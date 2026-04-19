@@ -60,8 +60,10 @@ function Landing() {
             For vibe coders &amp; indie builders
           </div>
 
-          <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.05]">
-            Stop burning credits.
+          <h1 className="mt-6 text-5xl sm:text-7xl lg:text-8xl font-semibold tracking-tight leading-[1.02]">
+            <span className="bg-gradient-to-br from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent">
+              Stop burning credits.
+            </span>
             <br />
             <span className="text-gradient">Start building smart.</span>
           </h1>
