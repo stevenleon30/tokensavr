@@ -170,7 +170,7 @@ function Landing() {
           {PARTNER_LOGOS.map((logo) => (
             <div
               key={logo.name}
-              className="h-14 flex items-center justify-center grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all"
+              className="h-14 flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity"
             >
               <img
                 src={logo.src}
