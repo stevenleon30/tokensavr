@@ -516,6 +516,35 @@ function DashboardPage() {
         </div>
       </div>
 
+      {/* Estimate accuracy */}
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card mb-8">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Gauge className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-medium">Estimate accuracy</h2>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              How close the AI's cost guesses have been to your real spend.
+            </p>
+          </div>
+          {stats?.accuracy && (
+            <span className="text-xs text-muted-foreground">
+              Based on {stats.accuracy.sampleSize} tracked{" "}
+              {stats.accuracy.sampleSize === 1 ? "strategy" : "strategies"}
+            </span>
+          )}
+        </div>
+        {stats?.accuracy ? (
+          <AccuracyWidget accuracy={stats.accuracy} />
+        ) : (
+          <div className="py-6 text-center text-xs text-muted-foreground">
+            Log actual costs on at least one strategy to see how accurate the
+            estimates have been.
+          </div>
+        )}
+      </div>
+
       {/* Per-platform breakdown */}
       <div className="rounded-xl border border-border bg-card p-5 shadow-card mb-8">
         <div className="flex items-center justify-between mb-4">
