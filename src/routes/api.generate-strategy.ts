@@ -54,8 +54,16 @@ const TOOL = {
     parameters: {
       type: "object",
       properties: {
-        total_estimated_cost: { type: "string" },
-        estimated_savings: { type: "string" },
+        total_estimated_cost: {
+          type: "string",
+          description:
+            'Total cost in credits across all steps. Format: "~N credits" or "N-M credits" (e.g. "~12 credits", "8-10 credits"). No dollars, tokens, or other units.',
+        },
+        estimated_savings: {
+          type: "string",
+          description:
+            'Estimated credit savings vs. doing everything in Lovable Build Mode. Format: "~N credits saved" or "N-M credits saved".',
+        },
         time_estimate: { type: "string" },
         steps: {
           type: "array",
@@ -66,7 +74,13 @@ const TOOL = {
               action: { type: "string" },
               platform: { type: "string" },
               mode: { type: "string" },
-              estimated_cost: { type: "string" },
+              estimated_cost: {
+                type: "string",
+                description:
+                  'Cost of THIS step, in credits only. Allowed formats: "0 credits", "1 credit", "N credits", "N-M credits", "~N credits", "~0.5 credits". Never use dollars, tokens, messages, or other units.',
+                pattern:
+                  "^(0 credits|1 credit|~?\\d+(\\.\\d)? credits|\\d+-\\d+ credits)$",
+              },
               prompt_to_use: { type: "string" },
             },
             required: [
