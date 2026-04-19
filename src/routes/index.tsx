@@ -8,12 +8,16 @@ import claudeLogo from "@/assets/logos/claude.svg";
 import lovableLogo from "@/assets/logos/lovable.svg";
 import cursorLogo from "@/assets/logos/cursor.svg";
 import boltLogo from "@/assets/logos/bolt.svg";
+import chatgptLogo from "@/assets/logos/chatgpt.svg";
+import v0Logo from "@/assets/logos/v0.svg";
 
 const PARTNER_LOGOS = [
   { name: "Lovable", src: lovableLogo },
   { name: "Claude", src: claudeLogo },
+  { name: "ChatGPT", src: chatgptLogo },
   { name: "Cursor", src: cursorLogo },
   { name: "Bolt", src: boltLogo },
+  { name: "v0", src: v0Logo },
 ];
 
 export const Route = createFileRoute("/")({
@@ -166,7 +170,7 @@ function Landing() {
         <p className="text-center text-xs uppercase tracking-widest text-muted-foreground mb-8">
           Routes prompts across the tools you already use
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-stretch">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-4 items-stretch">
           {PARTNER_LOGOS.map((logo) => (
             <div
               key={logo.name}
