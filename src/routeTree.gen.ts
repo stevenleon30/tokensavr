@@ -16,6 +16,7 @@ import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiGenerateStrategyRouteImport } from './routes/api.generate-strategy'
 
 const TipsRoute = TipsRouteImport.update({
   id: '/tips',
@@ -52,6 +53,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGenerateStrategyRoute = ApiGenerateStrategyRouteImport.update({
+  id: '/api/generate-strategy',
+  path: '/api/generate-strategy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
   '/tips': typeof TipsRoute
+  '/api/generate-strategy': typeof ApiGenerateStrategyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
   '/tips': typeof TipsRoute
+  '/api/generate-strategy': typeof ApiGenerateStrategyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
   '/tips': typeof TipsRoute
+  '/api/generate-strategy': typeof ApiGenerateStrategyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/results'
     | '/settings'
     | '/tips'
+    | '/api/generate-strategy'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/results'
     | '/settings'
     | '/tips'
+    | '/api/generate-strategy'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/results'
     | '/settings'
     | '/tips'
+    | '/api/generate-strategy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   ResultsRoute: typeof ResultsRoute
   SettingsRoute: typeof SettingsRoute
   TipsRoute: typeof TipsRoute
+  ApiGenerateStrategyRoute: typeof ApiGenerateStrategyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/generate-strategy': {
+      id: '/api/generate-strategy'
+      path: '/api/generate-strategy'
+      fullPath: '/api/generate-strategy'
+      preLoaderRoute: typeof ApiGenerateStrategyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResultsRoute: ResultsRoute,
   SettingsRoute: SettingsRoute,
   TipsRoute: TipsRoute,
+  ApiGenerateStrategyRoute: ApiGenerateStrategyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
