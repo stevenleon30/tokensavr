@@ -13,6 +13,8 @@ import {
   Circle,
   ClipboardList,
   Pencil,
+  Info,
+  PieChart,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,7 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
+import { getPlatform } from "@/lib/platforms";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 
 type Step = {
@@ -179,7 +182,44 @@ function ResultsPage() {
       (sum, s) => sum + parseCostToCredits(s.estimated_cost),
       0,
     );
-    return { totalSteps, completed, actual, estimated };
+
+    // Per-platform estimated breakdown.
+    const byPlatform: Record<
+      string,
+      { credits: number; steps: number; actual: number; hasActual: boolean }
+    > = {};
+    strategy.steps.forEach((s) => {
+      const key = s.platform || "unknown";
+      const entry = (byPlatform[key] ??= {
+        credits: 0,
+        steps: 0,
+        actual: 0,
+        hasActual: false,
+      });
+      entry.credits += parseCostToCredits(s.estimated_cost);
+      entry.steps += 1;
+      const pr = progress[s.step_number];
+      if (pr?.actual_cost_credits != null && pr.actual_cost_credits > 0) {
+        entry.actual += pr.actual_cost_credits;
+        entry.hasActual = true;
+      }
+    });
+    const platformBreakdown = Object.entries(byPlatform)
+      .map(([id, v]) => ({ id, ...v }))
+      .sort((a, b) => b.credits - a.credits);
+    const platformMax = Math.max(
+      0,
+      ...platformBreakdown.map((p) => Math.max(p.credits, p.actual)),
+    );
+
+    return {
+      totalSteps,
+      completed,
+      actual,
+      estimated,
+      platformBreakdown,
+      platformMax,
+    };
   }, [strategy, progress]);
 
   const saveToDashboard = async () => {
@@ -412,6 +452,85 @@ function ResultsPage() {
               tone={overEstimate ? "warn" : "ok"}
             />
           </div>
+        </div>
+      )}
+
+      {/* Cost by platform */}
+      {totals && totals.platformBreakdown.length > 0 && (
+        <div className="mt-6 rounded-xl border border-border bg-card p-5 shadow-card">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2">
+              <PieChart className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-medium">Cost by platform</h2>
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+              Estimated · {formatCredits(totals.estimated)} cr total
+            </span>
+          </div>
+          <div className="mb-4 flex items-start gap-2 rounded-md border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-foreground/80">
+            <Info className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
+            <p>
+              Rough planning estimate only. The AI is guessing typical token
+              usage — your real spend depends on prompt length, iterations, and
+              platform pricing changes. Use the tracker below to log what you
+              actually spend.
+            </p>
+          </div>
+          <ul className="space-y-3">
+            {totals.platformBreakdown.map((p) => {
+              const denom = totals.platformMax || 1;
+              const estPct = Math.min(100, (p.credits / denom) * 100);
+              const actualPct = Math.min(100, (p.actual / denom) * 100);
+              const share =
+                totals.estimated > 0
+                  ? Math.round((p.credits / totals.estimated) * 100)
+                  : 0;
+              const platform = getPlatform(p.id);
+              return (
+                <li key={p.id}>
+                  <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <PlatformBadge id={p.id} size="sm" />
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        · {p.steps} {p.steps === 1 ? "step" : "steps"}
+                      </span>
+                    </div>
+                    <div className="text-xs tabular-nums text-muted-foreground shrink-0">
+                      {p.hasActual && (
+                        <span className="text-foreground font-medium mr-1">
+                          {formatCredits(p.actual)} cr actual /
+                        </span>
+                      )}
+                      <span>
+                        ~{formatCredits(p.credits)} cr est.
+                      </span>
+                      <span className="ml-1 text-muted-foreground/70">
+                        ({share}%)
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full opacity-30"
+                      style={{
+                        width: `${estPct}%`,
+                        backgroundColor: platform.color,
+                      }}
+                    />
+                    {p.hasActual && (
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full"
+                        style={{
+                          width: `${actualPct}%`,
+                          backgroundColor: platform.color,
+                        }}
+                      />
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
 
