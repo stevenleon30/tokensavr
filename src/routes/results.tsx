@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { PlatformBadge } from "@/components/platform-badge";
+import { PlatformDonut } from "@/components/platform-donut";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
@@ -476,6 +477,17 @@ function ResultsPage() {
               actually spend.
             </p>
           </div>
+          {totals.estimated > 0 && (
+            <div className="mb-5 rounded-lg border border-border/60 bg-background/40 p-4">
+              <PlatformDonut
+                slices={totals.platformBreakdown.map((p) => ({
+                  id: p.id,
+                  credits: p.credits,
+                }))}
+                total={totals.estimated}
+              />
+            </div>
+          )}
           <ul className="space-y-3">
             {totals.platformBreakdown.map((p) => {
               const denom = totals.platformMax || 1;
