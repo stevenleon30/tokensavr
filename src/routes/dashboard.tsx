@@ -229,6 +229,60 @@ function DashboardPage() {
 
     const realSavings = totalActualHasData ? totalEstimated - totalActual : null;
 
+    // Estimate accuracy: how close the AI's guesses were to reality.
+    // Per-strategy ratio = actual / estimated. Accuracy = 100 - mean(|1 - ratio|) * 100.
+    // Skips strategies without tracked actuals or with 0 estimate.
+    const tracked = perStrategy.filter(
+      (p) => p.hasActual && p.estimated > 0,
+    );
+    let accuracy: {
+      score: number; // 0-100
+      sampleSize: number;
+      avgErrorPct: number; // signed: positive = AI underestimated (real > est)
+      overCount: number;
+      underCount: number;
+      worst: { id: string; title: string; errorPct: number } | null;
+      best: { id: string; title: string; errorPct: number } | null;
+    } | null = null;
+    if (tracked.length > 0) {
+      const errors = tracked.map((p) => ({
+        id: p.id,
+        title: p.title,
+        // signed deviation as fraction: +0.5 means actual is 50% higher than est.
+        deviation: (p.actual - p.estimated) / p.estimated,
+      }));
+      const meanAbs =
+        errors.reduce((s, e) => s + Math.abs(e.deviation), 0) / errors.length;
+      const meanSigned =
+        errors.reduce((s, e) => s + e.deviation, 0) / errors.length;
+      const sortedByAbs = [...errors].sort(
+        (a, b) => Math.abs(a.deviation) - Math.abs(b.deviation),
+      );
+      accuracy = {
+        score: Math.max(0, Math.round((1 - Math.min(1, meanAbs)) * 100)),
+        sampleSize: tracked.length,
+        avgErrorPct: Math.round(meanSigned * 100),
+        overCount: errors.filter((e) => e.deviation > 0.05).length,
+        underCount: errors.filter((e) => e.deviation < -0.05).length,
+        best: sortedByAbs[0]
+          ? {
+              id: sortedByAbs[0].id,
+              title: sortedByAbs[0].title,
+              errorPct: Math.round(sortedByAbs[0].deviation * 100),
+            }
+          : null,
+        worst: sortedByAbs[sortedByAbs.length - 1]
+          ? {
+              id: sortedByAbs[sortedByAbs.length - 1].id,
+              title: sortedByAbs[sortedByAbs.length - 1].title,
+              errorPct: Math.round(
+                sortedByAbs[sortedByAbs.length - 1].deviation * 100,
+              ),
+            }
+          : null,
+      };
+    }
+
     return {
       totalSaved,
       fav,
@@ -241,6 +295,7 @@ function DashboardPage() {
       totalActual,
       totalActualHasData,
       realSavings,
+      accuracy,
     };
   }, [rows, progress]);
 
