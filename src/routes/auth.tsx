@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
+import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -53,6 +54,20 @@ function AuthPage() {
     else toast.success("Account created. You're in!");
   };
 
+  const onGoogle = async () => {
+    setLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/dashboard`,
+    });
+    if (result.error) {
+      setLoading(false);
+      toast.error(result.error.message);
+      return;
+    }
+    if (result.redirected) return;
+    navigate({ to: "/dashboard" });
+  };
+
   return (
     <div className="mx-auto max-w-md px-4 sm:px-6 py-16">
       <div className="text-center mb-8">
@@ -66,6 +81,24 @@ function AuthPage() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full mb-4"
+          onClick={onGoogle}
+          disabled={loading}
+        >
+          <GoogleIcon className="h-4 w-4 mr-2" />
+          Continue with Google
+        </Button>
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-card px-2 text-muted-foreground">or</span>
+          </div>
+        </div>
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid grid-cols-2 w-full mb-5">
             <TabsTrigger value="signin">Sign in</TabsTrigger>
@@ -149,5 +182,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label className="text-xs text-muted-foreground">{label}</Label>
       {children}
     </div>
+  );
+}
+
+function GoogleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden>
+      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.1-5.5 4.1-3.3 0-6-2.7-6-6.2s2.7-6.2 6-6.2c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.3 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12S6.7 21.6 12 21.6c6.9 0 9.6-4.8 9.6-7.3 0-.5 0-.9-.1-1.3H12z"/>
+    </svg>
   );
 }
