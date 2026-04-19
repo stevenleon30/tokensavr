@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
 import { AuthProvider } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 import appCss from "../styles.css?url";
 
@@ -79,6 +80,7 @@ function RootComponent() {
           <main className="flex-1">
             <Outlet />
           </main>
+          <SiteFooter />
         </div>
         <Toaster />
       </AuthProvider>
