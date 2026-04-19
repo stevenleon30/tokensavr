@@ -16,6 +16,7 @@ import {
   type StreamingPartial,
   type StreamingStep,
 } from "@/lib/strategy-stream";
+import { loadUserCalibration } from "@/lib/calibration";
 
 export const Route = createFileRoute("/generate")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -114,9 +115,32 @@ function GeneratePage() {
     let lastPartial: StreamingPartial | null = null;
     let errored = false;
 
+    // Pull the user's running accuracy signal so the AI can nudge estimates
+    // up or down based on their historical over/under pattern. Failures here
+    // are non-fatal — we just generate without calibration.
+    let calibration: Awaited<ReturnType<typeof loadUserCalibration>> = null;
+    if (user) {
+      try {
+        calibration = await loadUserCalibration(user.id);
+        if (calibration && Math.abs(Math.round(calibration.avgErrorPct * 100)) >= 10) {
+          const pct = Math.round(calibration.avgErrorPct * 100);
+          toast.message("Calibrating estimates", {
+            description: `Past strategies ran ${pct > 0 ? `${pct}% over` : `${Math.abs(pct)}% under`} estimate — adjusting.`,
+          });
+        }
+      } catch (e) {
+        console.warn("calibration load failed", e);
+      }
+    }
+
     try {
       await streamStrategy(
-        { idea: idea.trim(), budget: budgetLabel, platforms },
+        {
+          idea: idea.trim(),
+          budget: budgetLabel,
+          platforms,
+          ...(calibration ? { calibration } : {}),
+        },
         {
           onPartial: (p) => {
             lastPartial = p;
