@@ -25,6 +25,7 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
+import { getPlatform } from "@/lib/platforms";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 
 type Step = {
