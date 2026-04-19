@@ -14,7 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          daily_budget_credits: number | null
+          display_name: string | null
+          id: string
+          preferred_platforms: string[] | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_budget_credits?: number | null
+          display_name?: string | null
+          id?: string
+          preferred_platforms?: string[] | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_budget_credits?: number | null
+          display_name?: string | null
+          id?: string
+          preferred_platforms?: string[] | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      strategies: {
+        Row: {
+          budget: string
+          created_at: string
+          estimated_savings: string | null
+          id: string
+          idea: string
+          platforms: string[]
+          steps: Json
+          time_estimate: string | null
+          title: string
+          total_estimated_cost: string | null
+          user_id: string
+        }
+        Insert: {
+          budget: string
+          created_at?: string
+          estimated_savings?: string | null
+          id?: string
+          idea: string
+          platforms?: string[]
+          steps?: Json
+          time_estimate?: string | null
+          title: string
+          total_estimated_cost?: string | null
+          user_id: string
+        }
+        Update: {
+          budget?: string
+          created_at?: string
+          estimated_savings?: string | null
+          id?: string
+          idea?: string
+          platforms?: string[]
+          steps?: Json
+          time_estimate?: string | null
+          title?: string
+          total_estimated_cost?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
