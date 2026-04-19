@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Circle,
   ClipboardList,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
