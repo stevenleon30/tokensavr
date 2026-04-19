@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PlatformBadge } from "@/components/platform-badge";
+import { getPlatform } from "@/lib/platforms";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
@@ -191,6 +192,41 @@ function DashboardPage() {
         Actual: Math.round(p.actual * 10) / 10,
       }));
 
+    // Per-platform breakdown: estimated + actual credits per platform
+    const platformTotals: Record<
+      string,
+      { estimated: number; actual: number; hasActual: boolean }
+    > = {};
+    rows.forEach((r) => {
+      const ps = progressByStrategy[r.id] ?? [];
+      const progressByStep: Record<number, ProgressRow> = {};
+      ps.forEach((p) => {
+        progressByStep[p.step_number] = p;
+      });
+      (r.steps ?? []).forEach((s, idx) => {
+        const platform = getPlatform(s.platform || "unknown").name;
+        const entry = (platformTotals[platform] ??= {
+          estimated: 0,
+          actual: 0,
+          hasActual: false,
+        });
+        entry.estimated += parseCostToCredits(s.estimated_cost ?? null);
+        const stepNum = s.step_number ?? idx + 1;
+        const pr = progressByStep[stepNum];
+        if (pr?.actual_cost_credits != null && pr.actual_cost_credits > 0) {
+          entry.actual += pr.actual_cost_credits;
+          entry.hasActual = true;
+        }
+      });
+    });
+    const platformBreakdown = Object.entries(platformTotals)
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => (b.actual || b.estimated) - (a.actual || a.estimated));
+    const platformActualMax = Math.max(
+      0,
+      ...platformBreakdown.map((p) => Math.max(p.actual, p.estimated)),
+    );
+
     const realSavings = totalActualHasData ? totalEstimated - totalActual : null;
 
     return {
@@ -199,6 +235,8 @@ function DashboardPage() {
       days,
       trackedChart,
       perStrategy,
+      platformBreakdown,
+      platformActualMax,
       totalEstimated,
       totalActual,
       totalActualHasData,
@@ -419,6 +457,67 @@ function DashboardPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Per-platform breakdown */}
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium">Spend by platform</h2>
+          <span className="text-xs text-muted-foreground">
+            Where your credits actually go
+          </span>
+        </div>
+        {stats?.platformBreakdown && stats.platformBreakdown.length > 0 ? (
+          <ul className="space-y-3">
+            {stats.platformBreakdown.map((p) => {
+              const denom = stats.platformActualMax || 1;
+              const actualPct = Math.min(100, (p.actual / denom) * 100);
+              const estPct = Math.min(100, (p.estimated / denom) * 100);
+              const platform = getPlatform(p.name);
+              return (
+                <li key={p.name}>
+                  <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <PlatformBadge id={p.name} size="sm" />
+                    <div className="text-xs text-muted-foreground tabular-nums">
+                      {p.hasActual ? (
+                        <>
+                          <span className="text-foreground font-medium">
+                            {formatCredits(p.actual)}
+                          </span>
+                          <span> / {formatCredits(p.estimated)} cr est.</span>
+                        </>
+                      ) : (
+                        <span>{formatCredits(p.estimated)} cr est.</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full opacity-30"
+                      style={{
+                        width: `${estPct}%`,
+                        backgroundColor: platform.color,
+                      }}
+                    />
+                    {p.hasActual && (
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full"
+                        style={{
+                          width: `${actualPct}%`,
+                          backgroundColor: platform.color,
+                        }}
+                      />
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Generate a strategy to see your platform mix here.
+          </p>
+        )}
       </div>
 
       {/* Strategy list */}
