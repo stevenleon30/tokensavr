@@ -192,6 +192,41 @@ function DashboardPage() {
         Actual: Math.round(p.actual * 10) / 10,
       }));
 
+    // Per-platform breakdown: estimated + actual credits per platform
+    const platformTotals: Record<
+      string,
+      { estimated: number; actual: number; hasActual: boolean }
+    > = {};
+    rows.forEach((r) => {
+      const ps = progressByStrategy[r.id] ?? [];
+      const progressByStep: Record<number, ProgressRow> = {};
+      ps.forEach((p) => {
+        progressByStep[p.step_number] = p;
+      });
+      (r.steps ?? []).forEach((s, idx) => {
+        const platform = getPlatform(s.platform || "unknown").name;
+        const entry = (platformTotals[platform] ??= {
+          estimated: 0,
+          actual: 0,
+          hasActual: false,
+        });
+        entry.estimated += parseCostToCredits(s.estimated_cost ?? null);
+        const stepNum = s.step_number ?? idx + 1;
+        const pr = progressByStep[stepNum];
+        if (pr?.actual_cost_credits != null && pr.actual_cost_credits > 0) {
+          entry.actual += pr.actual_cost_credits;
+          entry.hasActual = true;
+        }
+      });
+    });
+    const platformBreakdown = Object.entries(platformTotals)
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => (b.actual || b.estimated) - (a.actual || a.estimated));
+    const platformActualMax = Math.max(
+      0,
+      ...platformBreakdown.map((p) => Math.max(p.actual, p.estimated)),
+    );
+
     const realSavings = totalActualHasData ? totalEstimated - totalActual : null;
 
     return {
@@ -200,6 +235,8 @@ function DashboardPage() {
       days,
       trackedChart,
       perStrategy,
+      platformBreakdown,
+      platformActualMax,
       totalEstimated,
       totalActual,
       totalActualHasData,
