@@ -11,6 +11,7 @@ import {
   CircleDollarSign,
   CheckCircle2,
   Circle,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
