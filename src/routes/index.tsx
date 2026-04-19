@@ -4,6 +4,17 @@ import { ArrowRight, Sparkles, Zap, BarChart3, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORM_LIST } from "@/lib/platforms";
+import claudeLogo from "@/assets/logos/claude.svg";
+import lovableLogo from "@/assets/logos/lovable.svg";
+import cursorLogo from "@/assets/logos/cursor.svg";
+import boltLogo from "@/assets/logos/bolt.svg";
+
+const PARTNER_LOGOS = [
+  { name: "Lovable", src: lovableLogo },
+  { name: "Claude", src: claudeLogo },
+  { name: "Cursor", src: cursorLogo },
+  { name: "Bolt", src: boltLogo },
+];
 
 export const Route = createFileRoute("/")({
   validateSearch: (s: Record<string, unknown>) => ({ idea: typeof s.idea === "string" ? s.idea : undefined }),
@@ -150,18 +161,23 @@ function Landing() {
         </div>
       </section>
 
-      {/* Social proof placeholder */}
+      {/* Powered-by logo strip */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 border-t border-border">
         <p className="text-center text-xs uppercase tracking-widest text-muted-foreground mb-8">
-          Trusted by indie builders
+          Routes prompts across the tools you already use
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 opacity-50">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 items-center">
+          {PARTNER_LOGOS.map((logo) => (
             <div
-              key={i}
-              className="h-14 rounded-md border border-dashed border-border flex items-center justify-center text-xs text-muted-foreground"
+              key={logo.name}
+              className="h-14 flex items-center justify-center grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all"
             >
-              Logo {i}
+              <img
+                src={logo.src}
+                alt={`${logo.name} logo`}
+                className="max-h-8 w-auto object-contain"
+                loading="lazy"
+              />
             </div>
           ))}
         </div>
