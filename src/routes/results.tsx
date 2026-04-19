@@ -317,6 +317,9 @@ function ResultsPage() {
           <Button onClick={downloadPdf} variant="outline" className="gap-2">
             <Download className="h-4 w-4" /> Download as PDF
           </Button>
+          <Button onClick={copyAllPrompts} variant="outline" className="gap-2">
+            <ClipboardList className="h-4 w-4" /> Copy all prompts
+          </Button>
         </div>
       </div>
 
