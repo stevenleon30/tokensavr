@@ -166,11 +166,11 @@ function Landing() {
         <p className="text-center text-xs uppercase tracking-widest text-muted-foreground mb-8">
           Routes prompts across the tools you already use
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-stretch">
           {PARTNER_LOGOS.map((logo) => (
             <div
               key={logo.name}
-              className="h-14 flex items-center justify-center grayscale opacity-60 hover:opacity-100 hover:grayscale-0 transition-all"
+              className="h-16 rounded-lg bg-white/95 border border-border flex items-center justify-center px-4 transition-transform hover:scale-[1.02]"
             >
               <img
                 src={logo.src}
