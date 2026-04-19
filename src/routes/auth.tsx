@@ -54,6 +54,20 @@ function AuthPage() {
     else toast.success("Account created. You're in!");
   };
 
+  const onGoogle = async () => {
+    setLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/dashboard`,
+    });
+    if (result.error) {
+      setLoading(false);
+      toast.error(result.error.message);
+      return;
+    }
+    if (result.redirected) return;
+    navigate({ to: "/dashboard" });
+  };
+
   return (
     <div className="mx-auto max-w-md px-4 sm:px-6 py-16">
       <div className="text-center mb-8">
