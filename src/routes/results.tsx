@@ -21,6 +21,7 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
+import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 
 type Step = {
   step_number: number;
@@ -213,38 +214,19 @@ function ResultsPage() {
 
   const downloadPdf = () => {
     if (!strategy) return;
-    const w = window.open("", "_blank");
-    if (!w) {
-      toast.error("Please allow pop-ups to download.");
-      return;
+    try {
+      const safeSlug =
+        strategy.idea
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 40) || "strategy";
+      downloadStrategyPdf(strategy, `tokensavvy-${safeSlug}.pdf`);
+      toast.success("PDF downloaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't generate PDF.");
     }
-    const stepsHtml = strategy.steps
-      .map(
-        (s) => `
-        <section style="margin:24px 0;padding:16px;border:1px solid #e5e5e5;border-radius:8px;page-break-inside:avoid;">
-          <h3 style="margin:0 0 4px;font-size:16px;">Step ${s.step_number}: ${escapeHtml(s.action)}</h3>
-          <div style="font-size:12px;color:#666;margin-bottom:8px;">
-            <strong>${escapeHtml(s.platform)}</strong> · ${escapeHtml(s.mode)} · ${escapeHtml(s.estimated_cost)}
-          </div>
-          <pre style="white-space:pre-wrap;background:#f6f6f8;padding:12px;border-radius:6px;font-size:12px;font-family:ui-monospace,Menlo,monospace;margin:0;">${escapeHtml(s.prompt_to_use)}</pre>
-        </section>`,
-      )
-      .join("");
-    w.document.write(`<!doctype html>
-<html><head><meta charset="utf-8"/><title>TokenSavvy Strategy</title>
-<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:760px;margin:32px auto;padding:0 24px;color:#111;}h1{margin:0 0 4px}</style>
-</head><body>
-<h1>TokenSavvy Build Strategy</h1>
-<p style="color:#666;margin:0 0 20px;font-size:14px;">${escapeHtml(strategy.idea)}</p>
-<div style="display:flex;gap:16px;font-size:13px;background:#f6f6f8;padding:12px 16px;border-radius:8px;">
-  <div><strong>Total cost:</strong> ${escapeHtml(strategy.total_estimated_cost)}</div>
-  <div><strong>Savings:</strong> ${escapeHtml(strategy.estimated_savings)}</div>
-  <div><strong>Time:</strong> ${escapeHtml(strategy.time_estimate)}</div>
-</div>
-${stepsHtml}
-<script>window.onload=()=>setTimeout(()=>window.print(),300);</script>
-</body></html>`);
-    w.document.close();
   };
 
   if (loading) {
@@ -583,11 +565,3 @@ function StepCard({
   );
 }
 
-function escapeHtml(s: string) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
