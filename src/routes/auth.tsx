@@ -99,7 +99,7 @@ function AuthPage() {
             <span className="bg-card px-2 text-muted-foreground">or</span>
           </div>
         </div>
-        <Tabs value={tab} onValueChange={setTab}></Tabs>
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid grid-cols-2 w-full mb-5">
             <TabsTrigger value="signin">Sign in</TabsTrigger>
             <TabsTrigger value="signup">Sign up</TabsTrigger>
