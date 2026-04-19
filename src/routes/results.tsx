@@ -1,0 +1,326 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Copy, Check, Download, Save, ArrowLeft, TrendingDown, Clock, CircleDollarSign } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { PlatformBadge } from "@/components/platform-badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+
+type Step = {
+  step_number: number;
+  action: string;
+  platform: string;
+  mode: string;
+  estimated_cost: string;
+  prompt_to_use: string;
+};
+
+type StoredStrategy = {
+  idea: string;
+  budget: string;
+  platforms: string[];
+  total_estimated_cost: string;
+  estimated_savings: string;
+  time_estimate: string;
+  steps: Step[];
+};
+
+export const Route = createFileRoute("/results")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    id: typeof s.id === "string" ? s.id : undefined,
+  }),
+  head: () => ({
+    meta: [
+      { title: "Your build strategy — TokenSavvy" },
+      { name: "description", content: "Token-optimized AI build plan." },
+    ],
+  }),
+  component: ResultsPage,
+});
+
+function ResultsPage() {
+  const { id } = Route.useSearch();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [strategy, setStrategy] = useState<StoredStrategy | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [savedId, setSavedId] = useState<string | undefined>(id);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      if (id) {
+        const { data, error } = await supabase
+          .from("strategies")
+          .select("idea,budget,platforms,total_estimated_cost,estimated_savings,time_estimate,steps")
+          .eq("id", id)
+          .maybeSingle();
+        if (!cancelled) {
+          if (error || !data) {
+            toast.error("Couldn't load that strategy.");
+          } else {
+            setStrategy({
+              idea: data.idea,
+              budget: data.budget,
+              platforms: (data.platforms as string[]) ?? [],
+              total_estimated_cost: data.total_estimated_cost ?? "—",
+              estimated_savings: data.estimated_savings ?? "—",
+              time_estimate: data.time_estimate ?? "—",
+              steps: (data.steps as unknown as Step[]) ?? [],
+            });
+          }
+          setLoading(false);
+        }
+        return;
+      }
+      const raw = sessionStorage.getItem("ts:lastStrategy");
+      if (raw) {
+        try {
+          setStrategy(JSON.parse(raw));
+        } catch {
+          /* noop */
+        }
+      }
+      setLoading(false);
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const saveToDashboard = async () => {
+    if (!user) {
+      toast.message("Sign in to save", { description: "Create a free account to save strategies." });
+      navigate({ to: "/auth" });
+      return;
+    }
+    if (!strategy) return;
+    const { data, error } = await supabase
+      .from("strategies")
+      .insert({
+        user_id: user.id,
+        title: strategy.idea.slice(0, 80),
+        idea: strategy.idea,
+        budget: strategy.budget,
+        platforms: strategy.platforms,
+        total_estimated_cost: strategy.total_estimated_cost,
+        estimated_savings: strategy.estimated_savings,
+        time_estimate: strategy.time_estimate,
+        steps: strategy.steps,
+      })
+      .select("id")
+      .single();
+    if (error) {
+      toast.error("Failed to save.");
+    } else {
+      setSavedId(data.id);
+      toast.success("Saved to your dashboard.");
+    }
+  };
+
+  const downloadPdf = () => {
+    if (!strategy) return;
+    // Lightweight printable HTML → user prints to PDF (no native deps in Worker)
+    const w = window.open("", "_blank");
+    if (!w) {
+      toast.error("Please allow pop-ups to download.");
+      return;
+    }
+    const stepsHtml = strategy.steps
+      .map(
+        (s) => `
+        <section style="margin:24px 0;padding:16px;border:1px solid #e5e5e5;border-radius:8px;page-break-inside:avoid;">
+          <h3 style="margin:0 0 4px;font-size:16px;">Step ${s.step_number}: ${escapeHtml(s.action)}</h3>
+          <div style="font-size:12px;color:#666;margin-bottom:8px;">
+            <strong>${escapeHtml(s.platform)}</strong> · ${escapeHtml(s.mode)} · ${escapeHtml(s.estimated_cost)}
+          </div>
+          <pre style="white-space:pre-wrap;background:#f6f6f8;padding:12px;border-radius:6px;font-size:12px;font-family:ui-monospace,Menlo,monospace;margin:0;">${escapeHtml(s.prompt_to_use)}</pre>
+        </section>`,
+      )
+      .join("");
+    w.document.write(`<!doctype html>
+<html><head><meta charset="utf-8"/><title>TokenSavvy Strategy</title>
+<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:760px;margin:32px auto;padding:0 24px;color:#111;}h1{margin:0 0 4px}</style>
+</head><body>
+<h1>TokenSavvy Build Strategy</h1>
+<p style="color:#666;margin:0 0 20px;font-size:14px;">${escapeHtml(strategy.idea)}</p>
+<div style="display:flex;gap:16px;font-size:13px;background:#f6f6f8;padding:12px 16px;border-radius:8px;">
+  <div><strong>Total cost:</strong> ${escapeHtml(strategy.total_estimated_cost)}</div>
+  <div><strong>Savings:</strong> ${escapeHtml(strategy.estimated_savings)}</div>
+  <div><strong>Time:</strong> ${escapeHtml(strategy.time_estimate)}</div>
+</div>
+${stepsHtml}
+<script>window.onload=()=>setTimeout(()=>window.print(),300);</script>
+</body></html>`);
+    w.document.close();
+  };
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-20 text-center text-muted-foreground">
+        Loading your strategy…
+      </div>
+    );
+  }
+
+  if (!strategy) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <h2 className="text-xl font-semibold">No strategy found</h2>
+        <p className="mt-2 text-muted-foreground">Generate a new one to get started.</p>
+        <Button asChild className="mt-6 bg-gradient-primary">
+          <Link to="/generate">Generate strategy</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10">
+      <Button
+        asChild
+        variant="ghost"
+        size="sm"
+        className="text-muted-foreground hover:text-foreground -ml-2 mb-4"
+      >
+        <Link to="/generate">
+          <ArrowLeft className="h-4 w-4 mr-1" /> New strategy
+        </Link>
+      </Button>
+
+      <div className="rounded-2xl border border-border bg-gradient-mesh p-6 sm:p-8 shadow-card">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Your build strategy</h1>
+        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{strategy.idea}</p>
+
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <SummaryCard
+            icon={<CircleDollarSign className="h-4 w-4" />}
+            label="Total estimated cost"
+            value={strategy.total_estimated_cost}
+          />
+          <SummaryCard
+            icon={<TrendingDown className="h-4 w-4 text-success" />}
+            label="Estimated savings"
+            value={strategy.estimated_savings}
+            accent
+          />
+          <SummaryCard
+            icon={<Clock className="h-4 w-4" />}
+            label="Time estimate"
+            value={strategy.time_estimate}
+          />
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Button onClick={saveToDashboard} variant="secondary" className="gap-2" disabled={!!savedId}>
+            <Save className="h-4 w-4" />
+            {savedId ? "Saved" : "Save to dashboard"}
+          </Button>
+          <Button onClick={downloadPdf} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" /> Download as PDF
+          </Button>
+        </div>
+      </div>
+
+      <ol className="mt-8 space-y-4">
+        {strategy.steps.map((s) => (
+          <StepCard key={s.step_number} step={s} />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function SummaryCard({
+  icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-xl border p-4 ${
+        accent ? "border-success/40 bg-success/5" : "border-border bg-card/60"
+      }`}
+    >
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        {icon}
+        {label}
+      </div>
+      <div className="mt-1 text-lg font-semibold tracking-tight break-words">{value}</div>
+    </div>
+  );
+}
+
+function StepCard({ step }: { step: Step }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(step.prompt_to_use);
+      setCopied(true);
+      toast.success("Prompt copied");
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Couldn't copy.");
+    }
+  };
+
+  return (
+    <li className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
+      <div className="p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-primary text-xs font-semibold text-primary-foreground">
+              {step.step_number}
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-medium leading-snug">{step.action}</h3>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <PlatformBadge id={step.platform} size="sm" />
+                <Badge variant="secondary" className="font-normal text-xs">
+                  {step.mode}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="font-normal text-xs border-warning/40 text-warning"
+                >
+                  {step.estimated_cost}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 relative">
+          <pre className="whitespace-pre-wrap rounded-lg border border-border bg-background/60 p-4 pr-12 text-xs sm:text-sm font-mono text-foreground/90 max-h-72 overflow-auto">
+            {step.prompt_to_use}
+          </pre>
+          <button
+            onClick={copy}
+            className="absolute top-2 right-2 inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            aria-label="Copy prompt"
+          >
+            {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
