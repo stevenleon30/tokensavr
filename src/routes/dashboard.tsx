@@ -459,6 +459,67 @@ function DashboardPage() {
         </div>
       </div>
 
+      {/* Per-platform breakdown */}
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium">Spend by platform</h2>
+          <span className="text-xs text-muted-foreground">
+            Where your credits actually go
+          </span>
+        </div>
+        {stats?.platformBreakdown && stats.platformBreakdown.length > 0 ? (
+          <ul className="space-y-3">
+            {stats.platformBreakdown.map((p) => {
+              const denom = stats.platformActualMax || 1;
+              const actualPct = Math.min(100, (p.actual / denom) * 100);
+              const estPct = Math.min(100, (p.estimated / denom) * 100);
+              const platform = getPlatform(p.name);
+              return (
+                <li key={p.name}>
+                  <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <PlatformBadge id={p.name} size="sm" />
+                    <div className="text-xs text-muted-foreground tabular-nums">
+                      {p.hasActual ? (
+                        <>
+                          <span className="text-foreground font-medium">
+                            {formatCredits(p.actual)}
+                          </span>
+                          <span> / {formatCredits(p.estimated)} cr est.</span>
+                        </>
+                      ) : (
+                        <span>{formatCredits(p.estimated)} cr est.</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full opacity-30"
+                      style={{
+                        width: `${estPct}%`,
+                        backgroundColor: platform.color,
+                      }}
+                    />
+                    {p.hasActual && (
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full"
+                        style={{
+                          width: `${actualPct}%`,
+                          backgroundColor: platform.color,
+                        }}
+                      />
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Generate a strategy to see your platform mix here.
+          </p>
+        )}
+      </div>
+
       {/* Strategy list */}
       <h2 className="text-sm font-medium mb-3 text-muted-foreground">Saved strategies</h2>
       {rows === null ? (
