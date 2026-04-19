@@ -1,16 +1,21 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Loader2, ArrowRight, Check } from "lucide-react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, ArrowRight, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useServerFn } from "@tanstack/react-start";
-import { generateStrategy } from "@/server/strategy.functions";
+import { Badge } from "@/components/ui/badge";
+import { PlatformBadge } from "@/components/platform-badge";
 import { BUDGETS, PLATFORM_LIST } from "@/lib/platforms";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import {
+  streamStrategy,
+  type StreamingPartial,
+  type StreamingStep,
+} from "@/lib/strategy-stream";
 
 export const Route = createFileRoute("/generate")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -28,22 +33,39 @@ export const Route = createFileRoute("/generate")({
   component: GeneratePage,
 });
 
+function isCompleteStep(s: StreamingStep): boolean {
+  return (
+    typeof s.step_number === "number" &&
+    !!s.action &&
+    !!s.platform &&
+    !!s.mode &&
+    !!s.estimated_cost &&
+    !!s.prompt_to_use
+  );
+}
+
 function GeneratePage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const generate = useServerFn(generateStrategy);
 
   const [idea, setIdea] = useState(search.idea ?? "");
   const [budgetId, setBudgetId] = useState<string>("free");
   const [customBudget, setCustomBudget] = useState("");
   const [platforms, setPlatforms] = useState<string[]>(["lovable", "claude"]);
   const [loading, setLoading] = useState(false);
+  const [partial, setPartial] = useState<StreamingPartial | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (search.idea && !idea) setIdea(search.idea);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.idea]);
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
 
   const togglePlatform = (id: string) => {
     setPlatforms((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
@@ -63,55 +85,103 @@ function GeneratePage() {
         ? customBudget.trim() || "Custom (not specified)"
         : BUDGETS.find((b) => b.id === budgetId)?.label ?? "Free tier only";
 
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
+    setPartial({ steps: [] });
+    // Smooth scroll to live preview
+    setTimeout(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+
+    let lastPartial: StreamingPartial | null = null;
+    let errored = false;
+
     try {
-      const result = await generate({
-        data: { idea: idea.trim(), budget: budgetLabel, platforms },
-      });
-
-      // Store in sessionStorage for results page (works for guests)
-      const payload = {
-        idea: idea.trim(),
-        budget: budgetLabel,
-        platforms,
-        ...result,
-      };
-      sessionStorage.setItem("ts:lastStrategy", JSON.stringify(payload));
-
-      // If logged in, save to DB
-      let savedId: string | undefined;
-      if (user) {
-        const { data, error } = await supabase
-          .from("strategies")
-          .insert({
-            user_id: user.id,
-            title: idea.trim().slice(0, 80),
-            idea: idea.trim(),
-            budget: budgetLabel,
-            platforms,
-            total_estimated_cost: result.total_estimated_cost,
-            estimated_savings: result.estimated_savings,
-            time_estimate: result.time_estimate,
-            steps: result.steps,
-          })
-          .select("id")
-          .single();
-        if (error) {
-          console.error(error);
-          toast.error("Couldn't save strategy, but here's your plan.");
-        } else {
-          savedId = data.id;
-        }
-      }
-
-      navigate({ to: "/results", search: savedId ? { id: savedId } : {} });
+      await streamStrategy(
+        { idea: idea.trim(), budget: budgetLabel, platforms },
+        {
+          onPartial: (p) => {
+            lastPartial = p;
+            setPartial(p);
+          },
+          onError: (msg) => {
+            errored = true;
+            toast.error(msg);
+          },
+        },
+        controller.signal,
+      );
     } catch (e) {
+      if (controller.signal.aborted) return;
+      errored = true;
       console.error(e);
       toast.error(e instanceof Error ? e.message : "Failed to generate strategy.");
-    } finally {
-      setLoading(false);
     }
+
+    if (errored || !lastPartial) {
+      setLoading(false);
+      return;
+    }
+
+    // Validate completeness
+    const final = lastPartial as StreamingPartial;
+    const completeSteps = (final.steps ?? []).filter(isCompleteStep) as Required<StreamingStep>[];
+    if (
+      !final.total_estimated_cost ||
+      !final.estimated_savings ||
+      completeSteps.length === 0
+    ) {
+      setLoading(false);
+      toast.error("AI returned an incomplete plan. Please try again.");
+      return;
+    }
+
+    const result = {
+      total_estimated_cost: final.total_estimated_cost,
+      estimated_savings: final.estimated_savings,
+      time_estimate: final.time_estimate ?? "—",
+      steps: completeSteps,
+    };
+
+    const payload = {
+      idea: idea.trim(),
+      budget: budgetLabel,
+      platforms,
+      ...result,
+    };
+    sessionStorage.setItem("ts:lastStrategy", JSON.stringify(payload));
+
+    let savedId: string | undefined;
+    if (user) {
+      const { data, error } = await supabase
+        .from("strategies")
+        .insert({
+          user_id: user.id,
+          title: idea.trim().slice(0, 80),
+          idea: idea.trim(),
+          budget: budgetLabel,
+          platforms,
+          total_estimated_cost: result.total_estimated_cost,
+          estimated_savings: result.estimated_savings,
+          time_estimate: result.time_estimate,
+          steps: result.steps,
+        })
+        .select("id")
+        .single();
+      if (error) {
+        console.error(error);
+        toast.error("Couldn't save strategy, but here's your plan.");
+      } else {
+        savedId = data.id;
+      }
+    }
+
+    setLoading(false);
+    navigate({ to: "/results", search: savedId ? { id: savedId } : {} });
   };
+
+  const liveSteps = partial?.steps ?? [];
 
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12">
@@ -132,6 +202,7 @@ function GeneratePage() {
             rows={5}
             placeholder="e.g. A Notion-style note-taking app with AI summarization, login, and a Stripe billing page."
             className="bg-card border-border resize-none"
+            disabled={loading}
           />
           <p className="mt-2 text-xs text-muted-foreground">
             Be specific — features, integrations, target users.
@@ -149,7 +220,8 @@ function GeneratePage() {
                   key={b.id}
                   type="button"
                   onClick={() => setBudgetId(b.id)}
-                  className={`text-left rounded-lg border p-4 transition-all ${
+                  disabled={loading}
+                  className={`text-left rounded-lg border p-4 transition-all disabled:opacity-60 ${
                     active
                       ? "border-primary bg-primary/5 shadow-elegant"
                       : "border-border bg-card hover:border-primary/40"
@@ -172,6 +244,7 @@ function GeneratePage() {
               placeholder="e.g. $30/month, mostly Lovable"
               value={customBudget}
               onChange={(e) => setCustomBudget(e.target.value)}
+              disabled={loading}
             />
           )}
         </section>
@@ -187,7 +260,8 @@ function GeneratePage() {
                   key={p.id}
                   type="button"
                   onClick={() => togglePlatform(p.id)}
-                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all ${
+                  disabled={loading}
+                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-all disabled:opacity-60 ${
                     active
                       ? "border-primary bg-primary/10 text-foreground"
                       : "border-border bg-card text-muted-foreground hover:text-foreground"
@@ -220,7 +294,7 @@ function GeneratePage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Routing your build…
+                Streaming your plan…
               </>
             ) : (
               <>
@@ -231,12 +305,127 @@ function GeneratePage() {
           </Button>
           {!user && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Tip: <button onClick={() => navigate({ to: "/auth" })} className="text-primary underline-offset-2 hover:underline">sign in</button> to save strategies to your dashboard.
+              Tip:{" "}
+              <Link to="/auth" className="text-primary underline-offset-2 hover:underline">
+                sign in
+              </Link>{" "}
+              to save strategies to your dashboard.
             </p>
           )}
         </section>
+
+        {/* Live streaming preview */}
+        {(loading || liveSteps.length > 0) && (
+          <section ref={previewRef} className="pt-2">
+            <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <Sparkles className="h-4 w-4 text-primary" />
+              {loading ? (
+                <span>
+                  Generating live — {liveSteps.length} step{liveSteps.length === 1 ? "" : "s"} so far
+                </span>
+              ) : (
+                <span>Done. Redirecting to your plan…</span>
+              )}
+            </div>
+
+            {(partial?.total_estimated_cost || partial?.estimated_savings) && (
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <MiniStat label="Cost" value={partial?.total_estimated_cost} />
+                <MiniStat label="Savings" value={partial?.estimated_savings} accent />
+                <MiniStat label="Time" value={partial?.time_estimate} />
+              </div>
+            )}
+
+            <ol className="space-y-3">
+              {liveSteps.map((s, i) => (
+                <LiveStep key={i} step={s} index={i} />
+              ))}
+              {loading && (
+                <li className="rounded-xl border border-dashed border-border bg-card/40 p-5">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Drafting the next step…
+                  </div>
+                </li>
+              )}
+            </ol>
+          </section>
+        )}
       </div>
     </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-lg border px-3 py-2 ${
+        accent ? "border-success/40 bg-success/5" : "border-border bg-card/60"
+      }`}
+    >
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-sm font-medium truncate">{value ?? "…"}</div>
+    </div>
+  );
+}
+
+function LiveStep({ step, index }: { step: StreamingStep; index: number }) {
+  const num = step.step_number ?? index + 1;
+  const ready = isCompleteStep(step);
+  return (
+    <li
+      className={`rounded-xl border bg-card shadow-card overflow-hidden transition-all ${
+        ready ? "border-border opacity-100" : "border-border/60 opacity-80"
+      }`}
+    >
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-primary text-xs font-semibold text-primary-foreground">
+            {num}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium leading-snug">
+              {step.action ?? <span className="text-muted-foreground">Writing action…</span>}
+            </h3>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {step.platform ? (
+                <PlatformBadge id={step.platform} size="sm" />
+              ) : (
+                <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
+                  picking platform…
+                </Badge>
+              )}
+              {step.mode && (
+                <Badge variant="secondary" className="font-normal text-xs">
+                  {step.mode}
+                </Badge>
+              )}
+              {step.estimated_cost && (
+                <Badge
+                  variant="outline"
+                  className="font-normal text-xs border-warning/40 text-warning"
+                >
+                  {step.estimated_cost}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+        {step.prompt_to_use && (
+          <pre className="mt-3 whitespace-pre-wrap rounded-lg border border-border bg-background/60 p-3 text-xs font-mono text-foreground/80 max-h-48 overflow-auto">
+            {step.prompt_to_use}
+          </pre>
+        )}
+      </div>
+    </li>
   );
 }
 
