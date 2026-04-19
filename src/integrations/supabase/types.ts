@@ -47,6 +47,50 @@ export type Database = {
         }
         Relationships: []
       }
+      step_progress: {
+        Row: {
+          actual_cost_credits: number | null
+          completed: boolean
+          created_at: string
+          id: string
+          notes: string | null
+          step_number: number
+          strategy_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_cost_credits?: number | null
+          completed?: boolean
+          created_at?: string
+          id?: string
+          notes?: string | null
+          step_number: number
+          strategy_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_cost_credits?: number | null
+          completed?: boolean
+          created_at?: string
+          id?: string
+          notes?: string | null
+          step_number?: number
+          strategy_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "step_progress_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       strategies: {
         Row: {
           budget: string
