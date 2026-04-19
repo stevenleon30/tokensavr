@@ -18,10 +18,31 @@ Rules:
 - Use Cursor Chat for local file edits when the user has it.
 - Batch related changes into a single Lovable Build Mode message — never send 5 small messages where 1 will do.
 - Use the cheapest model that can do the task (e.g. GPT-4o-mini for simple text).
-- Be specific about costs: "~1 credit", "~$0.02 in tokens", "free", etc.
 - Each prompt_to_use must be a complete, copy-pasteable prompt the user sends to that platform — not a description.
 - Estimate savings vs. doing the entire project in Lovable Build Mode alone.
 - Only suggest platforms from the user's available list.
+
+COST UNIT — CRITICAL FOR DOWNSTREAM AGGREGATION:
+- ALL "estimated_cost" values MUST be expressed in CREDITS, using ONE of these exact formats:
+  • "0 credits"            (free tier, no measurable cost)
+  • "1 credit"             (single-credit step, singular)
+  • "N credits"            (integer ≥ 2, e.g. "3 credits")
+  • "N-M credits"          (integer range, e.g. "2-4 credits", with N < M)
+  • "~N credits"           (approximate, e.g. "~2 credits")
+  • "~0.5 credits"         (decimal, max one decimal place, for sub-credit costs)
+- DO NOT use dollars, tokens, messages, hours, or any other unit in estimated_cost.
+- DO NOT add prose qualifiers ("about", "roughly", "in tokens", "of API", etc.) — only the formats above.
+- "total_estimated_cost" and "estimated_savings" MUST also use the credits unit, e.g. "~12 credits" or "8-10 credits saved".
+
+Credit conversion guide (use these as your baseline when estimating):
+- Lovable Build Mode: ~1-3 credits per non-trivial build message; complex multi-file refactors 3-5.
+- Lovable Chat Mode: 1 credit per message, flat.
+- Claude.ai free chat / ChatGPT free tier: "0 credits" (free).
+- Claude API / OpenAI API direct calls: convert at $0.10 ≈ 1 credit (e.g. a $0.02 call → "~0.2 credits", a $0.50 call → "~5 credits").
+- Cursor Chat (paid plan, included quota): "0 credits" if within the user's existing subscription.
+- Bolt / v0 message-based steps: count each message as ~1 credit unless the platform's pricing clearly differs.
+
+Sanity check before responding: the sum of every step's estimated_cost (using the midpoint of any range) should be within ±20% of total_estimated_cost. If they don't match, fix the per-step numbers — do not silently inflate the total.
 
 You MUST respond by calling the return_strategy tool with the structured plan.`;
 
@@ -33,8 +54,16 @@ const TOOL = {
     parameters: {
       type: "object",
       properties: {
-        total_estimated_cost: { type: "string" },
-        estimated_savings: { type: "string" },
+        total_estimated_cost: {
+          type: "string",
+          description:
+            'Total cost in credits across all steps. Format: "~N credits" or "N-M credits" (e.g. "~12 credits", "8-10 credits"). No dollars, tokens, or other units.',
+        },
+        estimated_savings: {
+          type: "string",
+          description:
+            'Estimated credit savings vs. doing everything in Lovable Build Mode. Format: "~N credits saved" or "N-M credits saved".',
+        },
         time_estimate: { type: "string" },
         steps: {
           type: "array",
@@ -45,7 +74,13 @@ const TOOL = {
               action: { type: "string" },
               platform: { type: "string" },
               mode: { type: "string" },
-              estimated_cost: { type: "string" },
+              estimated_cost: {
+                type: "string",
+                description:
+                  'Cost of THIS step, in credits only. Allowed formats: "0 credits", "1 credit", "N credits", "N-M credits", "~N credits", "~0.5 credits". Never use dollars, tokens, messages, or other units.',
+                pattern:
+                  "^(0 credits|1 credit|~?\\d+(\\.\\d)? credits|\\d+-\\d+ credits)$",
+              },
               prompt_to_use: { type: "string" },
             },
             required: [
