@@ -677,3 +677,137 @@ function DashboardPage() {
     </div>
   );
 }
+
+type AccuracyData = {
+  score: number;
+  sampleSize: number;
+  avgErrorPct: number;
+  overCount: number;
+  underCount: number;
+  worst: { id: string; title: string; errorPct: number } | null;
+  best: { id: string; title: string; errorPct: number } | null;
+};
+
+function AccuracyWidget({ accuracy }: { accuracy: AccuracyData }) {
+  const { score, avgErrorPct, overCount, underCount, best, worst } = accuracy;
+  const tone =
+    score >= 80 ? "success" : score >= 50 ? "primary" : "warning";
+  const ringColor =
+    tone === "success"
+      ? "var(--color-success)"
+      : tone === "warning"
+        ? "var(--color-warning)"
+        : "var(--color-primary)";
+  const label =
+    score >= 80
+      ? "Pretty trustworthy"
+      : score >= 50
+        ? "Roughly in the ballpark"
+        : "Take with a grain of salt";
+  const direction =
+    avgErrorPct > 5
+      ? `On average, real spend was ${avgErrorPct}% higher than the AI's estimate.`
+      : avgErrorPct < -5
+        ? `On average, real spend was ${Math.abs(avgErrorPct)}% lower than the AI's estimate.`
+        : `On average, the AI's estimates were within ~${Math.max(
+            Math.abs(avgErrorPct),
+            1,
+          )}% of real spend.`;
+
+  return (
+    <div className="grid gap-5 md:grid-cols-[auto_1fr] md:items-center">
+      {/* Circular gauge */}
+      <div className="flex items-center gap-4">
+        <div
+          className="relative h-24 w-24 shrink-0 rounded-full"
+          style={{
+            background: `conic-gradient(${ringColor} ${score * 3.6}deg, var(--color-secondary) 0deg)`,
+          }}
+        >
+          <div className="absolute inset-1.5 rounded-full bg-card flex flex-col items-center justify-center">
+            <span className="text-2xl font-semibold tabular-nums">
+              {score}
+            </span>
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              / 100
+            </span>
+          </div>
+        </div>
+        <div className="md:hidden">
+          <div className="text-sm font-medium">{label}</div>
+          <p className="text-xs text-muted-foreground mt-0.5">{direction}</p>
+        </div>
+      </div>
+
+      {/* Details */}
+      <div className="space-y-3">
+        <div className="hidden md:block">
+          <div className="text-sm font-medium">{label}</div>
+          <p className="text-xs text-muted-foreground mt-0.5">{direction}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <TrendingUp className="h-3 w-3 text-warning" /> Underestimated
+            </div>
+            <div className="mt-0.5 font-semibold tabular-nums">
+              {overCount} {overCount === 1 ? "strategy" : "strategies"}
+            </div>
+          </div>
+          <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-2">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <TrendingDown className="h-3 w-3 text-success" /> Overestimated
+            </div>
+            <div className="mt-0.5 font-semibold tabular-nums">
+              {underCount} {underCount === 1 ? "strategy" : "strategies"}
+            </div>
+          </div>
+        </div>
+        {(best || worst) && (
+          <div className="grid gap-1.5 text-xs">
+            {best && (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-background/40 px-3 py-1.5">
+                <span className="text-muted-foreground shrink-0">
+                  Closest call
+                </span>
+                <Link
+                  to="/results"
+                  search={{ id: best.id }}
+                  className="truncate text-foreground hover:text-primary"
+                >
+                  {best.title}
+                </Link>
+                <span className="tabular-nums text-muted-foreground shrink-0">
+                  {best.errorPct >= 0 ? "+" : ""}
+                  {best.errorPct}%
+                </span>
+              </div>
+            )}
+            {worst && worst.id !== best?.id && (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-background/40 px-3 py-1.5">
+                <span className="text-muted-foreground shrink-0">
+                  Biggest miss
+                </span>
+                <Link
+                  to="/results"
+                  search={{ id: worst.id }}
+                  className="truncate text-foreground hover:text-primary"
+                >
+                  {worst.title}
+                </Link>
+                <span
+                  className={`tabular-nums shrink-0 ${
+                    worst.errorPct > 0 ? "text-warning" : "text-success"
+                  }`}
+                >
+                  {worst.errorPct >= 0 ? "+" : ""}
+                  {worst.errorPct}%
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
