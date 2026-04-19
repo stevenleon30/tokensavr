@@ -230,6 +230,22 @@ function ResultsPage() {
     }
   };
 
+  const copyAllPrompts = async () => {
+    if (!strategy) return;
+    const md = strategy.steps
+      .map(
+        (s) =>
+          `${s.step_number}. **${s.action}** _(${s.platform} · ${s.mode} · est. ${s.estimated_cost})_\n\n\`\`\`\n${s.prompt_to_use}\n\`\`\``,
+      )
+      .join("\n\n");
+    try {
+      await navigator.clipboard.writeText(md);
+      toast.success(`Copied ${strategy.steps.length} prompts as markdown`);
+    } catch {
+      toast.error("Couldn't copy prompts.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-20 text-center text-muted-foreground">
