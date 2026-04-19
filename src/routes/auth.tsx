@@ -1,0 +1,153 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Loader2, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useAuth } from "@/lib/auth";
+
+export const Route = createFileRoute("/auth")({
+  head: () => ({
+    meta: [
+      { title: "Sign in — TokenSavvy" },
+      { name: "description", content: "Sign in or create a TokenSavvy account." },
+    ],
+  }),
+  component: AuthPage,
+});
+
+function AuthPage() {
+  const { user, signIn, signUp } = useAuth();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) navigate({ to: "/dashboard" });
+  }, [user, navigate]);
+
+  const onSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
+    if (error) toast.error(error.message);
+    else navigate({ to: "/dashboard" });
+  };
+
+  const onSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return;
+    }
+    setLoading(true);
+    const { error } = await signUp(email, password, displayName);
+    setLoading(false);
+    if (error) toast.error(error.message);
+    else toast.success("Account created. You're in!");
+  };
+
+  return (
+    <div className="mx-auto max-w-md px-4 sm:px-6 py-16">
+      <div className="text-center mb-8">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow mb-4">
+          <Sparkles className="h-5 w-5 text-primary-foreground" />
+        </div>
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome to TokenSavvy</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Save strategies, track your budget, and learn what works.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList className="grid grid-cols-2 w-full mb-5">
+            <TabsTrigger value="signin">Sign in</TabsTrigger>
+            <TabsTrigger value="signup">Sign up</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="signin">
+            <form onSubmit={onSignIn} className="space-y-4">
+              <Field label="Email">
+                <Input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Field>
+              <Field label="Password">
+                <Input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Field>
+              <Button type="submit" className="w-full bg-gradient-primary" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
+              </Button>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="signup">
+            <form onSubmit={onSignUp} className="space-y-4">
+              <Field label="Display name">
+                <Input
+                  required
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+              </Field>
+              <Field label="Email">
+                <Input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Field>
+              <Field label="Password">
+                <Input
+                  type="password"
+                  required
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Field>
+              <Button type="submit" className="w-full bg-gradient-primary" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <p className="text-center text-xs text-muted-foreground mt-6">
+        By continuing you agree to our terms.{" "}
+        <Link to="/" className="text-primary hover:underline">
+          Back to home
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
+}
