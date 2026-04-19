@@ -28,6 +28,16 @@ export type StrategyInput = {
   idea: string;
   budget: string;
   platforms: string[];
+  /**
+   * Optional historical accuracy signal. The server uses this to nudge the
+   * AI's per-step credit estimates up or down based on the user's past
+   * over/under pattern. `avgErrorPct` is a signed fraction
+   * (e.g. 0.2 = real spend ran 20% over estimates).
+   */
+  calibration?: {
+    avgErrorPct: number;
+    sampleSize: number;
+  };
 };
 
 export async function streamStrategy(
