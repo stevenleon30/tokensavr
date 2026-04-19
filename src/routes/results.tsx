@@ -182,7 +182,44 @@ function ResultsPage() {
       (sum, s) => sum + parseCostToCredits(s.estimated_cost),
       0,
     );
-    return { totalSteps, completed, actual, estimated };
+
+    // Per-platform estimated breakdown.
+    const byPlatform: Record<
+      string,
+      { credits: number; steps: number; actual: number; hasActual: boolean }
+    > = {};
+    strategy.steps.forEach((s) => {
+      const key = s.platform || "unknown";
+      const entry = (byPlatform[key] ??= {
+        credits: 0,
+        steps: 0,
+        actual: 0,
+        hasActual: false,
+      });
+      entry.credits += parseCostToCredits(s.estimated_cost);
+      entry.steps += 1;
+      const pr = progress[s.step_number];
+      if (pr?.actual_cost_credits != null && pr.actual_cost_credits > 0) {
+        entry.actual += pr.actual_cost_credits;
+        entry.hasActual = true;
+      }
+    });
+    const platformBreakdown = Object.entries(byPlatform)
+      .map(([id, v]) => ({ id, ...v }))
+      .sort((a, b) => b.credits - a.credits);
+    const platformMax = Math.max(
+      0,
+      ...platformBreakdown.map((p) => Math.max(p.credits, p.actual)),
+    );
+
+    return {
+      totalSteps,
+      completed,
+      actual,
+      estimated,
+      platformBreakdown,
+      platformMax,
+    };
   }, [strategy, progress]);
 
   const saveToDashboard = async () => {
