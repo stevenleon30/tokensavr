@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PLATFORM_LIST } from "@/lib/platforms";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (s: Record<string, unknown>) => ({ idea: typeof s.idea === "string" ? s.idea : undefined }),
   head: () => ({
     meta: [
       { title: "TokenSavvy — Stop burning credits. Start building smart." },
@@ -25,7 +26,8 @@ function Landing() {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate({ to: "/generate", search: { idea } });
+    if (idea.trim().length < 10) return;
+    navigate({ to: "/generate", search: { idea: idea.trim() } });
   };
 
   return (
