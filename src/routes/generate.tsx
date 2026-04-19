@@ -20,6 +20,11 @@ import {
 export const Route = createFileRoute("/generate")({
   validateSearch: (s: Record<string, unknown>) => ({
     idea: typeof s.idea === "string" ? s.idea : undefined,
+    budget: typeof s.budget === "string" ? s.budget : undefined,
+    platforms:
+      Array.isArray(s.platforms) && s.platforms.every((p) => typeof p === "string")
+        ? (s.platforms as string[])
+        : undefined,
   }),
   head: () => ({
     meta: [
@@ -44,15 +49,27 @@ function isCompleteStep(s: StreamingStep): boolean {
   );
 }
 
+// Reverse-map a budget label (or raw custom string) to a budget id + custom text.
+function resolveBudget(budgetParam: string | undefined): { id: string; custom: string } {
+  if (!budgetParam) return { id: "free", custom: "" };
+  const match = BUDGETS.find((b) => b.label === budgetParam);
+  if (match) return { id: match.id, custom: "" };
+  return { id: "custom", custom: budgetParam };
+}
+
 function GeneratePage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const initialBudget = resolveBudget(search.budget);
+
   const [idea, setIdea] = useState(search.idea ?? "");
-  const [budgetId, setBudgetId] = useState<string>("free");
-  const [customBudget, setCustomBudget] = useState("");
-  const [platforms, setPlatforms] = useState<string[]>(["lovable", "claude"]);
+  const [budgetId, setBudgetId] = useState<string>(initialBudget.id);
+  const [customBudget, setCustomBudget] = useState(initialBudget.custom);
+  const [platforms, setPlatforms] = useState<string[]>(
+    search.platforms && search.platforms.length > 0 ? search.platforms : ["lovable", "claude"],
+  );
   const [loading, setLoading] = useState(false);
   const [partial, setPartial] = useState<StreamingPartial | null>(null);
   const abortRef = useRef<AbortController | null>(null);
