@@ -5,7 +5,39 @@ const InputSchema = z.object({
   idea: z.string().trim().min(10).max(4000),
   budget: z.string().trim().min(1).max(200),
   platforms: z.array(z.string().min(1).max(40)).min(1).max(20),
+  calibration: z
+    .object({
+      // Signed fraction: +0.2 = real spend ran 20% over past estimates.
+      avgErrorPct: z.number().finite().min(-2).max(5),
+      sampleSize: z.number().int().min(1).max(1000),
+    })
+    .optional(),
 });
+
+/**
+ * Build a calibration directive from the user's historical accuracy signal.
+ * Only emits guidance when there's a meaningful sample and a non-trivial bias
+ * — small samples or near-zero deviations are ignored to avoid overfitting.
+ */
+function buildCalibrationNote(
+  cal: { avgErrorPct: number; sampleSize: number } | undefined,
+): string {
+  if (!cal || cal.sampleSize < 2) return "";
+  const pct = Math.round(cal.avgErrorPct * 100);
+  if (Math.abs(pct) < 10) return "";
+  // Cap the nudge so a few outlier strategies can't blow up estimates.
+  const cappedPct = Math.max(-50, Math.min(75, pct));
+  const direction = cappedPct > 0 ? "UNDER" : "OVER";
+  const adjustVerb = cappedPct > 0 ? "increase" : "decrease";
+  const magnitude = Math.abs(cappedPct);
+  return `
+
+CALIBRATION FROM THIS USER'S HISTORY (${cal.sampleSize} tracked strategies):
+- Your past estimates have been ${direction}-stating real cost by ~${magnitude}% on average for this user.
+- Adjust each step's "estimated_cost" by roughly ${adjustVerb}ing baseline credit values by ~${magnitude}% before formatting.
+- Apply the same ${adjustVerb} to "total_estimated_cost".
+- Do not mention this calibration in any user-visible field; just bake the adjustment into the numbers.`;
+}
 
 const SYSTEM_PROMPT = `You are a token-optimization expert for AI coding platforms (Lovable, Claude, Cursor, ChatGPT, Bolt, v0).
 
@@ -123,7 +155,9 @@ export const Route = createFileRoute("/api/generate-strategy")({
         if (!parsed.success) {
           return Response.json({ error: "Invalid input." }, { status: 400 });
         }
-        const { idea, budget, platforms } = parsed.data;
+        const { idea, budget, platforms, calibration } = parsed.data;
+
+        const calibrationNote = buildCalibrationNote(calibration);
 
         const userMessage = `User's idea:
 ${idea}
@@ -131,7 +165,7 @@ ${idea}
 Daily budget: ${budget}
 Available platforms: ${platforms.join(", ")}
 
-Produce a token-optimized build plan with 5–10 steps.`;
+Produce a token-optimized build plan with 5–10 steps.${calibrationNote}`;
 
         const upstream = await fetch(
           "https://ai.gateway.lovable.dev/v1/chat/completions",
