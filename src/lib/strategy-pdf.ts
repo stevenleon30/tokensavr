@@ -111,12 +111,7 @@ export function downloadStrategyPdf(strategy: StrategyForPdf, filename = "tokens
     y += gapAfter;
   };
 
-  // ---------- Header ----------
-  writeLines("TokenSavvy Build Strategy", {
-    size: 22,
-    style: "bold",
-    gapAfter: 4,
-  });
+  // ---------- Subtitle (branded header rendered above) ----------
   writeLines("A token-optimized plan for your build", {
     size: 10,
     color: [110, 110, 130],
