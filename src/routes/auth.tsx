@@ -81,7 +81,25 @@ function AuthPage() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <Tabs value={tab} onValueChange={setTab}>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full mb-4"
+          onClick={onGoogle}
+          disabled={loading}
+        >
+          <GoogleIcon className="h-4 w-4 mr-2" />
+          Continue with Google
+        </Button>
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-card px-2 text-muted-foreground">or</span>
+          </div>
+        </div>
+        <Tabs value={tab} onValueChange={setTab}></Tabs>
           <TabsList className="grid grid-cols-2 w-full mb-5">
             <TabsTrigger value="signin">Sign in</TabsTrigger>
             <TabsTrigger value="signup">Sign up</TabsTrigger>
