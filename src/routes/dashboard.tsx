@@ -8,6 +8,8 @@ import {
   Coins,
   Sparkles,
   Target,
+  Gauge,
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -229,6 +231,60 @@ function DashboardPage() {
 
     const realSavings = totalActualHasData ? totalEstimated - totalActual : null;
 
+    // Estimate accuracy: how close the AI's guesses were to reality.
+    // Per-strategy ratio = actual / estimated. Accuracy = 100 - mean(|1 - ratio|) * 100.
+    // Skips strategies without tracked actuals or with 0 estimate.
+    const tracked = perStrategy.filter(
+      (p) => p.hasActual && p.estimated > 0,
+    );
+    let accuracy: {
+      score: number; // 0-100
+      sampleSize: number;
+      avgErrorPct: number; // signed: positive = AI underestimated (real > est)
+      overCount: number;
+      underCount: number;
+      worst: { id: string; title: string; errorPct: number } | null;
+      best: { id: string; title: string; errorPct: number } | null;
+    } | null = null;
+    if (tracked.length > 0) {
+      const errors = tracked.map((p) => ({
+        id: p.id,
+        title: p.title,
+        // signed deviation as fraction: +0.5 means actual is 50% higher than est.
+        deviation: (p.actual - p.estimated) / p.estimated,
+      }));
+      const meanAbs =
+        errors.reduce((s, e) => s + Math.abs(e.deviation), 0) / errors.length;
+      const meanSigned =
+        errors.reduce((s, e) => s + e.deviation, 0) / errors.length;
+      const sortedByAbs = [...errors].sort(
+        (a, b) => Math.abs(a.deviation) - Math.abs(b.deviation),
+      );
+      accuracy = {
+        score: Math.max(0, Math.round((1 - Math.min(1, meanAbs)) * 100)),
+        sampleSize: tracked.length,
+        avgErrorPct: Math.round(meanSigned * 100),
+        overCount: errors.filter((e) => e.deviation > 0.05).length,
+        underCount: errors.filter((e) => e.deviation < -0.05).length,
+        best: sortedByAbs[0]
+          ? {
+              id: sortedByAbs[0].id,
+              title: sortedByAbs[0].title,
+              errorPct: Math.round(sortedByAbs[0].deviation * 100),
+            }
+          : null,
+        worst: sortedByAbs[sortedByAbs.length - 1]
+          ? {
+              id: sortedByAbs[sortedByAbs.length - 1].id,
+              title: sortedByAbs[sortedByAbs.length - 1].title,
+              errorPct: Math.round(
+                sortedByAbs[sortedByAbs.length - 1].deviation * 100,
+              ),
+            }
+          : null,
+      };
+    }
+
     return {
       totalSaved,
       fav,
@@ -241,6 +297,7 @@ function DashboardPage() {
       totalActual,
       totalActualHasData,
       realSavings,
+      accuracy,
     };
   }, [rows, progress]);
 
@@ -459,6 +516,35 @@ function DashboardPage() {
         </div>
       </div>
 
+      {/* Estimate accuracy */}
+      <div className="rounded-xl border border-border bg-card p-5 shadow-card mb-8">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Gauge className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-medium">Estimate accuracy</h2>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              How close the AI's cost guesses have been to your real spend.
+            </p>
+          </div>
+          {stats?.accuracy && (
+            <span className="text-xs text-muted-foreground">
+              Based on {stats.accuracy.sampleSize} tracked{" "}
+              {stats.accuracy.sampleSize === 1 ? "strategy" : "strategies"}
+            </span>
+          )}
+        </div>
+        {stats?.accuracy ? (
+          <AccuracyWidget accuracy={stats.accuracy} />
+        ) : (
+          <div className="py-6 text-center text-xs text-muted-foreground">
+            Log actual costs on at least one strategy to see how accurate the
+            estimates have been.
+          </div>
+        )}
+      </div>
+
       {/* Per-platform breakdown */}
       <div className="rounded-xl border border-border bg-card p-5 shadow-card mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -588,6 +674,140 @@ function DashboardPage() {
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+type AccuracyData = {
+  score: number;
+  sampleSize: number;
+  avgErrorPct: number;
+  overCount: number;
+  underCount: number;
+  worst: { id: string; title: string; errorPct: number } | null;
+  best: { id: string; title: string; errorPct: number } | null;
+};
+
+function AccuracyWidget({ accuracy }: { accuracy: AccuracyData }) {
+  const { score, avgErrorPct, overCount, underCount, best, worst } = accuracy;
+  const tone =
+    score >= 80 ? "success" : score >= 50 ? "primary" : "warning";
+  const ringColor =
+    tone === "success"
+      ? "var(--color-success)"
+      : tone === "warning"
+        ? "var(--color-warning)"
+        : "var(--color-primary)";
+  const label =
+    score >= 80
+      ? "Pretty trustworthy"
+      : score >= 50
+        ? "Roughly in the ballpark"
+        : "Take with a grain of salt";
+  const direction =
+    avgErrorPct > 5
+      ? `On average, real spend was ${avgErrorPct}% higher than the AI's estimate.`
+      : avgErrorPct < -5
+        ? `On average, real spend was ${Math.abs(avgErrorPct)}% lower than the AI's estimate.`
+        : `On average, the AI's estimates were within ~${Math.max(
+            Math.abs(avgErrorPct),
+            1,
+          )}% of real spend.`;
+
+  return (
+    <div className="grid gap-5 md:grid-cols-[auto_1fr] md:items-center">
+      {/* Circular gauge */}
+      <div className="flex items-center gap-4">
+        <div
+          className="relative h-24 w-24 shrink-0 rounded-full"
+          style={{
+            background: `conic-gradient(${ringColor} ${score * 3.6}deg, var(--color-secondary) 0deg)`,
+          }}
+        >
+          <div className="absolute inset-1.5 rounded-full bg-card flex flex-col items-center justify-center">
+            <span className="text-2xl font-semibold tabular-nums">
+              {score}
+            </span>
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              / 100
+            </span>
+          </div>
+        </div>
+        <div className="md:hidden">
+          <div className="text-sm font-medium">{label}</div>
+          <p className="text-xs text-muted-foreground mt-0.5">{direction}</p>
+        </div>
+      </div>
+
+      {/* Details */}
+      <div className="space-y-3">
+        <div className="hidden md:block">
+          <div className="text-sm font-medium">{label}</div>
+          <p className="text-xs text-muted-foreground mt-0.5">{direction}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <TrendingUp className="h-3 w-3 text-warning" /> Underestimated
+            </div>
+            <div className="mt-0.5 font-semibold tabular-nums">
+              {overCount} {overCount === 1 ? "strategy" : "strategies"}
+            </div>
+          </div>
+          <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-2">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <TrendingDown className="h-3 w-3 text-success" /> Overestimated
+            </div>
+            <div className="mt-0.5 font-semibold tabular-nums">
+              {underCount} {underCount === 1 ? "strategy" : "strategies"}
+            </div>
+          </div>
+        </div>
+        {(best || worst) && (
+          <div className="grid gap-1.5 text-xs">
+            {best && (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-background/40 px-3 py-1.5">
+                <span className="text-muted-foreground shrink-0">
+                  Closest call
+                </span>
+                <Link
+                  to="/results"
+                  search={{ id: best.id }}
+                  className="truncate text-foreground hover:text-primary"
+                >
+                  {best.title}
+                </Link>
+                <span className="tabular-nums text-muted-foreground shrink-0">
+                  {best.errorPct >= 0 ? "+" : ""}
+                  {best.errorPct}%
+                </span>
+              </div>
+            )}
+            {worst && worst.id !== best?.id && (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-background/40 px-3 py-1.5">
+                <span className="text-muted-foreground shrink-0">
+                  Biggest miss
+                </span>
+                <Link
+                  to="/results"
+                  search={{ id: worst.id }}
+                  className="truncate text-foreground hover:text-primary"
+                >
+                  {worst.title}
+                </Link>
+                <span
+                  className={`tabular-nums shrink-0 ${
+                    worst.errorPct > 0 ? "text-warning" : "text-success"
+                  }`}
+                >
+                  {worst.errorPct >= 0 ? "+" : ""}
+                  {worst.errorPct}%
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
