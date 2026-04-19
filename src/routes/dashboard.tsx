@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PlatformBadge } from "@/components/platform-badge";
+import { getPlatform } from "@/lib/platforms";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
