@@ -35,6 +35,50 @@ export function downloadStrategyPdf(strategy: StrategyForPdf, filename = "tokens
     }
   };
 
+  // ---------- Branded header ----------
+  // Brand colors (matches app gradient-primary feel)
+  const brandPrimary: [number, number, number] = [124, 58, 237]; // violet-600
+  const brandAccent: [number, number, number] = [236, 72, 153]; // pink-500
+
+  // Top accent bar (full width)
+  doc.setFillColor(brandPrimary[0], brandPrimary[1], brandPrimary[2]);
+  doc.rect(0, 0, pageWidth, 6, "F");
+  doc.setFillColor(brandAccent[0], brandAccent[1], brandAccent[2]);
+  doc.rect(pageWidth * 0.6, 0, pageWidth * 0.4, 6, "F");
+
+  // Logo mark: rounded square with "TS" monogram
+  const logoSize = 26;
+  const logoX = PAGE_MARGIN;
+  const logoY = y;
+  doc.setFillColor(brandPrimary[0], brandPrimary[1], brandPrimary[2]);
+  doc.roundedRect(logoX, logoY, logoSize, logoSize, 6, 6, "F");
+  // Small accent dot on the logo
+  doc.setFillColor(brandAccent[0], brandAccent[1], brandAccent[2]);
+  doc.circle(logoX + logoSize - 5, logoY + 5, 2.2, "F");
+  // Monogram
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(255, 255, 255);
+  doc.text("TS", logoX + logoSize / 2, logoY + logoSize / 2 + 4, { align: "center" });
+
+  // Wordmark + tagline next to logo
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(25, 25, 40);
+  doc.text("TokenSavvy", logoX + logoSize + 12, logoY + 12);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(brandPrimary[0], brandPrimary[1], brandPrimary[2]);
+  doc.text("BUILD STRATEGY", logoX + logoSize + 12, logoY + 23);
+
+  y = logoY + logoSize + 18;
+
+  // Thin divider under header
+  doc.setDrawColor(228, 226, 240);
+  doc.setLineWidth(0.5);
+  doc.line(PAGE_MARGIN, y, pageWidth - PAGE_MARGIN, y);
+  y += 18;
+
   const writeLines = (
     text: string,
     options: {
@@ -67,12 +111,7 @@ export function downloadStrategyPdf(strategy: StrategyForPdf, filename = "tokens
     y += gapAfter;
   };
 
-  // ---------- Header ----------
-  writeLines("TokenSavvy Build Strategy", {
-    size: 22,
-    style: "bold",
-    gapAfter: 4,
-  });
+  // ---------- Subtitle (branded header rendered above) ----------
   writeLines("A token-optimized plan for your build", {
     size: 10,
     color: [110, 110, 130],
