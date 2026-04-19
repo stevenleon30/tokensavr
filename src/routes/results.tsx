@@ -276,16 +276,30 @@ function ResultsPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10">
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-        className="text-muted-foreground hover:text-foreground -ml-2 mb-4"
-      >
-        <Link to="/generate">
-          <ArrowLeft className="h-4 w-4 mr-1" /> New strategy
-        </Link>
-      </Button>
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground -ml-2"
+        >
+          <Link to="/generate">
+            <ArrowLeft className="h-4 w-4 mr-1" /> New strategy
+          </Link>
+        </Button>
+        <Button asChild variant="outline" size="sm" className="gap-2">
+          <Link
+            to="/generate"
+            search={{
+              idea: strategy.idea,
+              budget: strategy.budget,
+              platforms: strategy.platforms,
+            }}
+          >
+            <Pencil className="h-3.5 w-3.5" /> Edit inputs
+          </Link>
+        </Button>
+      </div>
 
       <div className="rounded-2xl border border-border bg-gradient-mesh p-6 sm:p-8 shadow-card">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Your build strategy</h1>
