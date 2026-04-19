@@ -11,6 +11,7 @@ import {
   CircleDollarSign,
   CheckCircle2,
   Circle,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -229,6 +230,22 @@ function ResultsPage() {
     }
   };
 
+  const copyAllPrompts = async () => {
+    if (!strategy) return;
+    const md = strategy.steps
+      .map(
+        (s) =>
+          `${s.step_number}. **${s.action}** _(${s.platform} · ${s.mode} · est. ${s.estimated_cost})_\n\n\`\`\`\n${s.prompt_to_use}\n\`\`\``,
+      )
+      .join("\n\n");
+    try {
+      await navigator.clipboard.writeText(md);
+      toast.success(`Copied ${strategy.steps.length} prompts as markdown`);
+    } catch {
+      toast.error("Couldn't copy prompts.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-20 text-center text-muted-foreground">
@@ -299,6 +316,9 @@ function ResultsPage() {
           </Button>
           <Button onClick={downloadPdf} variant="outline" className="gap-2">
             <Download className="h-4 w-4" /> Download as PDF
+          </Button>
+          <Button onClick={copyAllPrompts} variant="outline" className="gap-2">
+            <ClipboardList className="h-4 w-4" /> Copy all prompts
           </Button>
         </div>
       </div>
