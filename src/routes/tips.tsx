@@ -166,7 +166,6 @@ const PLATFORM_FILTERS: { id: PlatformId | "all"; label: string }[] = [
   { id: "chatgpt", label: "ChatGPT" },
   { id: "gemini", label: "Gemini" },
   { id: "bolt", label: "Bolt" },
-  { id: "v0", label: "v0" },
   { id: "replit", label: "Replit" },
 ];
 
