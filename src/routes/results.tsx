@@ -402,7 +402,7 @@ function ResultsPage() {
           />
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6 hidden sm:flex flex-wrap gap-2">
           <Button onClick={saveToDashboard} variant="secondary" className="gap-2" disabled={!!savedId}>
             <Save className="h-4 w-4" />
             {savedId ? "Saved" : "Save to dashboard"}
