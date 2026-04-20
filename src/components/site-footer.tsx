@@ -3,18 +3,19 @@ import tokensavrLogo from "@/assets/tokensavr-logo.png";
 import tokensavrDarkNav from "@/assets/tokensavr-dark-nav.svg";
 
 // Brand hex colors — kept literal because these are external brands, not
-// part of our themed palette.
+// part of our themed palette. Picked to remain legible on both light and
+// dark footer backgrounds (no pure white/black).
 const FOOTER_PLATFORMS: { name: string; color: string }[] = [
   { name: "Lovable", color: "#FF4F8B" },
   { name: "Claude", color: "#D97757" },
-  { name: "Claude Code", color: "#D97757" },
+  { name: "Claude Code", color: "#C96342" },
   { name: "ChatGPT", color: "#10A37F" },
   { name: "Gemini", color: "#4796E3" },
-  { name: "Cursor", color: "#E5E5E5" },
+  { name: "Cursor", color: "#6E6E73" },
   { name: "Windsurf", color: "#0BAA9F" },
-  { name: "GitHub Copilot", color: "#FFFFFF" },
-  { name: "Bolt", color: "#F5C518" },
-  { name: "v0", color: "#FFFFFF" },
+  { name: "GitHub Copilot", color: "#6E6E73" },
+  { name: "Bolt", color: "#E0AE00" },
+  { name: "v0", color: "#6E6E73" },
   { name: "Replit", color: "#F26207" },
 ];
 
