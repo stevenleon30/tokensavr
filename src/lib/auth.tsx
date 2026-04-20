@@ -18,6 +18,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // One-time cleanup: remove deprecated BYOK key from localStorage
+    try {
+      if (typeof window !== "undefined" && localStorage.getItem("ts:anthropicKey") !== null) {
+        localStorage.removeItem("ts:anthropicKey");
+      }
+    } catch {}
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       setLoading(false);
