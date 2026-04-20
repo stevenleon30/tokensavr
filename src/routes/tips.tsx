@@ -80,12 +80,6 @@ const TIPS: Tip[] = [
     example: "Ask for one component at a time, not 'a full marketing site'.",
   },
   {
-    platform: "v0",
-    title: "Generate components, not whole pages",
-    body: "v0 is best at single components. Compose them yourself rather than asking for full layouts.",
-    example: "Ask for 'a pricing card with 3 tiers' rather than 'a SaaS pricing page'.",
-  },
-  {
     platform: "replit",
     title: "Use Checkpoints to roll back, not re-prompt",
     body: "Replit Agent charges for each fix attempt. When something breaks, restore to the last good Checkpoint instead of asking the Agent to undo its own changes.",
@@ -154,7 +148,7 @@ export const Route = createFileRoute("/tips")({
       {
         name: "description",
         content:
-          "Curated tactics to save credits across Lovable, Claude, Cursor, ChatGPT, Bolt, and v0.",
+          "Curated tactics to save credits across Lovable, Claude, Cursor, ChatGPT, and Bolt.",
       },
     ],
   }),
@@ -172,7 +166,6 @@ const PLATFORM_FILTERS: { id: PlatformId | "all"; label: string }[] = [
   { id: "chatgpt", label: "ChatGPT" },
   { id: "gemini", label: "Gemini" },
   { id: "bolt", label: "Bolt" },
-  { id: "v0", label: "v0" },
   { id: "replit", label: "Replit" },
 ];
 
