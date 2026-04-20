@@ -19,7 +19,6 @@ export const PLATFORMS: Record<
   chatgpt: { id: "chatgpt", name: "ChatGPT", color: "oklch(0.70 0.14 165)", initial: "G" },
   cursor: { id: "cursor", name: "Cursor", color: "oklch(0.78 0.04 270)", initial: "U" },
   bolt: { id: "bolt", name: "Bolt", color: "oklch(0.78 0.16 80)", initial: "B" },
-  v0: { id: "v0", name: "v0", color: "oklch(0.92 0.01 270)", initial: "V" },
   replit: { id: "replit", name: "Replit", color: "oklch(0.70 0.18 35)", initial: "R" },
   windsurf: { id: "windsurf", name: "Windsurf", color: "oklch(0.72 0.13 195)", initial: "W" },
   claudecode: { id: "claudecode", name: "Claude Code", color: "oklch(0.68 0.16 38)", initial: "C" },
