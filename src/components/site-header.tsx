@@ -84,7 +84,7 @@ export function SiteHeader() {
   const initials = getInitials(displayName || email || "U");
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl dark:bg-black dark:backdrop-blur-none">
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl dark:bg-[#0A0A0A] dark:backdrop-blur-none">
       <div className="mx-auto flex h-20 sm:h-24 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 group" onClick={() => setOpen(false)}>
           <img
