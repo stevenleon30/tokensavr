@@ -452,8 +452,9 @@ function ResultsPage() {
           />
           <SummaryCard
             icon={<Clock className="h-4 w-4" />}
-            label="Time estimate"
+            label="Est. build time"
             value={strategy.time_estimate}
+            tooltip="How long it'll take you to work through all the prompts in this strategy — copying each into the target tool, reviewing the output, and iterating. Not the time the AI takes to respond."
           />
         </div>
 
@@ -692,11 +693,13 @@ function SummaryCard({
   label,
   value,
   accent,
+  tooltip,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   accent?: boolean;
+  tooltip?: string;
 }) {
   return (
     <div
@@ -706,7 +709,17 @@ function SummaryCard({
     >
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         {icon}
-        {label}
+        <span>{label}</span>
+        {tooltip && (
+          <span
+            tabIndex={0}
+            title={tooltip}
+            aria-label={tooltip}
+            className="inline-flex cursor-help text-muted-foreground/70 hover:text-foreground transition-colors"
+          >
+            <Info className="h-3.5 w-3.5" />
+          </span>
+        )}
       </div>
       <div className="mt-1 text-lg font-semibold tracking-tight break-words">{value}</div>
     </div>
