@@ -39,7 +39,6 @@ function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [dailyBudget, setDailyBudget] = useState(5);
   const [preferred, setPreferred] = useState<string[]>([]);
-  const [anthropicKey, setAnthropicKey] = useState("");
   const [calibrationEnabled, setCalibrationEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -62,7 +61,6 @@ function SettingsPage() {
         setPreferred((data.preferred_platforms as string[]) ?? []);
       }
       try {
-        setAnthropicKey(localStorage.getItem("ts:anthropicKey") ?? "");
         setCalibrationEnabled(localStorage.getItem("ts:calibrationDisabled") !== "1");
       } catch {}
       setLoading(false);
@@ -85,8 +83,6 @@ function SettingsPage() {
       })
       .eq("user_id", user.id);
     try {
-      if (anthropicKey) localStorage.setItem("ts:anthropicKey", anthropicKey);
-      else localStorage.removeItem("ts:anthropicKey");
       if (calibrationEnabled) localStorage.removeItem("ts:calibrationDisabled");
       else localStorage.setItem("ts:calibrationDisabled", "1");
     } catch {}
@@ -208,24 +204,6 @@ function SettingsPage() {
               onCheckedChange={setCalibrationEnabled}
             />
           </div>
-        </Section>
-
-        <Section
-          title="API keys (optional)"
-          desc="TokenSavvy uses managed AI by default. You can supply your own key for full control."
-        >
-          <Field label="Anthropic API key (saved locally only)">
-            <Input
-              type="password"
-              placeholder="sk-ant-…"
-              value={anthropicKey}
-              onChange={(e) => setAnthropicKey(e.target.value)}
-              className="bg-card border-border"
-            />
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Stored in your browser only. We don't send this to our servers in this version.
-            </p>
-          </Field>
         </Section>
 
         <div className="flex items-center gap-3">
