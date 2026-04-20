@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { redirect?: string; idea?: string } => ({
     redirect: typeof s.redirect === "string" ? s.redirect : undefined,
     idea: typeof s.idea === "string" ? s.idea : undefined,
   }),
