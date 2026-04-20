@@ -4,7 +4,6 @@ import { ArrowRight, Sparkles, Zap, BarChart3, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORM_LIST } from "@/lib/platforms";
-import tokensavrHorizontalDark from "@/assets/tokensavr-logo-horizontal-dark.png";
 import claudeLogo from "@/assets/logos/claude.svg";
 import lovableLogo from "@/assets/logos/lovable.svg";
 import cursorLogo from "@/assets/logos/cursor.svg";
