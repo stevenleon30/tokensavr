@@ -85,6 +85,66 @@ const TIPS: Tip[] = [
     body: "v0 is best at single components. Compose them yourself rather than asking for full layouts.",
     example: "Ask for 'a pricing card with 3 tiers' rather than 'a SaaS pricing page'.",
   },
+  {
+    platform: "replit",
+    title: "Use Checkpoints to roll back, not re-prompt",
+    body: "Replit Agent charges for each fix attempt. When something breaks, restore to the last good Checkpoint instead of asking the Agent to undo its own changes.",
+    example: "Agent broke routing? Click the previous Checkpoint → reapply your last working prompt.",
+  },
+  {
+    platform: "replit",
+    title: "Keep the file tree small",
+    body: "Agent re-reads project context each turn. Delete unused scaffold files and demo folders early — every kept file inflates the per-message cost.",
+    example: "After picking a template, prune the example pages you won't use before issuing your first real prompt.",
+  },
+  {
+    platform: "windsurf",
+    title: "Use Cascade Write for edits, Chat for planning",
+    body: "Cascade's Write mode applies surgical, scoped diffs; Chat is cheaper for thinking out loud. Don't use Write to brainstorm.",
+    example: "Chat: 'How should I structure the auth flow?' → Write: 'Add a useAuth hook to src/hooks based on that plan.'",
+  },
+  {
+    platform: "windsurf",
+    title: "Trim your .windsurfrules file",
+    body: "Every line in .windsurfrules is sent on every turn. Treat it like SKILL.md — link to docs instead of pasting them.",
+    example: "Replace a 100-line coding standard with: 'Follow conventions in docs/style.md.'",
+  },
+  {
+    platform: "claudecode",
+    title: "Use /clear between unrelated tasks",
+    body: "Claude Code keeps the full conversation in context until you clear it. Switching from auth to billing? Run /clear first to drop the auth tokens you no longer need.",
+    example: "Finished the login flow → /clear → start the Stripe integration with a fresh context window.",
+  },
+  {
+    platform: "claudecode",
+    title: "Prefer Read+Edit over pasting files",
+    body: "Pasting a file into your prompt costs tokens twice (your message + Claude's working copy). Let Claude Read it directly and Edit in place.",
+    example: "Say 'Read src/api/users.ts and add input validation' instead of pasting the file contents.",
+  },
+  {
+    platform: "githubcopilot",
+    title: "Inline completions for boilerplate, Chat for logic",
+    body: "Tab-completions are essentially free per keystroke; Chat invocations cost a request. Use inline for getters, types, and obvious patterns; save Chat for non-obvious logic.",
+    example: "Let inline finish a useState hook. Use Chat only when you need 'why is this useEffect re-running?'",
+  },
+  {
+    platform: "githubcopilot",
+    title: "Scope @workspace with file globs",
+    body: "@workspace by default searches the whole repo. Narrow it with explicit paths so Copilot doesn't pay to index irrelevant folders.",
+    example: "Use '@workspace /src/api how is auth handled?' instead of '@workspace how is auth handled?'",
+  },
+  {
+    platform: "gemini",
+    title: "Flash for summarization, Pro for reasoning",
+    body: "Gemini Flash is roughly 10× cheaper than Pro and handles summarization, classification, and extraction just as well. Reserve Pro for genuine multi-step reasoning.",
+    example: "Flash: 'Summarize these 20 support tickets into 5 themes.' Pro: 'Design a multi-tenant data model for this spec.'",
+  },
+  {
+    platform: "gemini",
+    title: "Upload reference docs once",
+    body: "Gemini's long context lets you attach a single PDF or doc and reference it across many prompts — far cheaper than pasting excerpts into each message.",
+    example: "Upload your API spec once, then ask 'Generate a client for the /orders endpoint per the attached spec.'",
+  },
 ];
 
 export const Route = createFileRoute("/tips")({
@@ -105,10 +165,15 @@ const PLATFORM_FILTERS: { id: PlatformId | "all"; label: string }[] = [
   { id: "all", label: "All" },
   { id: "lovable", label: "Lovable" },
   { id: "claude", label: "Claude" },
+  { id: "claudecode", label: "Claude Code" },
   { id: "cursor", label: "Cursor" },
+  { id: "windsurf", label: "Windsurf" },
+  { id: "githubcopilot", label: "Copilot" },
   { id: "chatgpt", label: "ChatGPT" },
+  { id: "gemini", label: "Gemini" },
   { id: "bolt", label: "Bolt" },
   { id: "v0", label: "v0" },
+  { id: "replit", label: "Replit" },
 ];
 
 function TipsPage() {

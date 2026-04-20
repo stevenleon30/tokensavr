@@ -39,7 +39,7 @@ CALIBRATION FROM THIS USER'S HISTORY (${cal.sampleSize} tracked strategies):
 - Do not mention this calibration in any user-visible field; just bake the adjustment into the numbers.`;
 }
 
-const SYSTEM_PROMPT = `You are a token-optimization expert for AI coding platforms (Lovable, Claude, Cursor, ChatGPT, Bolt, v0).
+const SYSTEM_PROMPT = `You are a token-optimization expert for AI coding platforms (Lovable, Claude, Cursor, ChatGPT, Bolt, v0, Replit Agent, Windsurf, Claude Code, GitHub Copilot, Gemini).
 
 Your job: take a user's idea + their budget + which platforms they have access to, and produce the cheapest possible build sequence.
 

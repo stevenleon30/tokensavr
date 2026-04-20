@@ -5,6 +5,11 @@ import cursorLogo from "@/assets/logos/cursor.svg";
 import boltLogo from "@/assets/logos/bolt.svg";
 import chatgptLogo from "@/assets/logos/chatgpt.svg";
 import v0Logo from "@/assets/logos/v0.svg";
+import replitLogo from "@/assets/logos/replit.svg";
+import windsurfLogo from "@/assets/logos/windsurf.svg";
+import claudeCodeLogo from "@/assets/logos/claude-code.svg";
+import copilotLogo from "@/assets/logos/copilot.svg";
+import geminiLogo from "@/assets/logos/gemini.svg";
 
 const LOGO_MAP: Partial<Record<PlatformId, string>> = {
   lovable: lovableLogo,
@@ -13,6 +18,11 @@ const LOGO_MAP: Partial<Record<PlatformId, string>> = {
   cursor: cursorLogo,
   bolt: boltLogo,
   v0: v0Logo,
+  replit: replitLogo,
+  windsurf: windsurfLogo,
+  claudecode: claudeCodeLogo,
+  githubcopilot: copilotLogo,
+  gemini: geminiLogo,
 };
 
 export function PlatformBadge({ id, size = "md" }: { id: string; size?: "sm" | "md" }) {
