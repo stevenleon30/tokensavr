@@ -229,9 +229,8 @@ function DocsPage() {
             client-side and passed to the AI only as a single percentage number.
           </p>
           <p>
-            If you supply a personal API key in Settings, it's stored in your
-            browser's <code className="rounded bg-card px-1 py-0.5 text-xs">localStorage</code>{" "}
-            only, never on our servers.
+            TokenSavvy uses a managed AI gateway under the hood, so you don't
+            need to bring or store your own API keys.
           </p>
         </Section>
 
