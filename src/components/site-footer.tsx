@@ -71,18 +71,13 @@ export function SiteFooter() {
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-4">
             Supported platforms
           </p>
-          <ul className="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {FOOTER_PLATFORMS.map((p) => (
               <li
                 key={p.name}
-                className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+                className="text-sm font-medium"
+                style={{ color: p.color }}
               >
-                <span
-                  className="h-6 w-6 flex items-center justify-center rounded-md bg-white p-0.5 ring-1 ring-border"
-                  aria-hidden
-                >
-                  <img src={p.src} alt="" className="max-h-full max-w-full object-contain" />
-                </span>
                 {p.name}
               </li>
             ))}
