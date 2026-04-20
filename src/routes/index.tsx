@@ -174,7 +174,7 @@ function Landing() {
       {/* Powered-by logo strip */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 border-t border-border">
         <p className="text-center text-xs uppercase tracking-widest text-muted-foreground mb-8">
-          Routes prompts across the tools you already use
+          Optimizes spend across the tools you already use
         </p>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-6 sm:gap-8 items-center">
           {PARTNER_LOGOS.map((logo) => (
