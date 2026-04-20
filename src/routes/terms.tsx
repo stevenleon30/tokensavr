@@ -45,7 +45,7 @@ function TermsPage() {
           <p>
             TokenSavr is a planning tool that uses AI to generate step-by-step strategies
             for building software with credit-based AI coding platforms (e.g. Lovable,
-            Cursor, Bolt, v0, Claude, ChatGPT). All credit costs, savings figures, time
+            Cursor, Bolt, Claude, ChatGPT). All credit costs, savings figures, time
             estimates, and platform recommendations are <strong>rough estimates</strong> —
             not guarantees. Actual costs and outcomes depend on the platform's own pricing,
             your prompts, and many other factors outside our control.
