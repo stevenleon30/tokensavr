@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Sparkles, Sun, Moon, LogOut, Menu, X, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
 import tokensavrLogo from "@/assets/tokensavr-logo.png";
+import tokensavrDarkNav from "@/assets/tokensavr-dark-nav.svg";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -84,12 +85,17 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-20 sm:h-24 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 group" onClick={() => setOpen(false)}>
           <img
             src={tokensavrLogo}
             alt="TokenSavr"
-            className="h-8 w-auto transition-transform group-hover:scale-105"
+            className="h-10 w-auto transition-transform group-hover:scale-105 dark:hidden"
+          />
+          <img
+            src={tokensavrDarkNav}
+            alt="TokenSavr"
+            className="hidden dark:block h-14 sm:h-16 w-auto transition-transform group-hover:scale-105"
           />
         </Link>
 
