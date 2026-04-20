@@ -40,6 +40,7 @@ function SettingsPage() {
   const [dailyBudget, setDailyBudget] = useState(5);
   const [preferred, setPreferred] = useState<string[]>([]);
   const [anthropicKey, setAnthropicKey] = useState("");
+  const [calibrationEnabled, setCalibrationEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -62,6 +63,7 @@ function SettingsPage() {
       }
       try {
         setAnthropicKey(localStorage.getItem("ts:anthropicKey") ?? "");
+        setCalibrationEnabled(localStorage.getItem("ts:calibrationDisabled") !== "1");
       } catch {}
       setLoading(false);
     })();
@@ -85,6 +87,8 @@ function SettingsPage() {
     try {
       if (anthropicKey) localStorage.setItem("ts:anthropicKey", anthropicKey);
       else localStorage.removeItem("ts:anthropicKey");
+      if (calibrationEnabled) localStorage.removeItem("ts:calibrationDisabled");
+      else localStorage.setItem("ts:calibrationDisabled", "1");
     } catch {}
     setSaving(false);
     if (error) toast.error("Couldn't save settings.");
@@ -184,6 +188,24 @@ function SettingsPage() {
             <Switch
               checked={theme === "dark"}
               onCheckedChange={(v) => setTheme(v ? "dark" : "light")}
+            />
+          </div>
+        </Section>
+
+        <Section
+          title="Estimate calibration"
+          desc="Nudge new strategy estimates based on your past over/under-spend pattern."
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm">Use historical calibration</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                When off, you'll get raw AI estimates without your personal bias correction.
+              </p>
+            </div>
+            <Switch
+              checked={calibrationEnabled}
+              onCheckedChange={setCalibrationEnabled}
             />
           </div>
         </Section>
