@@ -60,7 +60,7 @@ export const Route = createFileRoute("/results")({
   }),
   head: () => ({
     meta: [
-      { title: "Your build strategy — TokenSavvy" },
+      { title: "Your build strategy — TokenSavr" },
       { name: "description", content: "Token-optimized AI build plan." },
     ],
   }),
@@ -264,7 +264,7 @@ function ResultsPage() {
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-+|-+$/g, "")
           .slice(0, 40) || "strategy";
-      downloadStrategyPdf(strategy, `tokensavvy-${safeSlug}.pdf`);
+      downloadStrategyPdf(strategy, `tokensavr-${safeSlug}.pdf`);
       toast.success("PDF downloaded");
     } catch (err) {
       console.error(err);

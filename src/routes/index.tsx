@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
   validateSearch: (s: Record<string, unknown>) => ({ idea: typeof s.idea === "string" ? s.idea : undefined }),
   head: () => ({
     meta: [
-      { title: "TokenSavvy — Stop burning credits. Start building smart." },
+      { title: "TokenSavr — Stop burning credits. Start building smart." },
       {
         name: "description",
         content:
@@ -69,7 +69,7 @@ function Landing() {
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            TokenSavvy turns your app idea into a token-optimized build plan across Lovable, Claude,
+            TokenSavr turns your app idea into a token-optimized build plan across Lovable, Claude,
             Cursor, ChatGPT, and more — so you save credits and ship faster.
           </p>
 

@@ -90,7 +90,7 @@ const TIPS: Tip[] = [
 export const Route = createFileRoute("/tips")({
   head: () => ({
     meta: [
-      { title: "Platform tips library — TokenSavvy" },
+      { title: "Platform tips library — TokenSavr" },
       {
         name: "description",
         content:
