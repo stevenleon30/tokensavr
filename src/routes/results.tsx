@@ -452,8 +452,9 @@ function ResultsPage() {
           />
           <SummaryCard
             icon={<Clock className="h-4 w-4" />}
-            label="Time estimate"
+            label="Est. build time"
             value={strategy.time_estimate}
+            tooltip="How long it'll take you to work through all the prompts in this strategy — copying each into the target tool, reviewing the output, and iterating. Not the time the AI takes to respond."
           />
         </div>
 
