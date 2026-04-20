@@ -15,7 +15,9 @@ import {
   Pencil,
   Info,
   PieChart,
+  ChevronDown,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -658,6 +660,9 @@ function StepCard({
   onUpdate: (patch: Partial<Omit<StepProgress, "step_number">>) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const isMobile = useIsMobile();
+  const [expanded, setExpanded] = useState(false);
+  const isOpen = !isMobile || expanded;
   const [costInput, setCostInput] = useState(
     progress?.actual_cost_credits != null ? String(progress.actual_cost_credits) : "",
   );
@@ -763,17 +768,45 @@ function StepCard({
           </div>
         </div>
 
-        <div className="mt-4 relative">
-          <pre className="whitespace-pre-wrap rounded-lg border border-border bg-background/60 p-4 pr-12 text-xs sm:text-sm font-mono text-foreground/90 max-h-72 overflow-auto">
-            {step.prompt_to_use}
-          </pre>
-          <button
-            onClick={copy}
-            className="absolute top-2 right-2 inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-            aria-label="Copy prompt"
-          >
-            {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
-          </button>
+        <div className="mt-4">
+          <div className="flex items-center justify-between gap-2 sm:hidden mb-2">
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              aria-expanded={isOpen}
+            >
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
+              {isOpen ? "Hide prompt" : "Show prompt"}
+            </button>
+            <button
+              onClick={copy}
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              aria-label="Copy prompt"
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-success" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+              Copy
+            </button>
+          </div>
+          {isOpen && (
+            <div className="relative">
+              <pre className="whitespace-pre-wrap rounded-lg border border-border bg-background/60 p-4 pr-12 text-xs sm:text-sm font-mono text-foreground/90 max-h-72 overflow-auto">
+                {step.prompt_to_use}
+              </pre>
+              <button
+                onClick={copy}
+                className="hidden sm:inline-flex absolute top-2 right-2 items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                aria-label="Copy prompt"
+              >
+                {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+              </button>
+            </div>
+          )}
         </div>
 
         {tracking && (
