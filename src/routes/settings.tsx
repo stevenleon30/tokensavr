@@ -193,6 +193,24 @@ function SettingsPage() {
         </Section>
 
         <Section
+          title="Estimate calibration"
+          desc="Nudge new strategy estimates based on your past over/under-spend pattern."
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm">Use historical calibration</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                When off, you'll get raw AI estimates without your personal bias correction.
+              </p>
+            </div>
+            <Switch
+              checked={calibrationEnabled}
+              onCheckedChange={setCalibrationEnabled}
+            />
+          </div>
+        </Section>
+
+        <Section
           title="API keys (optional)"
           desc="TokenSavvy uses managed AI by default. You can supply your own key for full control."
         >
