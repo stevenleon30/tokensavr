@@ -24,7 +24,7 @@ export function SiteFooter() {
             <img
               src={tokensavrLogo}
               alt="TokenSavr"
-              className="h-10 w-auto transition-transform group-hover:scale-105"
+              className="h-14 sm:h-16 w-auto transition-transform group-hover:scale-105"
             />
           </Link>
 
