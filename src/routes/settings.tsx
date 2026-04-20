@@ -40,6 +40,7 @@ function SettingsPage() {
   const [dailyBudget, setDailyBudget] = useState(5);
   const [preferred, setPreferred] = useState<string[]>([]);
   const [anthropicKey, setAnthropicKey] = useState("");
+  const [calibrationEnabled, setCalibrationEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
