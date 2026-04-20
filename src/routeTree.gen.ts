@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TipsRouteImport } from './routes/tips'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as GenerateRouteImport } from './routes/generate'
@@ -22,6 +23,11 @@ import { Route as ApiGenerateStrategyRouteImport } from './routes/api.generate-s
 const TipsRoute = TipsRouteImport.update({
   id: '/tips',
   path: '/tips',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/generate': typeof GenerateRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tips': typeof TipsRoute
   '/api/generate-strategy': typeof ApiGenerateStrategyRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/generate': typeof GenerateRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tips': typeof TipsRoute
   '/api/generate-strategy': typeof ApiGenerateStrategyRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/generate': typeof GenerateRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tips': typeof TipsRoute
   '/api/generate-strategy': typeof ApiGenerateStrategyRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/generate'
     | '/results'
     | '/settings'
+    | '/terms'
     | '/tips'
     | '/api/generate-strategy'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/generate'
     | '/results'
     | '/settings'
+    | '/terms'
     | '/tips'
     | '/api/generate-strategy'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/generate'
     | '/results'
     | '/settings'
+    | '/terms'
     | '/tips'
     | '/api/generate-strategy'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   GenerateRoute: typeof GenerateRoute
   ResultsRoute: typeof ResultsRoute
   SettingsRoute: typeof SettingsRoute
+  TermsRoute: typeof TermsRoute
   TipsRoute: typeof TipsRoute
   ApiGenerateStrategyRoute: typeof ApiGenerateStrategyRoute
 }
@@ -154,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/tips'
       fullPath: '/tips'
       preLoaderRoute: typeof TipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -223,9 +243,19 @@ const rootRouteChildren: RootRouteChildren = {
   GenerateRoute: GenerateRoute,
   ResultsRoute: ResultsRoute,
   SettingsRoute: SettingsRoute,
+  TermsRoute: TermsRoute,
   TipsRoute: TipsRoute,
   ApiGenerateStrategyRoute: ApiGenerateStrategyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
