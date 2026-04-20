@@ -4,30 +4,21 @@ import { ArrowRight, Sparkles, Zap, BarChart3, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORM_LIST } from "@/lib/platforms";
-import claudeLogo from "@/assets/logos/claude.svg";
-import lovableLogo from "@/assets/logos/lovable.svg";
-import cursorLogo from "@/assets/logos/cursor.svg";
-import boltLogo from "@/assets/logos/bolt.svg";
-import chatgptLogo from "@/assets/logos/chatgpt.svg";
-import v0Logo from "@/assets/logos/v0.svg";
-import replitLogo from "@/assets/logos/replit.svg";
-import windsurfLogo from "@/assets/logos/windsurf.svg";
-import claudeCodeLogo from "@/assets/logos/claude-code.svg";
-import copilotLogo from "@/assets/logos/copilot.svg";
-import geminiLogo from "@/assets/logos/gemini.svg";
-
-const PARTNER_LOGOS = [
-  { name: "Lovable", src: lovableLogo },
-  { name: "Claude", src: claudeLogo },
-  { name: "Claude Code", src: claudeCodeLogo },
-  { name: "ChatGPT", src: chatgptLogo },
-  { name: "Gemini", src: geminiLogo },
-  { name: "Cursor", src: cursorLogo },
-  { name: "Windsurf", src: windsurfLogo },
-  { name: "GitHub Copilot", src: copilotLogo },
-  { name: "Bolt", src: boltLogo },
-  { name: "v0", src: v0Logo },
-  { name: "Replit", src: replitLogo },
+// Brand hex colors for the platform name strip — kept literal because
+// these are external brands, not part of our themed palette. Picked to
+// remain legible on both light and dark backgrounds.
+const PARTNER_BRANDS: { name: string; color: string }[] = [
+  { name: "Lovable", color: "#FF4F8B" },
+  { name: "Claude", color: "#D97757" },
+  { name: "Claude Code", color: "#C96342" },
+  { name: "ChatGPT", color: "#10A37F" },
+  { name: "Gemini", color: "#4796E3" },
+  { name: "Cursor", color: "#6E6E73" },
+  { name: "Windsurf", color: "#0BAA9F" },
+  { name: "GitHub Copilot", color: "#6E6E73" },
+  { name: "Bolt", color: "#E0AE00" },
+  { name: "v0", color: "#6E6E73" },
+  { name: "Replit", color: "#F26207" },
 ];
 
 export const Route = createFileRoute("/")({
@@ -186,19 +177,15 @@ function Landing() {
         <p className="text-center text-xs uppercase tracking-widest text-muted-foreground mb-8">
           Optimizes spend across the tools you already use
         </p>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-6 sm:gap-8 items-center">
-          {PARTNER_LOGOS.map((logo) => (
-            <div
-              key={logo.name}
-              className="flex items-center justify-center h-12 transition-transform hover:scale-[1.05]"
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+          {PARTNER_BRANDS.map((b) => (
+            <span
+              key={b.name}
+              className="text-base sm:text-lg font-semibold tracking-tight transition-transform hover:scale-[1.05]"
+              style={{ color: b.color }}
             >
-              <img
-                src={logo.src}
-                alt={`${logo.name} logo`}
-                className="max-h-8 w-auto object-contain"
-                loading="lazy"
-              />
-            </div>
+              {b.name}
+            </span>
           ))}
         </div>
       </section>
