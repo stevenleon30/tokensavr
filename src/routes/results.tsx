@@ -291,6 +291,58 @@ function ResultsPage() {
     }
   };
 
+  const shareStrategy = async () => {
+    if (!strategy) return;
+    if (!user) {
+      toast.message("Sign in to share", {
+        description: "Create a free account to share strategies.",
+      });
+      navigate({ to: "/auth" });
+      return;
+    }
+    let shareId = savedId;
+    if (!shareId) {
+      const { data, error } = await supabase
+        .from("strategies")
+        .insert({
+          user_id: user.id,
+          title: strategy.idea.slice(0, 80),
+          idea: strategy.idea,
+          budget: strategy.budget,
+          platforms: strategy.platforms,
+          total_estimated_cost: strategy.total_estimated_cost,
+          estimated_savings: strategy.estimated_savings,
+          time_estimate: strategy.time_estimate,
+          steps: strategy.steps,
+          is_public: true,
+        })
+        .select("id")
+        .single();
+      if (error || !data) {
+        toast.error("Couldn't create share link.");
+        return;
+      }
+      shareId = data.id;
+      setSavedId(shareId);
+    } else {
+      const { error } = await supabase
+        .from("strategies")
+        .update({ is_public: true })
+        .eq("id", shareId);
+      if (error) {
+        toast.error("Couldn't enable sharing.");
+        return;
+      }
+    }
+    const url = `${window.location.origin}/results?id=${shareId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Public link copied to clipboard");
+    } catch {
+      toast.message("Share link ready", { description: url });
+    }
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-20 text-center text-muted-foreground">
