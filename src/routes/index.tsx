@@ -23,7 +23,9 @@ const PARTNER_BRANDS: { name: string; color: string }[] = [
 ];
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>) => ({ idea: typeof s.idea === "string" ? s.idea : undefined }),
+  validateSearch: (s: Record<string, unknown>): { idea?: string } => ({
+    idea: typeof s.idea === "string" ? s.idea : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "TokenSavr — Stop burning credits. Start building smart." },
