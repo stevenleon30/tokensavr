@@ -1,9 +1,19 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Sparkles, Sun, Moon, LogOut, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Sparkles, Sun, Moon, LogOut, Menu, X, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +33,15 @@ const navItems = [
   { to: "/settings", label: "Settings" },
 ] as const;
 
+function getInitials(source: string) {
+  const trimmed = source.trim();
+  if (!trimmed) return "U";
+  const parts = trimmed.split(/[\s@._-]+/).filter(Boolean);
+  if (parts.length === 0) return trimmed.slice(0, 1).toUpperCase();
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
 export function SiteHeader() {
   const { user, signOut } = useAuth();
   const { theme, toggle } = useTheme();
@@ -30,6 +49,26 @@ export function SiteHeader() {
   const { location } = useRouterState();
   const [open, setOpen] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setDisplayName(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!cancelled) setDisplayName(data?.display_name ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const handleConfirmSignOut = async () => {
     setConfirmSignOut(false);
@@ -37,6 +76,10 @@ export function SiteHeader() {
     await signOut();
     navigate({ to: "/" });
   };
+
+  const email = user?.email ?? "";
+  const primaryLabel = displayName || email.split("@")[0] || "Account";
+  const initials = getInitials(displayName || email || "U");
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -79,15 +122,57 @@ export function SiteHeader() {
           </Button>
 
           {user ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden sm:inline-flex gap-2"
-              onClick={() => setConfirmSignOut(true)}
-            >
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="hidden sm:inline-flex items-center gap-2 rounded-full border border-border bg-card pl-1 pr-3 py-1 text-sm transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring"
+                  aria-label="Account menu"
+                >
+                  <Avatar className="h-7 w-7">
+                    <AvatarFallback className="bg-gradient-primary text-[11px] font-semibold text-primary-foreground">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="max-w-[10rem] truncate text-foreground">
+                    {primaryLabel}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {displayName || "Signed in"}
+                    </span>
+                    {email && (
+                      <span className="text-xs text-muted-foreground truncate">
+                        {email}
+                      </span>
+                    )}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => navigate({ to: "/dashboard" })}>
+                  <UserIcon className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
+                  <SettingsIcon className="h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setConfirmSignOut(true);
+                  }}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button
               variant="default"
@@ -112,6 +197,23 @@ export function SiteHeader() {
       {open && (
         <div className="md:hidden border-t border-border/60 bg-background">
           <nav className="mx-auto max-w-7xl flex flex-col px-4 py-2">
+            {user && (
+              <div className="flex items-center gap-3 px-3 py-3 border-b border-border/60 mb-1">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="bg-gradient-primary text-xs font-semibold text-primary-foreground">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {displayName || "Signed in"}
+                  </p>
+                  {email && (
+                    <p className="text-xs text-muted-foreground truncate">{email}</p>
+                  )}
+                </div>
+              </div>
+            )}
             {navItems.map((item) => (
               <Link
                 key={item.to}
@@ -128,7 +230,7 @@ export function SiteHeader() {
                   setOpen(false);
                   setConfirmSignOut(true);
                 }}
-                className="rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:text-foreground hover:bg-secondary"
+                className="rounded-md px-3 py-2 text-left text-sm text-destructive hover:bg-secondary"
               >
                 Sign out
               </button>
