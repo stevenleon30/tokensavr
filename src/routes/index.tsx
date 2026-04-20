@@ -4,6 +4,7 @@ import { ArrowRight, Sparkles, Zap, BarChart3, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORM_LIST } from "@/lib/platforms";
+import { useAuth } from "@/lib/auth";
 // Brand hex colors for the platform name strip — kept literal because
 // these are external brands, not part of our themed palette. Picked to
 // remain legible on both light and dark backgrounds.
