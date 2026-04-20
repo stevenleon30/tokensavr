@@ -4,7 +4,6 @@ export type PlatformId =
   | "chatgpt"
   | "cursor"
   | "bolt"
-  | "v0"
   | "replit"
   | "windsurf"
   | "claudecode"
