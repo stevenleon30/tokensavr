@@ -86,10 +86,11 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 group" onClick={() => setOpen(false)}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow transition-transform group-hover:scale-105">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-base font-semibold tracking-tight">TokenSavr</span>
+          <img
+            src={tokensavrLogo}
+            alt="TokenSavr"
+            className="h-8 w-auto transition-transform group-hover:scale-105"
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
