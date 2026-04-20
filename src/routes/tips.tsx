@@ -148,7 +148,7 @@ export const Route = createFileRoute("/tips")({
       {
         name: "description",
         content:
-          "Curated tactics to save credits across Lovable, Claude, Cursor, ChatGPT, Bolt, and v0.",
+          "Curated tactics to save credits across Lovable, Claude, Cursor, ChatGPT, and Bolt.",
       },
     ],
   }),
