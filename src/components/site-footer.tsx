@@ -1,6 +1,31 @@
 import { Link } from "@tanstack/react-router";
 import tokensavrLogo from "@/assets/tokensavr-logo.png";
 import tokensavrDarkNav from "@/assets/tokensavr-dark-nav.svg";
+import claudeLogo from "@/assets/logos/claude.svg";
+import lovableLogo from "@/assets/logos/lovable.svg";
+import cursorLogo from "@/assets/logos/cursor.svg";
+import boltLogo from "@/assets/logos/bolt.svg";
+import chatgptLogo from "@/assets/logos/chatgpt.svg";
+import v0Logo from "@/assets/logos/v0.svg";
+import replitLogo from "@/assets/logos/replit.svg";
+import windsurfLogo from "@/assets/logos/windsurf.svg";
+import claudeCodeLogo from "@/assets/logos/claude-code.svg";
+import copilotLogo from "@/assets/logos/copilot.svg";
+import geminiLogo from "@/assets/logos/gemini.svg";
+
+const FOOTER_PLATFORMS = [
+  { name: "Lovable", src: lovableLogo },
+  { name: "Claude", src: claudeLogo },
+  { name: "Claude Code", src: claudeCodeLogo },
+  { name: "ChatGPT", src: chatgptLogo },
+  { name: "Gemini", src: geminiLogo },
+  { name: "Cursor", src: cursorLogo },
+  { name: "Windsurf", src: windsurfLogo },
+  { name: "GitHub Copilot", src: copilotLogo },
+  { name: "Bolt", src: boltLogo },
+  { name: "v0", src: v0Logo },
+  { name: "Replit", src: replitLogo },
+];
 
 const footerLinks = [
   { to: "/generate", label: "Generate" },
@@ -49,6 +74,28 @@ export function SiteFooter() {
           <p className="text-xs text-muted-foreground">
             © {year} TokenSavr. All rights reserved.
           </p>
+        </div>
+
+        <div className="mt-8 border-t border-border/60 pt-6">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-4">
+            Supported platforms
+          </p>
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            {FOOTER_PLATFORMS.map((p) => (
+              <li
+                key={p.name}
+                className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+              >
+                <span
+                  className="h-6 w-6 flex items-center justify-center rounded-md bg-white p-0.5 ring-1 ring-border"
+                  aria-hidden
+                >
+                  <img src={p.src} alt="" className="max-h-full max-w-full object-contain" />
+                </span>
+                {p.name}
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 border-t border-border/60 pt-6 sm:flex-row sm:items-center sm:justify-between">
