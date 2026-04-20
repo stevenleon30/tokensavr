@@ -72,7 +72,7 @@ Credit conversion guide (use these as your baseline when estimating):
 - Claude.ai free chat / ChatGPT free tier: "0 credits" (free).
 - Claude API / OpenAI API direct calls: convert at $0.10 ≈ 1 credit (e.g. a $0.02 call → "~0.2 credits", a $0.50 call → "~5 credits").
 - Cursor Chat (paid plan, included quota): "0 credits" if within the user's existing subscription.
-- Bolt / v0 message-based steps: count each message as ~1 credit unless the platform's pricing clearly differs.
+- Bolt message-based steps: count each message as ~1 credit unless the platform's pricing clearly differs.
 
 Sanity check before responding: the sum of every step's estimated_cost (using the midpoint of any range) should be within ±20% of total_estimated_cost. If they don't match, fix the per-step numbers — do not silently inflate the total.
 
