@@ -29,6 +29,14 @@ export function SiteHeader() {
   const navigate = useNavigate();
   const { location } = useRouterState();
   const [open, setOpen] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+
+  const handleConfirmSignOut = async () => {
+    setConfirmSignOut(false);
+    setOpen(false);
+    await signOut();
+    navigate({ to: "/" });
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
