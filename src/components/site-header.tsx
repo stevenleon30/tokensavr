@@ -62,13 +62,13 @@ export function SiteHeader() {
 
           {user ? (
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 hidden sm:inline-flex"
+              variant="outline"
+              size="sm"
+              className="hidden sm:inline-flex gap-2"
               onClick={() => signOut()}
-              aria-label="Sign out"
             >
               <LogOut className="h-4 w-4" />
+              Sign out
             </Button>
           ) : (
             <Button
