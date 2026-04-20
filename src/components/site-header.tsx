@@ -4,6 +4,16 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const navItems = [
   { to: "/generate", label: "Generate" },
@@ -19,6 +29,14 @@ export function SiteHeader() {
   const navigate = useNavigate();
   const { location } = useRouterState();
   const [open, setOpen] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+
+  const handleConfirmSignOut = async () => {
+    setConfirmSignOut(false);
+    setOpen(false);
+    await signOut();
+    navigate({ to: "/" });
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -65,7 +83,7 @@ export function SiteHeader() {
               variant="outline"
               size="sm"
               className="hidden sm:inline-flex gap-2"
-              onClick={() => signOut()}
+              onClick={() => setConfirmSignOut(true)}
             >
               <LogOut className="h-4 w-4" />
               Sign out
@@ -108,7 +126,7 @@ export function SiteHeader() {
               <button
                 onClick={() => {
                   setOpen(false);
-                  signOut();
+                  setConfirmSignOut(true);
                 }}
                 className="rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:text-foreground hover:bg-secondary"
               >
@@ -126,6 +144,23 @@ export function SiteHeader() {
           </nav>
         </div>
       )}
+
+      <AlertDialog open={confirmSignOut} onOpenChange={setConfirmSignOut}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign out of TokenSavvy?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You'll need to sign back in to access your strategies and saved progress.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Stay signed in</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSignOut}>
+              Sign out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 }
