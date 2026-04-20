@@ -10,14 +10,24 @@ import cursorLogo from "@/assets/logos/cursor.svg";
 import boltLogo from "@/assets/logos/bolt.svg";
 import chatgptLogo from "@/assets/logos/chatgpt.svg";
 import v0Logo from "@/assets/logos/v0.svg";
+import replitLogo from "@/assets/logos/replit.svg";
+import windsurfLogo from "@/assets/logos/windsurf.svg";
+import claudeCodeLogo from "@/assets/logos/claude-code.svg";
+import copilotLogo from "@/assets/logos/copilot.svg";
+import geminiLogo from "@/assets/logos/gemini.svg";
 
 const PARTNER_LOGOS = [
   { name: "Lovable", src: lovableLogo },
   { name: "Claude", src: claudeLogo },
+  { name: "Claude Code", src: claudeCodeLogo },
   { name: "ChatGPT", src: chatgptLogo },
+  { name: "Gemini", src: geminiLogo },
   { name: "Cursor", src: cursorLogo },
+  { name: "Windsurf", src: windsurfLogo },
+  { name: "GitHub Copilot", src: copilotLogo },
   { name: "Bolt", src: boltLogo },
   { name: "v0", src: v0Logo },
+  { name: "Replit", src: replitLogo },
 ];
 
 export const Route = createFileRoute("/")({
