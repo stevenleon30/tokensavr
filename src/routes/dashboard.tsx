@@ -322,11 +322,11 @@ function DashboardPage() {
     !!stats?.totalActualHasData && stats.totalActual > stats.totalEstimated;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-muted-foreground text-sm">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="mt-1 text-muted-foreground text-sm truncate">
             Welcome back{user.email ? `, ${user.email.split("@")[0]}` : ""}.
           </p>
         </div>
@@ -339,7 +339,7 @@ function DashboardPage() {
       </div>
 
       {/* Top stat row */}
-      <div className="grid gap-4 md:grid-cols-4 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="rounded-xl border border-border bg-card p-5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Daily budget</span>
@@ -663,7 +663,7 @@ function DashboardPage() {
                   </Link>
                   <button
                     onClick={() => onDelete(r.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    className="shrink-0 h-9 w-9 sm:h-8 sm:w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 transition-opacity"
                     aria-label="Delete strategy"
                   >
                     <Trash2 className="h-4 w-4" />
