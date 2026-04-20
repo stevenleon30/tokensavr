@@ -63,6 +63,7 @@ function SettingsPage() {
       }
       try {
         setAnthropicKey(localStorage.getItem("ts:anthropicKey") ?? "");
+        setCalibrationEnabled(localStorage.getItem("ts:calibrationDisabled") !== "1");
       } catch {}
       setLoading(false);
     })();
