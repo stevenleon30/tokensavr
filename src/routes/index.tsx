@@ -51,12 +51,7 @@ function Landing() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
-        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-6 pb-24 sm:pt-8 sm:pb-32 text-center dark:pt-2 sm:dark:pt-3">
-          <img
-            src={tokensavrHorizontalDark}
-            alt="TokenSavr"
-            className="hidden dark:block mx-auto mb-6 h-28 sm:h-36 w-auto"
-          />
+        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-28 sm:pb-32 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-foreground shadow-glow backdrop-blur">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
