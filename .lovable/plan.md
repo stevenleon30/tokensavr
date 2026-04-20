@@ -1,35 +1,50 @@
 
-The user is questioning whether collecting/storing the Anthropic API key in Settings makes sense. As I noted in my previous reply, this field is currently a non-functional placeholder — it's saved to localStorage but never read or sent to the backend. Strategy generation only uses the server-side `LOVABLE_API_KEY` via the Lovable AI Gateway.
 
-So storing it serves no purpose today and is actively misleading. Three sensible directions:
+## Plan: Add 5 new platforms (Replit Agent, Windsurf, Claude Code, GitHub Copilot, Gemini)
 
-## Recommendation
+### 1. Logos (`src/assets/logos/`)
+Add 5 new SVG files using each brand's recognizable mark in a square viewBox, designed to render cleanly inside the existing white rounded tile in `PlatformBadge`:
+- `replit.svg` — Replit orange "play" hexagon mark
+- `windsurf.svg` — Windsurf teal wave/sail mark
+- `claude-code.svg` — Claude sunburst with a small terminal `>_` glyph to differentiate from regular Claude
+- `copilot.svg` — GitHub Copilot dual-loop mark
+- `gemini.svg` — Google Gemini four-point sparkle gradient
 
-Remove the field. It collects sensitive-looking data, suggests functionality that doesn't exist, and adds support burden ("why isn't my key being used?"). If BYOK is wanted later, it should be wired through properly with multiple providers.
+All hand-authored as compact inline SVGs (no external fetches, no fonts).
 
-## Plan: Remove the unused API keys section
+### 2. `src/lib/platforms.ts`
+Extend `PlatformId` union and `PLATFORMS` map with 5 new entries:
 
-**File: `src/routes/settings.tsx`**
+| id | name | color | initial |
+|---|---|---|---|
+| `replit` | Replit | oklch(0.70 0.18 35) orange | R |
+| `windsurf` | Windsurf | oklch(0.72 0.13 195) teal | W |
+| `claudecode` | Claude Code | oklch(0.68 0.16 38) (matches Claude family) | C |
+| `copilot` | GitHub Copilot | oklch(0.78 0.04 270) light gray | G |
+| `gemini` | Gemini | oklch(0.70 0.16 250) blue | G |
 
-1. Delete the entire "API keys (optional)" `<Section>` block (the Anthropic input).
-2. Remove `anthropicKey` state and its `useState`.
-3. Remove the `localStorage.getItem("ts:anthropicKey")` read in the load effect.
-4. Remove the `localStorage.setItem/removeItem("ts:anthropicKey")` writes in `onSave`.
-5. Keep the calibration toggle's localStorage logic untouched — that one is actually wired up.
+`getPlatform()` already normalizes via `replace(/[^a-z0-9]/g, "")`, so inputs like "Claude Code", "GitHub Copilot", "Replit Agent" map cleanly to `claudecode`, `githubcopilot`… one wrinkle: "GitHub Copilot" normalizes to `githubcopilot`, not `copilot`. I'll use `githubcopilot` as the id to match. Same for `replitagent` vs `replit` — I'll use `replit` as id since the AI may emit either "Replit" or "Replit Agent"; we'll add a tiny alias step in `getPlatform` that strips a trailing "agent" suffix before lookup so both forms resolve.
 
-Net effect: the Settings page becomes shorter and honest. No backend or schema changes needed since the key was never persisted server-side.
+### 3. `src/components/platform-badge.tsx`
+- Import the 5 new SVGs.
+- Extend `LOGO_MAP` with entries for `replit`, `windsurf`, `claudecode`, `githubcopilot`, `gemini`.
 
-## Alternative (only if you want BYOK to actually work)
+### 4. `src/routes/tips.tsx`
+- Add the 5 new ids to `PLATFORM_FILTERS` so users can filter by them.
+- Add 2 starter tips per platform (10 new tips total), following the existing tone (concrete tactic + example):
+  - **Replit Agent**: (a) Use Checkpoints to roll back instead of re-prompting fixes; (b) Keep the file tree small — Agent re-reads context each turn.
+  - **Windsurf**: (a) Use Cascade's Write mode for surgical edits, Chat for planning; (b) Trim `.windsurfrules` — every line ships every turn.
+  - **Claude Code**: (a) Use `/clear` between unrelated tasks to drop context cost; (b) Prefer `Read`+targeted `Edit` over re-pasting whole files into prompts.
+  - **GitHub Copilot**: (a) Use inline completions for boilerplate, Chat only for non-obvious logic; (b) Scope `@workspace` queries with file globs to cut context size.
+  - **Gemini**: (a) Use Gemini Flash for summarization/classification, Pro only for hard reasoning; (b) Move long reference docs into a single uploaded file rather than pasting into each prompt.
 
-If you'd rather keep the field and make it real, that's a bigger change:
-- Add OpenAI key field alongside Anthropic
-- Pass the chosen key from client → `/api/generate-strategy` (in a header, not the body)
-- In the route handler, branch: if user key present, call Anthropic/OpenAI directly; otherwise use Lovable Gateway
-- Add provider/model selector in the UI
-- Document the security tradeoff (key in localStorage is readable by any XSS)
+### 5. AI strategy generator (`src/routes/api.generate-strategy.ts`)
+Update the system prompt's opening line to mention the new platforms so the model knows it can recommend them. One-line change:
+> "…AI coding platforms (Lovable, Claude, Cursor, ChatGPT, Bolt, v0, **Replit Agent, Windsurf, Claude Code, GitHub Copilot, Gemini**)."
 
-This is roughly a half-day of work versus a 2-minute deletion. I'd lean toward deletion unless you have users actively asking for BYOK.
+No schema changes — `platforms` already accepts arbitrary string ids up to length 40.
 
-## My suggestion
+### Out of scope (can do next)
+- Surfacing the new platforms in any user-facing platform picker UI on `/generate` (haven't checked if that screen has a fixed list — will verify and follow up if it needs wiring).
+- Categorization/grouping ("App builders", "IDE agents", etc.) — separate change.
 
-Go with the removal. It's the cleanest fix to the misleading UI, and we can revisit BYOK as a proper feature when there's real demand.
