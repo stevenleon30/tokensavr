@@ -34,7 +34,7 @@ import {
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — TokenSavvy" },
+      { title: "Dashboard — TokenSavr" },
       { name: "description", content: "Your saved strategies and budget tracker." },
     ],
   }),

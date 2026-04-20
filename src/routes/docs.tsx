@@ -12,17 +12,17 @@ import {
 export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
-      { title: "How it works — TokenSavvy Docs" },
+      { title: "How it works — TokenSavr Docs" },
       {
         name: "description",
         content:
           "Plain-English guide to AI estimates, calibration, per-platform credit logic, and everything you need to know about Generate Strategy.",
       },
-      { property: "og:title", content: "How it works — TokenSavvy Docs" },
+      { property: "og:title", content: "How it works — TokenSavr Docs" },
       {
         property: "og:description",
         content:
-          "Understand AI estimates, calibration, and per-platform credit logic in TokenSavvy.",
+          "Understand AI estimates, calibration, and per-platform credit logic in TokenSavr.",
       },
     ],
   }),
@@ -38,7 +38,7 @@ function DocsPage() {
           Documentation
         </div>
         <h1 className="mt-4 text-3xl sm:text-4xl font-semibold tracking-tight">
-          How TokenSavvy works
+          How TokenSavr works
         </h1>
         <p className="mt-3 text-muted-foreground">
           A plain-English guide to estimates, calibration, and how we account for

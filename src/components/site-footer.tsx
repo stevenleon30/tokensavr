@@ -24,7 +24,7 @@ export function SiteFooter() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-primary shadow-glow transition-transform group-hover:scale-105">
               <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
-            <span className="text-sm font-semibold tracking-tight">TokenSavvy</span>
+            <span className="text-sm font-semibold tracking-tight">TokenSavr</span>
           </Link>
 
           <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -40,7 +40,7 @@ export function SiteFooter() {
           </nav>
 
           <p className="text-xs text-muted-foreground">
-            © {year} TokenSavvy. All rights reserved.
+            © {year} TokenSavr. All rights reserved.
           </p>
         </div>
 

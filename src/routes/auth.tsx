@@ -13,8 +13,8 @@ import { lovable } from "@/integrations/lovable";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — TokenSavvy" },
-      { name: "description", content: "Sign in or create a TokenSavvy account." },
+      { title: "Sign in — TokenSavr" },
+      { name: "description", content: "Sign in or create a TokenSavr account." },
     ],
   }),
   component: AuthPage,
@@ -80,7 +80,7 @@ function AuthPage() {
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow mb-4">
           <Sparkles className="h-5 w-5 text-primary-foreground" />
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome to TokenSavvy</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome to TokenSavr</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Save strategies, track your budget, and learn what works.
         </p>

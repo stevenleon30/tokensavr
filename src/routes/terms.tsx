@@ -3,16 +3,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Service — TokenSavvy" },
+      { title: "Terms of Service — TokenSavr" },
       {
         name: "description",
         content:
-          "The terms governing your use of TokenSavvy, an AI strategy planner for credit-based AI coding platforms.",
+          "The terms governing your use of TokenSavr, an AI strategy planner for credit-based AI coding platforms.",
       },
-      { property: "og:title", content: "Terms of Service — TokenSavvy" },
+      { property: "og:title", content: "Terms of Service — TokenSavr" },
       {
         property: "og:description",
-        content: "Read the terms governing your use of TokenSavvy.",
+        content: "Read the terms governing your use of TokenSavr.",
       },
     ],
   }),
@@ -35,15 +35,15 @@ function TermsPage() {
       <div className="space-y-10 text-sm leading-relaxed text-muted-foreground">
         <Section title="1. Agreement">
           <p>
-            By creating an account or using TokenSavvy ("the Service"), you agree to these
+            By creating an account or using TokenSavr ("the Service"), you agree to these
             Terms of Service. If you do not agree, do not use the Service. These terms form
-            a binding agreement between you and the operators of TokenSavvy ("we", "us").
+            a binding agreement between you and the operators of TokenSavr ("we", "us").
           </p>
         </Section>
 
-        <Section title="2. What TokenSavvy does">
+        <Section title="2. What TokenSavr does">
           <p>
-            TokenSavvy is a planning tool that uses AI to generate step-by-step strategies
+            TokenSavr is a planning tool that uses AI to generate step-by-step strategies
             for building software with credit-based AI coding platforms (e.g. Lovable,
             Cursor, Bolt, v0, Claude, ChatGPT). All credit costs, savings figures, time
             estimates, and platform recommendations are <strong>rough estimates</strong> —
@@ -54,7 +54,7 @@ function TermsPage() {
 
         <Section title="3. Account & eligibility">
           <p>
-            You must be at least 13 years old to use TokenSavvy. You are responsible for
+            You must be at least 13 years old to use TokenSavr. You are responsible for
             keeping your login credentials confidential and for all activity under your
             account. Notify us immediately if you suspect unauthorized access.
           </p>
@@ -73,7 +73,7 @@ function TermsPage() {
               infringes intellectual property.
             </li>
             <li>
-              Resell, sublicense, or rebrand TokenSavvy outputs as if they were a separate
+              Resell, sublicense, or rebrand TokenSavr outputs as if they were a separate
               commercial product.
             </li>
           </ul>
@@ -91,7 +91,7 @@ function TermsPage() {
         <Section title="6. Your content">
           <p>
             You retain ownership of the project ideas, prompts, and notes you submit. By
-            using TokenSavvy you grant us a limited license to process this content in
+            using TokenSavr you grant us a limited license to process this content in
             order to operate the Service (including sending it to AI providers to generate
             your strategy). We do not sell your content.
           </p>
@@ -99,7 +99,7 @@ function TermsPage() {
 
         <Section title="7. Third-party platforms">
           <p>
-            TokenSavvy references and links to third-party AI coding platforms. We are not
+            TokenSavr references and links to third-party AI coding platforms. We are not
             affiliated with, endorsed by, or responsible for those platforms. Their
             pricing, terms, and availability may change at any time.
           </p>
@@ -115,7 +115,7 @@ function TermsPage() {
 
         <Section title="9. Limitation of liability">
           <p>
-            To the fullest extent permitted by law, TokenSavvy and its operators are not
+            To the fullest extent permitted by law, TokenSavr and its operators are not
             liable for any indirect, incidental, or consequential damages, lost profits,
             or wasted credits arising from use of the Service. Our total liability for any
             claim is limited to the amount you paid us in the 12 months prior, or USD 50
