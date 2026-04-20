@@ -76,6 +76,28 @@ export function SiteFooter() {
           </p>
         </div>
 
+        <div className="mt-8 border-t border-border/60 pt-6">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-4">
+            Supported platforms
+          </p>
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            {FOOTER_PLATFORMS.map((p) => (
+              <li
+                key={p.name}
+                className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+              >
+                <span
+                  className="h-6 w-6 flex items-center justify-center rounded-md bg-white p-0.5 ring-1 ring-border"
+                  aria-hidden
+                >
+                  <img src={p.src} alt="" className="max-h-full max-w-full object-contain" />
+                </span>
+                {p.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+
         <div className="mt-6 flex flex-col gap-3 border-t border-border/60 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
             {legalLinks.map((item) => (
