@@ -19,7 +19,9 @@ import {
 import { loadUserCalibration } from "@/lib/calibration";
 
 export const Route = createFileRoute("/generate")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { idea?: string; budget?: string; platforms?: string[] } => ({
     idea: typeof s.idea === "string" ? s.idea : undefined,
     budget: typeof s.budget === "string" ? s.budget : undefined,
     platforms:
