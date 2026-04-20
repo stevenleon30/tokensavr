@@ -18,7 +18,6 @@ const PARTNER_BRANDS: { name: string; color: string }[] = [
   { name: "Windsurf", color: "#0BAA9F" },
   { name: "GitHub Copilot", color: "#6E6E73" },
   { name: "Bolt", color: "#E0AE00" },
-  { name: "v0", color: "#6E6E73" },
   { name: "Replit", color: "#F26207" },
 ];
 
@@ -32,7 +31,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Paste your app idea. Get a token-optimized build plan across Lovable, Claude, Cursor, ChatGPT, Bolt, and v0.",
+          "Paste your app idea. Get a token-optimized build plan across Lovable, Claude, Cursor, ChatGPT, and Bolt.",
       },
     ],
   }),
