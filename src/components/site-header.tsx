@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Sun, Moon, LogOut, Menu, X, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
+import { Sparkles, Sun, Moon, LogOut, Menu, X, User as UserIcon, Settings as SettingsIcon } from "lucide-react";
 import tokensavrLogo from "@/assets/tokensavr-logo.png";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
