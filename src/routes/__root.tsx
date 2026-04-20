@@ -42,7 +42,7 @@ export const Route = createRootRoute({
           "Turn your app idea into a token-optimized build plan across Lovable, Claude, Cursor, ChatGPT, and more. Save credits, ship faster.",
       },
       { name: "author", content: "TokenSavr" },
-      { property: "og:title", content: "TokenSavr — Token-optimized AI build plans" },
+      { property: "og:title", content: "TokenSavr — Stop burning credits. Start building smart." },
       {
         property: "og:description",
         content:
@@ -50,6 +50,12 @@ export const Route = createRootRoute({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "TokenSavr — Stop burning credits. Start building smart." },
+      { name: "description", content: "Stop burning tokens. Start shipping leaner. TokenSavr is the token-efficiency playbook for vibe coders building with Claude, Lovable, and Cursor." },
+      { property: "og:description", content: "Stop burning tokens. Start shipping leaner. TokenSavr is the token-efficiency playbook for vibe coders building with Claude, Lovable, and Cursor." },
+      { name: "twitter:description", content: "Stop burning tokens. Start shipping leaner. TokenSavr is the token-efficiency playbook for vibe coders building with Claude, Lovable, and Cursor." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b7dae22-ad8c-46d6-bd75-69b088e24c4f/id-preview-414ed117--e46ad49f-3dfe-41d2-908d-cdf603646bea.lovable.app-1776654826986.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b7dae22-ad8c-46d6-bd75-69b088e24c4f/id-preview-414ed117--e46ad49f-3dfe-41d2-908d-cdf603646bea.lovable.app-1776654826986.png" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
