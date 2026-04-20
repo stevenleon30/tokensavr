@@ -119,7 +119,11 @@ function GeneratePage() {
     // up or down based on their historical over/under pattern. Failures here
     // are non-fatal — we just generate without calibration.
     let calibration: Awaited<ReturnType<typeof loadUserCalibration>> = null;
-    if (user) {
+    let calibrationDisabled = false;
+    try {
+      calibrationDisabled = localStorage.getItem("ts:calibrationDisabled") === "1";
+    } catch {}
+    if (user && !calibrationDisabled) {
       try {
         calibration = await loadUserCalibration(user.id);
         if (calibration && Math.abs(Math.round(calibration.avgErrorPct * 100)) >= 10) {
