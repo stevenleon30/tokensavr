@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { AuthProvider } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { CookieNotice } from "@/components/cookie-notice";
 
 import appCss from "../styles.css?url";
 
@@ -83,6 +84,7 @@ function RootComponent() {
           <SiteFooter />
         </div>
         <Toaster />
+        <CookieNotice />
       </AuthProvider>
     </ThemeProvider>
   );
