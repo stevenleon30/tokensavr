@@ -4,6 +4,7 @@ import { ArrowRight, Sparkles, Zap, BarChart3, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORM_LIST } from "@/lib/platforms";
+import { useAuth } from "@/lib/auth";
 // Brand hex colors for the platform name strip — kept literal because
 // these are external brands, not part of our themed palette. Picked to
 // remain legible on both light and dark backgrounds.
@@ -38,12 +39,24 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [idea, setIdea] = useState("");
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (idea.trim().length < 10) return;
-    navigate({ to: "/generate", search: { idea: idea.trim() } });
+    const trimmed = idea.trim();
+    if (trimmed.length < 10) return;
+    if (!user) {
+      try {
+        sessionStorage.setItem("ts:pendingIdea", trimmed);
+      } catch {}
+      navigate({ to: "/auth", search: { redirect: "/generate", idea: trimmed } });
+      return;
+    }
+    navigate({
+      to: "/generate",
+      search: { idea: trimmed, budget: undefined, platforms: undefined },
+    });
   };
 
   return (
