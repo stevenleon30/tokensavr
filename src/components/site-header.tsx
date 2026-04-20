@@ -83,7 +83,7 @@ export function SiteHeader() {
               variant="outline"
               size="sm"
               className="hidden sm:inline-flex gap-2"
-              onClick={() => signOut()}
+              onClick={() => setConfirmSignOut(true)}
             >
               <LogOut className="h-4 w-4" />
               Sign out
