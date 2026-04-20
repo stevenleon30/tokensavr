@@ -5,6 +5,12 @@ const footerLinks = [
   { to: "/generate", label: "Generate" },
   { to: "/dashboard", label: "Dashboard" },
   { to: "/tips", label: "Tips" },
+  { to: "/docs", label: "Docs" },
+] as const;
+
+const legalLinks = [
+  { to: "/terms", label: "Terms" },
+  { to: "/privacy", label: "Privacy" },
 ] as const;
 
 export function SiteFooter() {
@@ -35,6 +41,23 @@ export function SiteFooter() {
 
           <p className="text-xs text-muted-foreground">
             © {year} TokenSavvy. All rights reserved.
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 border-t border-border/60 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {legalLinks.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <p className="text-xs text-muted-foreground">
+            Estimates are AI-generated and approximate. Verify on the platform you use.
           </p>
         </div>
       </div>
