@@ -115,7 +115,7 @@ function DocsPage() {
               <Row p="Lovable" m="Build" c="1–3 credits per meaningful change" />
               <Row p="Lovable" m="Chat / Plan" c="1 credit per message" />
               <Row p="Claude / ChatGPT" m="Chat" c="$0.10 of usage ≈ 1 credit" />
-              <Row p="Cursor / Bolt / v0" m="Various" c="Mapped to nearest equivalent" />
+              <Row p="Cursor / Bolt" m="Various" c="Mapped to nearest equivalent" />
             </tbody>
           </table>
           <p className="mt-3 text-xs text-muted-foreground">
