@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Paste your app idea. Get a token-optimized build plan across Lovable, Claude, Cursor, ChatGPT, Bolt, and v0.",
+          "Paste your app idea. Get a token-optimized build plan across Lovable, Claude, Cursor, ChatGPT, and Bolt.",
       },
     ],
   }),
