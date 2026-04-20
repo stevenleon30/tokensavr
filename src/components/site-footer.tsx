@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import tokensavrLogo from "@/assets/tokensavr-logo.png";
+import tokensavrLogo from "@/assets/tokensavr-dark-nav.svg";
 
 const footerLinks = [
   { to: "/generate", label: "Generate" },
@@ -24,7 +24,7 @@ export function SiteFooter() {
             <img
               src={tokensavrLogo}
               alt="TokenSavr"
-              className="h-7 w-auto transition-transform group-hover:scale-105"
+              className="h-10 w-auto transition-transform group-hover:scale-105"
             />
           </Link>
 
