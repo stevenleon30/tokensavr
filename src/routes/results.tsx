@@ -468,6 +468,9 @@ function ResultsPage() {
           <Button onClick={copyAllPrompts} variant="outline" className="gap-2">
             <ClipboardList className="h-4 w-4" /> Copy all prompts
           </Button>
+          <Button onClick={shareStrategy} variant="outline" className="gap-2">
+            <Share2 className="h-4 w-4" /> Share strategy
+          </Button>
         </div>
       </div>
 
