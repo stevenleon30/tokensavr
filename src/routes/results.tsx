@@ -316,7 +316,7 @@ function ResultsPage() {
     !!totals && totals.estimated > 0 && totals.actual > totals.estimated;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10 pb-28 sm:pb-10">
       <div className="flex items-center justify-between gap-2 mb-4">
         <Button
           asChild
@@ -402,7 +402,7 @@ function ResultsPage() {
           />
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6 hidden sm:flex flex-wrap gap-2">
           <Button onClick={saveToDashboard} variant="secondary" className="gap-2" disabled={!!savedId}>
             <Save className="h-4 w-4" />
             {savedId ? "Saved" : "Save to dashboard"}
@@ -557,6 +557,40 @@ function ResultsPage() {
           />
         ))}
       </ol>
+
+      {/* Sticky mobile action bar */}
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl shadow-elegant pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto max-w-4xl px-3 py-2 grid grid-cols-3 gap-2">
+          <Button
+            onClick={saveToDashboard}
+            variant="secondary"
+            size="sm"
+            disabled={!!savedId}
+            className="flex-col h-auto py-2 gap-1"
+          >
+            <Save className="h-4 w-4" />
+            <span className="text-[11px] leading-none">{savedId ? "Saved" : "Save"}</span>
+          </Button>
+          <Button
+            onClick={downloadPdf}
+            variant="outline"
+            size="sm"
+            className="flex-col h-auto py-2 gap-1"
+          >
+            <Download className="h-4 w-4" />
+            <span className="text-[11px] leading-none">PDF</span>
+          </Button>
+          <Button
+            onClick={copyAllPrompts}
+            variant="outline"
+            size="sm"
+            className="flex-col h-auto py-2 gap-1"
+          >
+            <ClipboardList className="h-4 w-4" />
+            <span className="text-[11px] leading-none">Copy all</span>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
