@@ -164,7 +164,33 @@ function AuthPage() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </Field>
-              <Button type="submit" className="w-full bg-gradient-primary" disabled={loading}>
+              <div className="flex items-start gap-2.5 pt-1">
+                <Checkbox
+                  id="accept-terms"
+                  checked={acceptedTerms}
+                  onCheckedChange={(v) => setAcceptedTerms(v === true)}
+                  className="mt-0.5"
+                />
+                <Label
+                  htmlFor="accept-terms"
+                  className="text-xs leading-relaxed text-muted-foreground font-normal cursor-pointer"
+                >
+                  I agree to the{" "}
+                  <Link to="/terms" target="_blank" className="text-primary hover:underline">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link to="/privacy" target="_blank" className="text-primary hover:underline">
+                    Privacy Policy
+                  </Link>
+                  .
+                </Label>
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-primary"
+                disabled={loading || !acceptedTerms}
+              >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
               </Button>
             </form>
@@ -173,7 +199,6 @@ function AuthPage() {
       </div>
 
       <p className="text-center text-xs text-muted-foreground mt-6">
-        By continuing you agree to our terms.{" "}
         <Link to="/" className="text-primary hover:underline">
           Back to home
         </Link>
