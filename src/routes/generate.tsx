@@ -233,7 +233,10 @@ function GeneratePage() {
       <div className="mb-10">
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Generate a strategy</h1>
         <p className="mt-2 text-muted-foreground">
-          Tell us about your project. We'll build the cheapest sequence of prompts.
+          Tell us about your project. We'll build the cheapest sequence of prompts.{" "}
+          <Link to="/docs" className="text-primary underline-offset-2 hover:underline">
+            How does this work?
+          </Link>
         </p>
       </div>
 
