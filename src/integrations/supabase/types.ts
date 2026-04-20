@@ -98,6 +98,7 @@ export type Database = {
           estimated_savings: string | null
           id: string
           idea: string
+          is_public: boolean
           platforms: string[]
           steps: Json
           time_estimate: string | null
@@ -111,6 +112,7 @@ export type Database = {
           estimated_savings?: string | null
           id?: string
           idea: string
+          is_public?: boolean
           platforms?: string[]
           steps?: Json
           time_estimate?: string | null
@@ -124,6 +126,7 @@ export type Database = {
           estimated_savings?: string | null
           id?: string
           idea?: string
+          is_public?: boolean
           platforms?: string[]
           steps?: Json
           time_estimate?: string | null

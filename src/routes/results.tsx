@@ -16,6 +16,7 @@ import {
   Info,
   PieChart,
   ChevronDown,
+  Share2,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -290,6 +291,58 @@ function ResultsPage() {
     }
   };
 
+  const shareStrategy = async () => {
+    if (!strategy) return;
+    if (!user) {
+      toast.message("Sign in to share", {
+        description: "Create a free account to share strategies.",
+      });
+      navigate({ to: "/auth" });
+      return;
+    }
+    let shareId = savedId;
+    if (!shareId) {
+      const { data, error } = await supabase
+        .from("strategies")
+        .insert({
+          user_id: user.id,
+          title: strategy.idea.slice(0, 80),
+          idea: strategy.idea,
+          budget: strategy.budget,
+          platforms: strategy.platforms,
+          total_estimated_cost: strategy.total_estimated_cost,
+          estimated_savings: strategy.estimated_savings,
+          time_estimate: strategy.time_estimate,
+          steps: strategy.steps,
+          is_public: true,
+        })
+        .select("id")
+        .single();
+      if (error || !data) {
+        toast.error("Couldn't create share link.");
+        return;
+      }
+      shareId = data.id;
+      setSavedId(shareId);
+    } else {
+      const { error } = await supabase
+        .from("strategies")
+        .update({ is_public: true })
+        .eq("id", shareId);
+      if (error) {
+        toast.error("Couldn't enable sharing.");
+        return;
+      }
+    }
+    const url = `${window.location.origin}/results?id=${shareId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Public link copied to clipboard");
+    } catch {
+      toast.message("Share link ready", { description: url });
+    }
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-20 text-center text-muted-foreground">
@@ -414,6 +467,9 @@ function ResultsPage() {
           </Button>
           <Button onClick={copyAllPrompts} variant="outline" className="gap-2">
             <ClipboardList className="h-4 w-4" /> Copy all prompts
+          </Button>
+          <Button onClick={shareStrategy} variant="outline" className="gap-2">
+            <Share2 className="h-4 w-4" /> Share strategy
           </Button>
         </div>
       </div>
@@ -562,13 +618,13 @@ function ResultsPage() {
 
       {/* Sticky mobile action bar */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl shadow-elegant pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto max-w-4xl px-3 py-2 grid grid-cols-3 gap-2">
+        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-4 gap-1.5">
           <Button
             onClick={saveToDashboard}
             variant="secondary"
             size="sm"
             disabled={!!savedId}
-            className="flex-col h-auto py-2 gap-1"
+            className="flex-col h-auto py-2 gap-1 px-1"
           >
             <Save className="h-4 w-4" />
             <span className="text-[11px] leading-none">{savedId ? "Saved" : "Save"}</span>
@@ -577,7 +633,7 @@ function ResultsPage() {
             onClick={downloadPdf}
             variant="outline"
             size="sm"
-            className="flex-col h-auto py-2 gap-1"
+            className="flex-col h-auto py-2 gap-1 px-1"
           >
             <Download className="h-4 w-4" />
             <span className="text-[11px] leading-none">PDF</span>
@@ -586,10 +642,19 @@ function ResultsPage() {
             onClick={copyAllPrompts}
             variant="outline"
             size="sm"
-            className="flex-col h-auto py-2 gap-1"
+            className="flex-col h-auto py-2 gap-1 px-1"
           >
             <ClipboardList className="h-4 w-4" />
-            <span className="text-[11px] leading-none">Copy all</span>
+            <span className="text-[11px] leading-none">Copy</span>
+          </Button>
+          <Button
+            onClick={shareStrategy}
+            variant="outline"
+            size="sm"
+            className="flex-col h-auto py-2 gap-1 px-1"
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="text-[11px] leading-none">Share</span>
           </Button>
         </div>
       </div>
