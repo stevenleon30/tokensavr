@@ -87,6 +87,8 @@ function SettingsPage() {
     try {
       if (anthropicKey) localStorage.setItem("ts:anthropicKey", anthropicKey);
       else localStorage.removeItem("ts:anthropicKey");
+      if (calibrationEnabled) localStorage.removeItem("ts:calibrationDisabled");
+      else localStorage.setItem("ts:calibrationDisabled", "1");
     } catch {}
     setSaving(false);
     if (error) toast.error("Couldn't save settings.");
