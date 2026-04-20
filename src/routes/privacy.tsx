@@ -63,11 +63,6 @@ function PrivacyPage() {
               <strong className="text-foreground">Preferences:</strong> theme, daily
               budget, preferred platforms, and the calibration toggle.
             </li>
-            <li>
-              <strong className="text-foreground">Local-only data:</strong> optional API
-              keys you enter in Settings are stored in your browser's localStorage and
-              never sent to our servers in this version.
-            </li>
           </ul>
         </Section>
 
@@ -111,8 +106,7 @@ function PrivacyPage() {
           <p>
             We use essential cookies and browser localStorage to keep you signed in,
             remember your theme, and store opt-in preferences such as the calibration
-            toggle and any API key you provide. We do not use third-party advertising
-            cookies.
+            toggle. We do not use third-party advertising cookies.
           </p>
         </Section>
 
