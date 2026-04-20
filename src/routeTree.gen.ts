@@ -13,6 +13,7 @@ import { Route as TipsRouteImport } from './routes/tips'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -38,6 +39,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GenerateRoute = GenerateRouteImport.update({
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
   '/generate': typeof GenerateRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
   '/generate': typeof GenerateRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
   '/generate': typeof GenerateRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/docs'
     | '/generate'
+    | '/privacy'
     | '/results'
     | '/settings'
     | '/terms'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/docs'
     | '/generate'
+    | '/privacy'
     | '/results'
     | '/settings'
     | '/terms'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/docs'
     | '/generate'
+    | '/privacy'
     | '/results'
     | '/settings'
     | '/terms'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   DocsRoute: typeof DocsRoute
   GenerateRoute: typeof GenerateRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResultsRoute: typeof ResultsRoute
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/results'
       fullPath: '/results'
       preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/generate': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   DocsRoute: DocsRoute,
   GenerateRoute: GenerateRoute,
+  PrivacyRoute: PrivacyRoute,
   ResultsRoute: ResultsRoute,
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
