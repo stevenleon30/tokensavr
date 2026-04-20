@@ -27,6 +27,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [tab, setTab] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,9 +35,30 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  const goAfterAuth = () => {
+    let pendingIdea = search.idea;
+    if (!pendingIdea) {
+      try {
+        pendingIdea = sessionStorage.getItem("ts:pendingIdea") ?? undefined;
+      } catch {}
+    }
+    try {
+      sessionStorage.removeItem("ts:pendingIdea");
+    } catch {}
+    if (search.redirect === "/generate" || pendingIdea) {
+      navigate({
+        to: "/generate",
+        search: { idea: pendingIdea, budget: undefined, platforms: undefined },
+      });
+      return;
+    }
+    navigate({ to: "/dashboard" });
+  };
+
   useEffect(() => {
-    if (user) navigate({ to: "/dashboard" });
-  }, [user, navigate]);
+    if (user) goAfterAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +66,7 @@ function AuthPage() {
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) toast.error(error.message);
-    else navigate({ to: "/dashboard" });
+    else goAfterAuth();
   };
 
   const onSignUp = async (e: React.FormEvent) => {
