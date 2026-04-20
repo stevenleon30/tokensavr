@@ -35,18 +35,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TokenSavvy — Stop burning credits. Start building smart." },
+      { title: "TokenSavr — Stop burning credits. Start building smart." },
       {
         name: "description",
         content:
           "Turn your app idea into a token-optimized build plan across Lovable, Claude, Cursor, ChatGPT, and more. Save credits, ship faster.",
       },
-      { name: "author", content: "TokenSavvy" },
-      { property: "og:title", content: "TokenSavvy — Token-optimized AI build plans" },
+      { name: "author", content: "TokenSavr" },
+      { property: "og:title", content: "TokenSavr — Token-optimized AI build plans" },
       {
         property: "og:description",
         content:
-          "TokenSavvy turns your app idea into the cheapest sequence of prompts across AI coding platforms.",
+          "TokenSavr turns your app idea into the cheapest sequence of prompts across AI coding platforms.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

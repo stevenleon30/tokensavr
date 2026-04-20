@@ -3,16 +3,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — TokenSavvy" },
+      { title: "Privacy Policy — TokenSavr" },
       {
         name: "description",
         content:
-          "How TokenSavvy collects, uses, and protects your data when you generate AI coding strategies.",
+          "How TokenSavr collects, uses, and protects your data when you generate AI coding strategies.",
       },
-      { property: "og:title", content: "Privacy Policy — TokenSavvy" },
+      { property: "og:title", content: "Privacy Policy — TokenSavr" },
       {
         property: "og:description",
-        content: "How TokenSavvy handles your data and AI prompts.",
+        content: "How TokenSavr handles your data and AI prompts.",
       },
     ],
   }),
@@ -35,7 +35,7 @@ function PrivacyPage() {
       <div className="space-y-10 text-sm leading-relaxed text-muted-foreground">
         <Section title="1. Summary">
           <p>
-            TokenSavvy is a planning tool for AI coding workflows. We collect the minimum
+            TokenSavr is a planning tool for AI coding workflows. We collect the minimum
             data needed to run your account, generate strategies, and improve estimate
             accuracy. We do not sell your data. We do not use your project ideas to train
             our own models.
@@ -152,7 +152,7 @@ function PrivacyPage() {
 
         <Section title="10. Children">
           <p>
-            TokenSavvy is not intended for children under 13. We do not knowingly collect
+            TokenSavr is not intended for children under 13. We do not knowingly collect
             data from children. If you believe a child has created an account, contact us
             so we can remove it.
           </p>

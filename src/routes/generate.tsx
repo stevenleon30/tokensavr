@@ -29,7 +29,7 @@ export const Route = createFileRoute("/generate")({
   }),
   head: () => ({
     meta: [
-      { title: "Generate a strategy — TokenSavvy" },
+      { title: "Generate a strategy — TokenSavr" },
       {
         name: "description",
         content: "Build a token-optimized plan for your app idea across multiple AI platforms.",

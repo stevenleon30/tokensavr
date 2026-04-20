@@ -88,7 +88,7 @@ export function SiteHeader() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow transition-transform group-hover:scale-105">
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="text-base font-semibold tracking-tight">TokenSavvy</span>
+          <span className="text-base font-semibold tracking-tight">TokenSavr</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
@@ -250,7 +250,7 @@ export function SiteHeader() {
       <AlertDialog open={confirmSignOut} onOpenChange={setConfirmSignOut}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Sign out of TokenSavvy?</AlertDialogTitle>
+            <AlertDialogTitle>Sign out of TokenSavr?</AlertDialogTitle>
             <AlertDialogDescription>
               You'll need to sign back in to access your strategies and saved progress.
             </AlertDialogDescription>

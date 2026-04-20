@@ -1,5 +1,5 @@
 /**
- * Cost parsing helpers for TokenSavvy.
+ * Cost parsing helpers for TokenSavr.
  *
  * The AI returns free-form cost strings like "~1 credit", "~$0.02 in tokens",
  * "free", "2-3 credits", "$0.50". We normalize them to a single comparable
