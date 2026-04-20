@@ -18,7 +18,6 @@ const PARTNER_BRANDS: { name: string; color: string }[] = [
   { name: "Windsurf", color: "#0BAA9F" },
   { name: "GitHub Copilot", color: "#6E6E73" },
   { name: "Bolt", color: "#E0AE00" },
-  { name: "v0", color: "#6E6E73" },
   { name: "Replit", color: "#F26207" },
 ];
 
