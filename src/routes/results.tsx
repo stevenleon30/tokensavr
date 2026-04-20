@@ -660,6 +660,9 @@ function StepCard({
   onUpdate: (patch: Partial<Omit<StepProgress, "step_number">>) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const isMobile = useIsMobile();
+  const [expanded, setExpanded] = useState(false);
+  const isOpen = !isMobile || expanded;
   const [costInput, setCostInput] = useState(
     progress?.actual_cost_credits != null ? String(progress.actual_cost_credits) : "",
   );
