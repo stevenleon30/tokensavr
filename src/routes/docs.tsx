@@ -228,10 +228,6 @@ function DocsPage() {
             The calibration signal never leaves your account; it's recomputed
             client-side and passed to the AI only as a single percentage number.
           </p>
-          <p>
-            TokenSavvy uses a managed AI gateway under the hood, so you don't
-            need to bring or store your own API keys.
-          </p>
         </Section>
 
         <Section
