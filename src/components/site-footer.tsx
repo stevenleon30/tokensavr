@@ -1,30 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import tokensavrLogo from "@/assets/tokensavr-logo.png";
 import tokensavrDarkNav from "@/assets/tokensavr-dark-nav.svg";
-import claudeLogo from "@/assets/logos/claude.svg";
-import lovableLogo from "@/assets/logos/lovable.svg";
-import cursorLogo from "@/assets/logos/cursor.svg";
-import boltLogo from "@/assets/logos/bolt.svg";
-import chatgptLogo from "@/assets/logos/chatgpt.svg";
-import v0Logo from "@/assets/logos/v0.svg";
-import replitLogo from "@/assets/logos/replit.svg";
-import windsurfLogo from "@/assets/logos/windsurf.svg";
-import claudeCodeLogo from "@/assets/logos/claude-code.svg";
-import copilotLogo from "@/assets/logos/copilot.svg";
-import geminiLogo from "@/assets/logos/gemini.svg";
 
-const FOOTER_PLATFORMS = [
-  { name: "Lovable", src: lovableLogo },
-  { name: "Claude", src: claudeLogo },
-  { name: "Claude Code", src: claudeCodeLogo },
-  { name: "ChatGPT", src: chatgptLogo },
-  { name: "Gemini", src: geminiLogo },
-  { name: "Cursor", src: cursorLogo },
-  { name: "Windsurf", src: windsurfLogo },
-  { name: "GitHub Copilot", src: copilotLogo },
-  { name: "Bolt", src: boltLogo },
-  { name: "v0", src: v0Logo },
-  { name: "Replit", src: replitLogo },
+// Brand hex colors — kept literal because these are external brands, not
+// part of our themed palette.
+const FOOTER_PLATFORMS: { name: string; color: string }[] = [
+  { name: "Lovable", color: "#FF4F8B" },
+  { name: "Claude", color: "#D97757" },
+  { name: "Claude Code", color: "#D97757" },
+  { name: "ChatGPT", color: "#10A37F" },
+  { name: "Gemini", color: "#4796E3" },
+  { name: "Cursor", color: "#E5E5E5" },
+  { name: "Windsurf", color: "#0BAA9F" },
+  { name: "GitHub Copilot", color: "#FFFFFF" },
+  { name: "Bolt", color: "#F5C518" },
+  { name: "v0", color: "#FFFFFF" },
+  { name: "Replit", color: "#F26207" },
 ];
 
 const footerLinks = [
