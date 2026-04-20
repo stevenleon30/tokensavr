@@ -28,6 +28,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     if (user) navigate({ to: "/dashboard" });
@@ -46,6 +47,10 @@ function AuthPage() {
     e.preventDefault();
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters.");
+      return;
+    }
+    if (!acceptedTerms) {
+      toast.error("Please accept the Terms and Privacy Policy to continue.");
       return;
     }
     setLoading(true);
