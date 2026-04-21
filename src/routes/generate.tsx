@@ -191,6 +191,13 @@ function GeneratePage() {
     }
 
     const result = {
+      recommended_platform: final.recommended_platform,
+      recommendation_reason: final.recommendation_reason,
+      optimization_goal: final.optimization_goal ?? optimizationGoal,
+      confidence_score: final.confidence_score,
+      platform_scores: final.platform_scores,
+      recommended_stack: final.recommended_stack,
+      tradeoffs: final.tradeoffs,
       total_estimated_cost: final.total_estimated_cost,
       estimated_savings: final.estimated_savings,
       time_estimate: final.time_estimate ?? "—",
@@ -225,7 +232,7 @@ function GeneratePage() {
           total_estimated_cost: result.total_estimated_cost,
           estimated_savings: result.estimated_savings,
           time_estimate: result.time_estimate,
-          steps: result.steps,
+          steps: { items: result.steps, recommendation: result },
         })
         .select("id")
         .single();
