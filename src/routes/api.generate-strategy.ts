@@ -90,6 +90,29 @@ const TOOL = {
     parameters: {
       type: "object",
       properties: {
+        recommended_platform: { type: "string" },
+        recommendation_reason: { type: "string" },
+        optimization_goal: { type: "string" },
+        confidence_score: { type: "number", minimum: 0, maximum: 100 },
+        platform_scores: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              platform: { type: "string" },
+              overall: { type: "number", minimum: 0, maximum: 100 },
+              cost: { type: "number", minimum: 0, maximum: 100 },
+              output_quality: { type: "number", minimum: 0, maximum: 100 },
+              speed: { type: "number", minimum: 0, maximum: 100 },
+              beginner_friendly: { type: "number", minimum: 0, maximum: 100 },
+              reason: { type: "string" },
+            },
+            required: ["platform", "overall", "cost", "output_quality", "speed", "beginner_friendly", "reason"],
+            additionalProperties: false,
+          },
+        },
+        recommended_stack: { type: "array", items: { type: "string" } },
+        tradeoffs: { type: "array", items: { type: "string" } },
         total_estimated_cost: {
           type: "string",
           description:
@@ -131,7 +154,19 @@ const TOOL = {
           },
         },
       },
-      required: ["total_estimated_cost", "estimated_savings", "time_estimate", "steps"],
+      required: [
+        "recommended_platform",
+        "recommendation_reason",
+        "optimization_goal",
+        "confidence_score",
+        "platform_scores",
+        "recommended_stack",
+        "tradeoffs",
+        "total_estimated_cost",
+        "estimated_savings",
+        "time_estimate",
+        "steps",
+      ],
       additionalProperties: false,
     },
   },
