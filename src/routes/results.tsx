@@ -157,15 +157,17 @@ function ResultsPage() {
 
           const fallback = readSessionStrategy();
           const loaded = data
-            ? {
-                idea: data.idea,
-                budget: data.budget,
-                platforms: (data.platforms as string[]) ?? [],
-                total_estimated_cost: data.total_estimated_cost ?? "—",
-                estimated_savings: data.estimated_savings ?? "—",
-                time_estimate: data.time_estimate ?? "—",
-                steps: (data.steps as unknown as Step[]) ?? [],
-              }
+            ? normalizeStrategyPayload(
+                {
+                  idea: data.idea,
+                  budget: data.budget,
+                  platforms: (data.platforms as string[]) ?? [],
+                  total_estimated_cost: data.total_estimated_cost ?? "—",
+                  estimated_savings: data.estimated_savings ?? "—",
+                  time_estimate: data.time_estimate ?? "—",
+                },
+                data.steps,
+              )
             : fallback;
 
           if (error || !loaded) {
