@@ -816,7 +816,16 @@ function ResultsPage() {
         </div>
       )}
 
-      <ol className="mt-8 space-y-4">
+      <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Copy-ready prompts</h2>
+          <p className="text-xs text-muted-foreground">Prompts are collapsed so the dashboard stays visual.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setPromptsExpanded((v) => !v)}>
+          {promptsExpanded ? "Collapse all prompts" : "Expand all prompts"}
+        </Button>
+      </div>
+      <ol className="mt-4 space-y-4">
         {strategy.steps.map((s) => (
           <StepCard
             key={s.step_number}
@@ -832,6 +841,7 @@ function ResultsPage() {
                   .map((p) => p.step_number),
               )
             }
+            forceExpanded={promptsExpanded}
             onUpdate={(patch) => upsertProgress(s.step_number, patch)}
           />
         ))}
