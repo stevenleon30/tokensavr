@@ -17,6 +17,7 @@ import {
   PieChart,
   ChevronDown,
   Share2,
+  LayoutDashboard,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -26,6 +27,10 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { PlatformBadge } from "@/components/platform-badge";
 import { PlatformDonut } from "@/components/platform-donut";
+import { StrategyTimelineBar } from "@/components/strategy-timeline-bar";
+import { ModeMixChart } from "@/components/mode-mix-chart";
+import { ProgressRing } from "@/components/progress-ring";
+import { StepVisualStrip } from "@/components/step-visual-strip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
@@ -291,6 +296,61 @@ function ResultsPage() {
     }
   };
 
+  const copyDashboardSummary = async () => {
+    if (!strategy || !totals) return;
+    const lines: string[] = [];
+    lines.push(`# ${strategy.idea}`);
+    lines.push("");
+    lines.push(`**Budget:** ${strategy.budget}`);
+    lines.push(`**Platforms:** ${strategy.platforms.join(", ") || "—"}`);
+    lines.push(`**Total estimated cost:** ${strategy.total_estimated_cost}`);
+    lines.push(`**Estimated savings:** ${strategy.estimated_savings}`);
+    lines.push(`**Estimated build time:** ${strategy.time_estimate}`);
+    lines.push(
+      `**Progress:** ${totals.completed} / ${totals.totalSteps} steps · actual ${formatCredits(totals.actual)} cr / est ${formatCredits(totals.estimated)} cr`,
+    );
+    lines.push("");
+    lines.push("## Cost breakdown by platform");
+    lines.push("");
+    lines.push("| Platform | Steps | Est. credits | Share |");
+    lines.push("| --- | ---: | ---: | ---: |");
+    totals.platformBreakdown.forEach((p) => {
+      const share =
+        totals.estimated > 0
+          ? Math.round((p.credits / totals.estimated) * 100)
+          : 0;
+      lines.push(
+        `| ${getPlatform(p.id).name} | ${p.steps} | ${formatCredits(p.credits)} | ${share}% |`,
+      );
+    });
+    lines.push("");
+    lines.push("## Steps");
+    lines.push("");
+    strategy.steps.forEach((s) => {
+      lines.push(
+        `### ${s.step_number}. ${s.action}`,
+      );
+      lines.push("");
+      lines.push(
+        `_${getPlatform(s.platform).name} · ${s.mode} · est. ${s.estimated_cost}_`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(s.prompt_to_use);
+      lines.push("```");
+      lines.push("");
+    });
+    lines.push("---");
+    lines.push("Generated with TokenSavr — https://tokensavr.lovable.app");
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      toast.success("Dashboard summary copied as markdown");
+    } catch {
+      toast.error("Couldn't copy dashboard.");
+    }
+  };
+
+
   const shareStrategy = async () => {
     if (!strategy) return;
     if (!user) {
@@ -438,26 +498,6 @@ function ResultsPage() {
           </div>
         </dl>
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <SummaryCard
-            icon={<CircleDollarSign className="h-4 w-4" />}
-            label="Total estimated cost"
-            value={strategy.total_estimated_cost}
-          />
-          <SummaryCard
-            icon={<TrendingDown className="h-4 w-4 text-success" />}
-            label="Estimated savings"
-            value={strategy.estimated_savings}
-            accent
-          />
-          <SummaryCard
-            icon={<Clock className="h-4 w-4" />}
-            label="Est. build time"
-            value={strategy.time_estimate}
-            tooltip="How long it'll take you to work through all the prompts in this strategy — copying each into the target tool, reviewing the output, and iterating. Not the time the AI takes to respond."
-          />
-        </div>
-
         <div className="mt-6 hidden sm:flex flex-wrap gap-2">
           <Button onClick={saveToDashboard} variant="secondary" className="gap-2" disabled={!!savedId}>
             <Save className="h-4 w-4" />
@@ -469,11 +509,110 @@ function ResultsPage() {
           <Button onClick={copyAllPrompts} variant="outline" className="gap-2">
             <ClipboardList className="h-4 w-4" /> Copy all prompts
           </Button>
+          <Button onClick={copyDashboardSummary} variant="outline" className="gap-2">
+            <LayoutDashboard className="h-4 w-4" /> Copy dashboard
+          </Button>
           <Button onClick={shareStrategy} variant="outline" className="gap-2">
             <Share2 className="h-4 w-4" /> Share strategy
           </Button>
         </div>
       </div>
+
+      {/* Visual dashboard hero — 4-panel summary */}
+      {totals && (
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Cost composition donut */}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <PieChart className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-medium">Cost composition</h2>
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                {formatCredits(totals.estimated)} cr est.
+              </span>
+            </div>
+            {totals.platformBreakdown.length > 0 && totals.estimated > 0 ? (
+              <PlatformDonut
+                slices={totals.platformBreakdown.map((p) => ({
+                  id: p.id,
+                  credits: p.credits,
+                }))}
+                total={totals.estimated}
+              />
+            ) : (
+              <p className="text-xs text-muted-foreground py-4">
+                No cost data yet.
+              </p>
+            )}
+          </div>
+
+          {/* Build timeline */}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-medium">Build timeline</h2>
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                Tap to jump
+              </span>
+            </div>
+            <StrategyTimelineBar
+              segments={strategy.steps.map((s) => ({
+                step_number: s.step_number,
+                platform: s.platform,
+                action: s.action,
+                credits: parseCostToCredits(s.estimated_cost),
+                completed: progress[s.step_number]?.completed ?? false,
+              }))}
+            />
+            <p className="mt-3 text-[10px] text-muted-foreground">
+              Width = step's share of estimated cost. Faded = completed.
+            </p>
+          </div>
+
+          {/* Mode mix */}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <CircleDollarSign className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-medium">Mode mix</h2>
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                Plan vs build vs review
+              </span>
+            </div>
+            <ModeMixChart steps={strategy.steps.map((s) => ({ mode: s.mode }))} />
+          </div>
+
+          {/* Progress ring */}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <TrendingDown className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-medium">Progress &amp; spend</h2>
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                {strategy.estimated_savings} saved
+              </span>
+            </div>
+            <ProgressRing
+              completed={totals.completed}
+              total={totals.totalSteps}
+              actual={totals.actual}
+              estimated={totals.estimated}
+            />
+            <div className="mt-4 flex items-start gap-2 rounded-md border border-warning/30 bg-warning/5 px-3 py-2 text-[11px] text-foreground/80">
+              <Info className="h-3 w-3 text-warning mt-0.5 shrink-0" />
+              <p>
+                Estimates are rough. Log actual credits per step to refine the
+                numbers and surface savings opportunities.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Real-spend tracker */}
       {totals && (
@@ -515,38 +654,18 @@ function ResultsPage() {
         </div>
       )}
 
-      {/* Cost by platform */}
+      {/* Per-platform breakdown bars (kept — complements the donut with actuals) */}
       {totals && totals.platformBreakdown.length > 0 && (
         <div className="mt-6 rounded-xl border border-border bg-card p-5 shadow-card">
-          <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div className="flex items-center gap-2">
               <PieChart className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-medium">Cost by platform</h2>
+              <h2 className="text-sm font-medium">Estimated vs actual by platform</h2>
             </div>
             <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-              Estimated · {formatCredits(totals.estimated)} cr total
+              {formatCredits(totals.estimated)} cr est. total
             </span>
           </div>
-          <div className="mb-4 flex items-start gap-2 rounded-md border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-foreground/80">
-            <Info className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
-            <p>
-              Rough planning estimate only. The AI is guessing typical token
-              usage — your real spend depends on prompt length, iterations, and
-              platform pricing changes. Use the tracker below to log what you
-              actually spend.
-            </p>
-          </div>
-          {totals.estimated > 0 && (
-            <div className="mb-5 rounded-lg border border-border/60 bg-background/40 p-4">
-              <PlatformDonut
-                slices={totals.platformBreakdown.map((p) => ({
-                  id: p.id,
-                  credits: p.credits,
-                }))}
-                total={totals.estimated}
-              />
-            </div>
-          )}
           <ul className="space-y-3">
             {totals.platformBreakdown.map((p) => {
               const denom = totals.platformMax || 1;
@@ -572,9 +691,7 @@ function ResultsPage() {
                           {formatCredits(p.actual)} cr actual /
                         </span>
                       )}
-                      <span>
-                        ~{formatCredits(p.credits)} cr est.
-                      </span>
+                      <span>~{formatCredits(p.credits)} cr est.</span>
                       <span className="ml-1 text-muted-foreground/70">
                         ({share}%)
                       </span>
@@ -612,6 +729,15 @@ function ResultsPage() {
             step={s}
             progress={progress[s.step_number]}
             tracking={tracking}
+            totalSteps={strategy.steps.length}
+            totalEstimatedCredits={totals?.estimated ?? 0}
+            completedNumbers={
+              new Set(
+                Object.values(progress)
+                  .filter((p) => p.completed)
+                  .map((p) => p.step_number),
+              )
+            }
             onUpdate={(patch) => upsertProgress(s.step_number, patch)}
           />
         ))}
@@ -619,7 +745,7 @@ function ResultsPage() {
 
       {/* Sticky mobile action bar */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl shadow-elegant pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-4 gap-1.5">
+        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-5 gap-1">
           <Button
             onClick={saveToDashboard}
             variant="secondary"
@@ -628,7 +754,7 @@ function ResultsPage() {
             className="flex-col h-auto py-2 gap-1 px-1"
           >
             <Save className="h-4 w-4" />
-            <span className="text-[11px] leading-none">{savedId ? "Saved" : "Save"}</span>
+            <span className="text-[10px] leading-none">{savedId ? "Saved" : "Save"}</span>
           </Button>
           <Button
             onClick={downloadPdf}
@@ -637,7 +763,7 @@ function ResultsPage() {
             className="flex-col h-auto py-2 gap-1 px-1"
           >
             <Download className="h-4 w-4" />
-            <span className="text-[11px] leading-none">PDF</span>
+            <span className="text-[10px] leading-none">PDF</span>
           </Button>
           <Button
             onClick={copyAllPrompts}
@@ -646,7 +772,16 @@ function ResultsPage() {
             className="flex-col h-auto py-2 gap-1 px-1"
           >
             <ClipboardList className="h-4 w-4" />
-            <span className="text-[11px] leading-none">Copy</span>
+            <span className="text-[10px] leading-none">Prompts</span>
+          </Button>
+          <Button
+            onClick={copyDashboardSummary}
+            variant="outline"
+            size="sm"
+            className="flex-col h-auto py-2 gap-1 px-1"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            <span className="text-[10px] leading-none">Dashboard</span>
           </Button>
           <Button
             onClick={shareStrategy}
@@ -655,7 +790,7 @@ function ResultsPage() {
             className="flex-col h-auto py-2 gap-1 px-1"
           >
             <Share2 className="h-4 w-4" />
-            <span className="text-[11px] leading-none">Share</span>
+            <span className="text-[10px] leading-none">Share</span>
           </Button>
         </div>
       </div>
@@ -688,53 +823,21 @@ function Stat({
   );
 }
 
-function SummaryCard({
-  icon,
-  label,
-  value,
-  accent,
-  tooltip,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  accent?: boolean;
-  tooltip?: string;
-}) {
-  return (
-    <div
-      className={`rounded-xl border p-4 ${
-        accent ? "border-success/40 bg-success/5" : "border-border bg-card/60"
-      }`}
-    >
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        {icon}
-        <span>{label}</span>
-        {tooltip && (
-          <span
-            tabIndex={0}
-            title={tooltip}
-            aria-label={tooltip}
-            className="inline-flex cursor-help text-muted-foreground/70 hover:text-foreground transition-colors"
-          >
-            <Info className="h-3.5 w-3.5" />
-          </span>
-        )}
-      </div>
-      <div className="mt-1 text-lg font-semibold tracking-tight break-words">{value}</div>
-    </div>
-  );
-}
-
 function StepCard({
   step,
   progress,
   tracking,
+  totalSteps,
+  totalEstimatedCredits,
+  completedNumbers,
   onUpdate,
 }: {
   step: Step;
   progress: StepProgress | undefined;
   tracking: boolean;
+  totalSteps: number;
+  totalEstimatedCredits: number;
+  completedNumbers: Set<number>;
   onUpdate: (patch: Partial<Omit<StepProgress, "step_number">>) => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -786,7 +889,8 @@ function StepCard({
 
   return (
     <li
-      className={`rounded-xl border bg-card shadow-card overflow-hidden transition-colors ${
+      id={`step-${step.step_number}`}
+      className={`rounded-xl border bg-card shadow-card overflow-hidden transition-colors scroll-mt-24 ${
         completed ? "border-success/40" : "border-border"
       }`}
     >
@@ -817,7 +921,7 @@ function StepCard({
                 <Circle className="h-5 w-5" />
               )}
             </button>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono text-muted-foreground">
                   Step {step.step_number}
@@ -832,9 +936,6 @@ function StepCard({
               </h3>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <PlatformBadge id={step.platform} size="sm" />
-                <Badge variant="secondary" className="font-normal text-xs">
-                  {step.mode}
-                </Badge>
                 <Badge
                   variant="outline"
                   className="font-normal text-xs border-warning/40 text-warning"
@@ -842,6 +943,16 @@ function StepCard({
                   Est. {step.estimated_cost}
                 </Badge>
               </div>
+              <StepVisualStrip
+                stepNumber={step.step_number}
+                totalSteps={totalSteps}
+                completedNumbers={completedNumbers}
+                estimatedCredits={parseCostToCredits(step.estimated_cost)}
+                totalEstimatedCredits={totalEstimatedCredits}
+                actualCredits={progress?.actual_cost_credits ?? null}
+                platformId={step.platform}
+                mode={step.mode}
+              />
             </div>
           </div>
         </div>
