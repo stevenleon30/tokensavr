@@ -111,6 +111,7 @@ function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [savedId, setSavedId] = useState<string | undefined>(id);
   const [progress, setProgress] = useState<Record<number, StepProgress>>({});
+  const [promptsExpanded, setPromptsExpanded] = useState(false);
 
   // Load strategy + (if signed-in) its progress rows
   useEffect(() => {
@@ -292,6 +293,31 @@ function ResultsPage() {
       platformMax,
     };
   }, [strategy, progress]);
+
+  const recommendation = useMemo(() => {
+    if (!strategy || !totals) return null;
+    const primary = strategy.recommended_platform || totals.platformBreakdown[0]?.id;
+    const fallbackScores = totals.platformBreakdown.map((p, index) => ({
+      platform: p.id,
+      overall: Math.max(55, 88 - index * 7),
+      cost: totals.estimated > 0 ? Math.max(40, Math.round(100 - (p.credits / totals.estimated) * 45)) : 80,
+      output_quality: Math.max(60, 90 - index * 5),
+      speed: Math.max(55, 84 - index * 6),
+      beginner_friendly: Math.max(55, 86 - index * 5),
+      reason: `${getPlatform(p.id).name} appears in ${p.steps} recommended ${p.steps === 1 ? "step" : "steps"}.`,
+    }));
+    return {
+      recommended_platform: primary,
+      recommendation_reason: strategy.recommendation_reason,
+      optimization_goal: strategy.optimization_goal || "Balanced recommendation",
+      confidence_score: strategy.confidence_score,
+      platform_scores: strategy.platform_scores?.length ? strategy.platform_scores : fallbackScores,
+      recommended_stack: strategy.recommended_stack?.length
+        ? strategy.recommended_stack
+        : totals.platformBreakdown.slice(0, 3).map((p) => `${getPlatform(p.id).name} for ${p.steps === 1 ? "a key workflow step" : `${p.steps} workflow steps`}`),
+      tradeoffs: strategy.tradeoffs ?? [],
+    };
+  }, [strategy, totals]);
 
   const saveToDashboard = async () => {
     if (!user) {
