@@ -545,48 +545,26 @@ function ResultsPage() {
         </Button>
       </div>
 
-      <div className="rounded-2xl border border-border bg-gradient-mesh p-6 sm:p-8 shadow-card">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Your build strategy</h1>
+      {recommendation && (
+        <RecommendationHero
+          recommendation={recommendation}
+          totalCost={strategy.total_estimated_cost}
+          savings={strategy.estimated_savings}
+          timeEstimate={strategy.time_estimate}
+        />
+      )}
 
-        <dl className="mt-5 space-y-3 text-sm">
-          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
-            <dt className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground sm:w-20 shrink-0">
-              Idea
-            </dt>
-            <dd className="text-foreground/90 line-clamp-2">{strategy.idea}</dd>
+      <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-card">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">Idea</div>
+            <p className="mt-1 truncate text-sm text-foreground/90">{strategy.idea}</p>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <dt className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground sm:w-20 shrink-0">
-              Budget
-            </dt>
-            <dd>
-              <Badge variant="outline" className="font-normal border-border bg-card/60">
-                {strategy.budget}
-              </Badge>
-            </dd>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <dt className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground sm:w-20 shrink-0">
-              Platforms
-            </dt>
-            <dd className="flex flex-wrap gap-2">
-              {strategy.platforms.length > 0 ? (
-                strategy.platforms.map((p) => (
-                  <span
-                    key={p}
-                    className="inline-flex items-center rounded-full border border-border bg-card/60 px-2.5 py-0.5"
-                  >
-                    <PlatformBadge id={p} size="sm" />
-                  </span>
-                ))
-              ) : (
-                <span className="text-muted-foreground text-xs">None selected</span>
-              )}
-            </dd>
-          </div>
-        </dl>
-
-        <div className="mt-6 hidden sm:flex flex-wrap gap-2">
+          <Badge variant="outline" className="w-fit font-normal border-border bg-background/40">
+            {strategy.budget}
+          </Badge>
+        </div>
+        <div className="mt-4 hidden sm:flex flex-wrap gap-2">
           <Button onClick={saveToDashboard} variant="secondary" className="gap-2" disabled={!!savedId}>
             <Save className="h-4 w-4" />
             {savedId ? "Saved" : "Save to dashboard"}
