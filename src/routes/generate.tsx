@@ -18,6 +18,14 @@ import {
 } from "@/lib/strategy-stream";
 import { loadUserCalibration } from "@/lib/calibration";
 
+const OPTIMIZATION_GOALS = [
+  { id: "Cheapest build", label: "Cheapest build", desc: "Minimize paid credits and use free planning first." },
+  { id: "Best output quality", label: "Best output quality", desc: "Prioritize the strongest final result." },
+  { id: "Fastest path", label: "Fastest path", desc: "Reduce steps and iteration time." },
+  { id: "Beginner-friendly", label: "Beginner-friendly", desc: "Prefer guided tools and simpler workflows." },
+  { id: "Balanced recommendation", label: "Balanced", desc: "Best mix of cost, speed, and quality." },
+];
+
 export const Route = createFileRoute("/generate")({
   validateSearch: (
     s: Record<string, unknown>,
@@ -73,6 +81,7 @@ function GeneratePage() {
   const [platforms, setPlatforms] = useState<string[]>(
     search.platforms && search.platforms.length > 0 ? search.platforms : ["lovable", "claude"],
   );
+  const [optimizationGoal, setOptimizationGoal] = useState("Balanced recommendation");
   const [loading, setLoading] = useState(false);
   const [partial, setPartial] = useState<StreamingPartial | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -94,10 +103,6 @@ function GeneratePage() {
   const onGenerate = async () => {
     if (idea.trim().length < 10) {
       toast.error("Please describe what you want to build (10+ characters).");
-      return;
-    }
-    if (platforms.length === 0) {
-      toast.error("Select at least one platform.");
       return;
     }
     const budgetLabel =
@@ -144,7 +149,8 @@ function GeneratePage() {
         {
           idea: idea.trim(),
           budget: budgetLabel,
-          platforms,
+          optimizationGoal,
+          existingAccess: platforms,
           ...(calibration ? { calibration } : {}),
         },
         {
@@ -194,6 +200,13 @@ function GeneratePage() {
     const payload = {
       idea: idea.trim(),
       budget: budgetLabel,
+      optimization_goal: final.optimization_goal ?? optimizationGoal,
+      recommended_platform: final.recommended_platform,
+      recommendation_reason: final.recommendation_reason,
+      confidence_score: final.confidence_score,
+      platform_scores: final.platform_scores,
+      recommended_stack: final.recommended_stack,
+      tradeoffs: final.tradeoffs,
       platforms,
       ...result,
     };
