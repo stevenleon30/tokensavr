@@ -207,13 +207,6 @@ function GeneratePage() {
     const payload = {
       idea: idea.trim(),
       budget: budgetLabel,
-      optimization_goal: final.optimization_goal ?? optimizationGoal,
-      recommended_platform: final.recommended_platform,
-      recommendation_reason: final.recommendation_reason,
-      confidence_score: final.confidence_score,
-      platform_scores: final.platform_scores,
-      recommended_stack: final.recommended_stack,
-      tradeoffs: final.tradeoffs,
       platforms,
       ...result,
     };
