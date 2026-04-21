@@ -87,62 +87,94 @@ function ResultsPage() {
   // Load strategy + (if signed-in) its progress rows
   useEffect(() => {
     let cancelled = false;
+
+    const readSessionStrategy = () => {
+      try {
+        const raw = sessionStorage.getItem("ts:lastStrategy");
+        return raw ? (JSON.parse(raw) as StoredStrategy) : null;
+      } catch {
+        return null;
+      }
+    };
+
     const load = async () => {
-      if (id) {
-        const [{ data, error }, progressRes] = await Promise.all([
-          supabase
+      setLoading(true);
+      try {
+        if (id) {
+          const strategyQuery = supabase
             .from("strategies")
             .select(
               "idea,budget,platforms,total_estimated_cost,estimated_savings,time_estimate,steps",
             )
             .eq("id", id)
-            .maybeSingle(),
-          supabase
-            .from("step_progress")
-            .select("step_number,completed,actual_cost_credits")
-            .eq("strategy_id", id),
-        ]);
-        if (cancelled) return;
-        if (error || !data) {
-          toast.error("Couldn't load that strategy.");
-        } else {
-          setStrategy({
-            idea: data.idea,
-            budget: data.budget,
-            platforms: (data.platforms as string[]) ?? [],
-            total_estimated_cost: data.total_estimated_cost ?? "—",
-            estimated_savings: data.estimated_savings ?? "—",
-            time_estimate: data.time_estimate ?? "—",
-            steps: (data.steps as unknown as Step[]) ?? [],
+            .maybeSingle();
+
+          const progressQuery = user
+            ? supabase
+                .from("step_progress")
+                .select("step_number,completed,actual_cost_credits")
+                .eq("strategy_id", id)
+            : Promise.resolve({ data: [], error: null });
+
+          const timeout = new Promise<never>((_, reject) => {
+            window.setTimeout(() => reject(new Error("Strategy load timed out")), 8000);
           });
-          const map: Record<number, StepProgress> = {};
-          (progressRes.data ?? []).forEach((row) => {
-            map[row.step_number] = {
-              step_number: row.step_number,
-              completed: row.completed,
-              actual_cost_credits: row.actual_cost_credits,
-            };
-          });
-          setProgress(map);
+
+          const [{ data, error }, progressRes] = await Promise.race([
+            Promise.all([strategyQuery, progressQuery]),
+            timeout,
+          ]);
+
+          if (cancelled) return;
+
+          const fallback = readSessionStrategy();
+          const loaded = data
+            ? {
+                idea: data.idea,
+                budget: data.budget,
+                platforms: (data.platforms as string[]) ?? [],
+                total_estimated_cost: data.total_estimated_cost ?? "—",
+                estimated_savings: data.estimated_savings ?? "—",
+                time_estimate: data.time_estimate ?? "—",
+                steps: (data.steps as unknown as Step[]) ?? [],
+              }
+            : fallback;
+
+          if (error || !loaded) {
+            toast.error("Couldn't load that strategy.");
+            setStrategy(null);
+          } else {
+            setStrategy(loaded);
+            const map: Record<number, StepProgress> = {};
+            (progressRes.data ?? []).forEach((row) => {
+              map[row.step_number] = {
+                step_number: row.step_number,
+                completed: row.completed,
+                actual_cost_credits: row.actual_cost_credits,
+              };
+            });
+            setProgress(map);
+          }
+          return;
         }
-        setLoading(false);
-        return;
-      }
-      const raw = sessionStorage.getItem("ts:lastStrategy");
-      if (raw) {
-        try {
-          setStrategy(JSON.parse(raw));
-        } catch {
-          /* noop */
+
+        if (!cancelled) setStrategy(readSessionStrategy());
+      } catch (err) {
+        console.error("Strategy load failed", err);
+        if (!cancelled) {
+          setStrategy(readSessionStrategy());
+          toast.error("Strategy load took too long. Try opening it again.");
         }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     };
+
     load();
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, user]);
 
   const upsertProgress = async (
     stepNumber: number,
