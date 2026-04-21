@@ -584,6 +584,19 @@ function ResultsPage() {
         </div>
       </div>
 
+      {recommendation && (
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <PlatformScoreBars scores={recommendation.platform_scores} />
+          <PlatformScoreMatrix scores={recommendation.platform_scores} />
+        </div>
+      )}
+
+      {recommendation && (
+        <div className="mt-6">
+          <RecommendationInsights tradeoffs={recommendation.tradeoffs} />
+        </div>
+      )}
+
       {/* Visual dashboard hero — 4-panel summary */}
       {totals && (
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
