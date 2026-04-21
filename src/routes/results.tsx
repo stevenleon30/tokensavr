@@ -385,18 +385,33 @@ function ResultsPage() {
   };
 
   const copyDashboardSummary = async () => {
-    if (!strategy || !totals) return;
+    if (!strategy || !totals || !recommendation) return;
     const lines: string[] = [];
-    lines.push(`# ${strategy.idea}`);
+    lines.push(`# TokenSavr Build Recommendation`);
     lines.push("");
+    lines.push(`**Idea:** ${strategy.idea}`);
+    lines.push(`**Recommended path:** ${recommendation.recommended_platform ? getPlatform(recommendation.recommended_platform).name : "—"}`);
+    lines.push(`**Optimization goal:** ${recommendation.optimization_goal}`);
+    lines.push(`**Confidence:** ${recommendation.confidence_score ?? "—"}%`);
     lines.push(`**Budget:** ${strategy.budget}`);
-    lines.push(`**Platforms:** ${strategy.platforms.join(", ") || "—"}`);
     lines.push(`**Total estimated cost:** ${strategy.total_estimated_cost}`);
     lines.push(`**Estimated savings:** ${strategy.estimated_savings}`);
     lines.push(`**Estimated build time:** ${strategy.time_estimate}`);
     lines.push(
       `**Progress:** ${totals.completed} / ${totals.totalSteps} steps · actual ${formatCredits(totals.actual)} cr / est ${formatCredits(totals.estimated)} cr`,
     );
+    lines.push("");
+    lines.push("## Why this route");
+    lines.push("");
+    lines.push(recommendation.recommendation_reason || "Recommended from platform fit, estimated credits, and workflow balance.");
+    lines.push("");
+    lines.push("## Platform scorecard");
+    lines.push("");
+    lines.push("| Platform | Overall | Cost | Quality | Speed | Ease |");
+    lines.push("| --- | ---: | ---: | ---: | ---: | ---: |");
+    recommendation.platform_scores.forEach((p) => {
+      lines.push(`| ${getPlatform(p.platform).name} | ${p.overall} | ${p.cost} | ${p.output_quality} | ${p.speed} | ${p.beginner_friendly} |`);
+    });
     lines.push("");
     lines.push("## Cost breakdown by platform");
     lines.push("");
