@@ -871,11 +871,17 @@ function StepCard({
   step,
   progress,
   tracking,
+  totalSteps,
+  totalEstimatedCredits,
+  completedNumbers,
   onUpdate,
 }: {
   step: Step;
   progress: StepProgress | undefined;
   tracking: boolean;
+  totalSteps: number;
+  totalEstimatedCredits: number;
+  completedNumbers: Set<number>;
   onUpdate: (patch: Partial<Omit<StepProgress, "step_number">>) => void;
 }) {
   const [copied, setCopied] = useState(false);
