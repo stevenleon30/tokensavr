@@ -20,6 +20,10 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
 import {
+  InProgressCard,
+  OpportunitiesCard,
+} from "@/components/dashboard-insights";
+import {
   Bar,
   BarChart,
   CartesianGrid,
@@ -514,6 +518,12 @@ function DashboardPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* In-progress + opportunities */}
+      <div className="grid gap-4 lg:grid-cols-2 mb-8">
+        <InProgressCard rows={rows ?? []} progress={progress} />
+        <OpportunitiesCard rows={rows ?? []} />
       </div>
 
       {/* Estimate accuracy */}
