@@ -934,6 +934,7 @@ function StepCard({
   totalSteps,
   totalEstimatedCredits,
   completedNumbers,
+  forceExpanded,
   onUpdate,
 }: {
   step: Step;
@@ -942,12 +943,12 @@ function StepCard({
   totalSteps: number;
   totalEstimatedCredits: number;
   completedNumbers: Set<number>;
+  forceExpanded: boolean;
   onUpdate: (patch: Partial<Omit<StepProgress, "step_number">>) => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const isMobile = useIsMobile();
   const [expanded, setExpanded] = useState(false);
-  const isOpen = !isMobile || expanded;
+  const isOpen = forceExpanded || expanded;
   const [costInput, setCostInput] = useState(
     progress?.actual_cost_credits != null ? String(progress.actual_cost_credits) : "",
   );
