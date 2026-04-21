@@ -1062,7 +1062,7 @@ function StepCard({
         </div>
 
         <div className="mt-4">
-          <div className="flex items-center justify-between gap-2 sm:hidden mb-2">
+          <div className="flex items-center justify-between gap-2 mb-2">
             <button
               onClick={() => setExpanded((v) => !v)}
               className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -1093,7 +1093,7 @@ function StepCard({
               </pre>
               <button
                 onClick={copy}
-                className="hidden sm:inline-flex absolute top-2 right-2 items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                className="absolute top-2 right-2 inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 aria-label="Copy prompt"
               >
                 {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
