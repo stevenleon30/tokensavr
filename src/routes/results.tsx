@@ -69,6 +69,21 @@ type StoredStrategy = {
 
 type StrategyStepsPayload = Step[] | (Partial<StoredStrategy> & { items?: Step[]; recommendation?: Partial<StoredStrategy> });
 
+function normalizeStrategyPayload(base: Omit<StoredStrategy, "steps">, rawSteps: unknown): StoredStrategy {
+  const payload = rawSteps as StrategyStepsPayload;
+  if (Array.isArray(payload)) return { ...base, steps: payload };
+  const recommendation = payload?.recommendation ?? payload ?? {};
+  return {
+    ...base,
+    ...recommendation,
+    platforms: base.platforms,
+    total_estimated_cost: base.total_estimated_cost,
+    estimated_savings: base.estimated_savings,
+    time_estimate: base.time_estimate,
+    steps: Array.isArray(payload?.items) ? payload.items : [],
+  };
+}
+
 type StepProgress = {
   step_number: number;
   completed: boolean;
