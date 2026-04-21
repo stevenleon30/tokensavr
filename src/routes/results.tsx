@@ -31,6 +31,10 @@ import { StrategyTimelineBar } from "@/components/strategy-timeline-bar";
 import { ModeMixChart } from "@/components/mode-mix-chart";
 import { ProgressRing } from "@/components/progress-ring";
 import { StepVisualStrip } from "@/components/step-visual-strip";
+import { RecommendationHero } from "@/components/recommendation-hero";
+import { PlatformScoreBars, type PlatformScore } from "@/components/platform-score-bars";
+import { PlatformScoreMatrix } from "@/components/platform-score-matrix";
+import { RecommendationInsights } from "@/components/recommendation-insights";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
@@ -50,11 +54,20 @@ type StoredStrategy = {
   idea: string;
   budget: string;
   platforms: string[];
+  recommended_platform?: string;
+  recommendation_reason?: string;
+  optimization_goal?: string;
+  confidence_score?: number;
+  platform_scores?: PlatformScore[];
+  recommended_stack?: string[];
+  tradeoffs?: string[];
   total_estimated_cost: string;
   estimated_savings: string;
   time_estimate: string;
   steps: Step[];
 };
+
+type StrategyStepsPayload = Step[] | (Partial<StoredStrategy> & { items?: Step[]; recommendation?: Partial<StoredStrategy> });
 
 type StepProgress = {
   step_number: number;
