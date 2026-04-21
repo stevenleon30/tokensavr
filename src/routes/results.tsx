@@ -933,7 +933,8 @@ function StepCard({
 
   return (
     <li
-      className={`rounded-xl border bg-card shadow-card overflow-hidden transition-colors ${
+      id={`step-${step.step_number}`}
+      className={`rounded-xl border bg-card shadow-card overflow-hidden transition-colors scroll-mt-24 ${
         completed ? "border-success/40" : "border-border"
       }`}
     >
@@ -964,7 +965,7 @@ function StepCard({
                 <Circle className="h-5 w-5" />
               )}
             </button>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono text-muted-foreground">
                   Step {step.step_number}
@@ -979,9 +980,6 @@ function StepCard({
               </h3>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <PlatformBadge id={step.platform} size="sm" />
-                <Badge variant="secondary" className="font-normal text-xs">
-                  {step.mode}
-                </Badge>
                 <Badge
                   variant="outline"
                   className="font-normal text-xs border-warning/40 text-warning"
@@ -989,6 +987,16 @@ function StepCard({
                   Est. {step.estimated_cost}
                 </Badge>
               </div>
+              <StepVisualStrip
+                stepNumber={step.step_number}
+                totalSteps={totalSteps}
+                completedNumbers={completedNumbers}
+                estimatedCredits={parseCostToCredits(step.estimated_cost)}
+                totalEstimatedCredits={totalEstimatedCredits}
+                actualCredits={progress?.actual_cost_credits ?? null}
+                platformId={step.platform}
+                mode={step.mode}
+              />
             </div>
           </div>
         </div>
