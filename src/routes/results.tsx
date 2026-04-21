@@ -823,44 +823,6 @@ function Stat({
   );
 }
 
-function SummaryCard({
-  icon,
-  label,
-  value,
-  accent,
-  tooltip,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  accent?: boolean;
-  tooltip?: string;
-}) {
-  return (
-    <div
-      className={`rounded-xl border p-4 ${
-        accent ? "border-success/40 bg-success/5" : "border-border bg-card/60"
-      }`}
-    >
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        {icon}
-        <span>{label}</span>
-        {tooltip && (
-          <span
-            tabIndex={0}
-            title={tooltip}
-            aria-label={tooltip}
-            className="inline-flex cursor-help text-muted-foreground/70 hover:text-foreground transition-colors"
-          >
-            <Info className="h-3.5 w-3.5" />
-          </span>
-        )}
-      </div>
-      <div className="mt-1 text-lg font-semibold tracking-tight break-words">{value}</div>
-    </div>
-  );
-}
-
 function StepCard({
   step,
   progress,
