@@ -25,12 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { PlatformBadge } from "@/components/platform-badge";
 import { PlatformDonut } from "@/components/platform-donut";
 import { StrategyTimelineBar } from "@/components/strategy-timeline-bar";
