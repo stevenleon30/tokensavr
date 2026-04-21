@@ -12,7 +12,24 @@ export type StreamingStep = {
   prompt_to_use?: string;
 };
 
+export type PlatformScore = {
+  platform: string;
+  overall: number;
+  cost: number;
+  output_quality: number;
+  speed: number;
+  beginner_friendly: number;
+  reason?: string;
+};
+
 export type StreamingPartial = {
+  recommended_platform?: string;
+  recommendation_reason?: string;
+  optimization_goal?: string;
+  confidence_score?: number;
+  platform_scores?: PlatformScore[];
+  recommended_stack?: string[];
+  tradeoffs?: string[];
   total_estimated_cost?: string;
   estimated_savings?: string;
   time_estimate?: string;
@@ -27,7 +44,8 @@ type Callbacks = {
 export type StrategyInput = {
   idea: string;
   budget: string;
-  platforms: string[];
+  optimizationGoal: string;
+  existingAccess: string[];
   /**
    * Optional historical accuracy signal. The server uses this to nudge the
    * AI's per-step credit estimates up or down based on the user's past

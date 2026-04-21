@@ -19,7 +19,6 @@ import {
   Share2,
   LayoutDashboard,
 } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +30,10 @@ import { StrategyTimelineBar } from "@/components/strategy-timeline-bar";
 import { ModeMixChart } from "@/components/mode-mix-chart";
 import { ProgressRing } from "@/components/progress-ring";
 import { StepVisualStrip } from "@/components/step-visual-strip";
+import { RecommendationHero } from "@/components/recommendation-hero";
+import { PlatformScoreBars, type PlatformScore } from "@/components/platform-score-bars";
+import { PlatformScoreMatrix } from "@/components/platform-score-matrix";
+import { RecommendationInsights } from "@/components/recommendation-insights";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
@@ -50,11 +53,35 @@ type StoredStrategy = {
   idea: string;
   budget: string;
   platforms: string[];
+  recommended_platform?: string;
+  recommendation_reason?: string;
+  optimization_goal?: string;
+  confidence_score?: number;
+  platform_scores?: PlatformScore[];
+  recommended_stack?: string[];
+  tradeoffs?: string[];
   total_estimated_cost: string;
   estimated_savings: string;
   time_estimate: string;
   steps: Step[];
 };
+
+type StrategyStepsPayload = Step[] | (Partial<StoredStrategy> & { items?: Step[]; recommendation?: Partial<StoredStrategy> });
+
+function normalizeStrategyPayload(base: Omit<StoredStrategy, "steps">, rawSteps: unknown): StoredStrategy {
+  const payload = rawSteps as StrategyStepsPayload;
+  if (Array.isArray(payload)) return { ...base, steps: payload };
+  const recommendation = payload?.recommendation ?? payload ?? {};
+  return {
+    ...base,
+    ...recommendation,
+    platforms: base.platforms,
+    total_estimated_cost: base.total_estimated_cost,
+    estimated_savings: base.estimated_savings,
+    time_estimate: base.time_estimate,
+    steps: Array.isArray(payload?.items) ? payload.items : [],
+  };
+}
 
 type StepProgress = {
   step_number: number;
@@ -83,6 +110,7 @@ function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [savedId, setSavedId] = useState<string | undefined>(id);
   const [progress, setProgress] = useState<Record<number, StepProgress>>({});
+  const [promptsExpanded, setPromptsExpanded] = useState(false);
 
   // Load strategy + (if signed-in) its progress rows
   useEffect(() => {
@@ -129,15 +157,17 @@ function ResultsPage() {
 
           const fallback = readSessionStrategy();
           const loaded = data
-            ? {
-                idea: data.idea,
-                budget: data.budget,
-                platforms: (data.platforms as string[]) ?? [],
-                total_estimated_cost: data.total_estimated_cost ?? "—",
-                estimated_savings: data.estimated_savings ?? "—",
-                time_estimate: data.time_estimate ?? "—",
-                steps: (data.steps as unknown as Step[]) ?? [],
-              }
+            ? normalizeStrategyPayload(
+                {
+                  idea: data.idea,
+                  budget: data.budget,
+                  platforms: (data.platforms as string[]) ?? [],
+                  total_estimated_cost: data.total_estimated_cost ?? "—",
+                  estimated_savings: data.estimated_savings ?? "—",
+                  time_estimate: data.time_estimate ?? "—",
+                },
+                data.steps,
+              )
             : fallback;
 
           if (error || !loaded) {
@@ -263,6 +293,31 @@ function ResultsPage() {
     };
   }, [strategy, progress]);
 
+  const recommendation = useMemo(() => {
+    if (!strategy || !totals) return null;
+    const primary = strategy.recommended_platform || totals.platformBreakdown[0]?.id;
+    const fallbackScores = totals.platformBreakdown.map((p, index) => ({
+      platform: p.id,
+      overall: Math.max(55, 88 - index * 7),
+      cost: totals.estimated > 0 ? Math.max(40, Math.round(100 - (p.credits / totals.estimated) * 45)) : 80,
+      output_quality: Math.max(60, 90 - index * 5),
+      speed: Math.max(55, 84 - index * 6),
+      beginner_friendly: Math.max(55, 86 - index * 5),
+      reason: `${getPlatform(p.id).name} appears in ${p.steps} recommended ${p.steps === 1 ? "step" : "steps"}.`,
+    }));
+    return {
+      recommended_platform: primary,
+      recommendation_reason: strategy.recommendation_reason,
+      optimization_goal: strategy.optimization_goal || "Balanced recommendation",
+      confidence_score: strategy.confidence_score,
+      platform_scores: strategy.platform_scores?.length ? strategy.platform_scores : fallbackScores,
+      recommended_stack: strategy.recommended_stack?.length
+        ? strategy.recommended_stack
+        : totals.platformBreakdown.slice(0, 3).map((p) => `${getPlatform(p.id).name} for ${p.steps === 1 ? "a key workflow step" : `${p.steps} workflow steps`}`),
+      tradeoffs: strategy.tradeoffs ?? [],
+    };
+  }, [strategy, totals]);
+
   const saveToDashboard = async () => {
     if (!user) {
       toast.message("Sign in to save", {
@@ -283,7 +338,7 @@ function ResultsPage() {
         total_estimated_cost: strategy.total_estimated_cost,
         estimated_savings: strategy.estimated_savings,
         time_estimate: strategy.time_estimate,
-        steps: strategy.steps,
+        steps: { items: strategy.steps, recommendation: strategy },
       })
       .select("id")
       .single();
@@ -329,18 +384,33 @@ function ResultsPage() {
   };
 
   const copyDashboardSummary = async () => {
-    if (!strategy || !totals) return;
+    if (!strategy || !totals || !recommendation) return;
     const lines: string[] = [];
-    lines.push(`# ${strategy.idea}`);
+    lines.push(`# TokenSavr Build Recommendation`);
     lines.push("");
+    lines.push(`**Idea:** ${strategy.idea}`);
+    lines.push(`**Recommended path:** ${recommendation.recommended_platform ? getPlatform(recommendation.recommended_platform).name : "—"}`);
+    lines.push(`**Optimization goal:** ${recommendation.optimization_goal}`);
+    lines.push(`**Confidence:** ${recommendation.confidence_score ?? "—"}%`);
     lines.push(`**Budget:** ${strategy.budget}`);
-    lines.push(`**Platforms:** ${strategy.platforms.join(", ") || "—"}`);
     lines.push(`**Total estimated cost:** ${strategy.total_estimated_cost}`);
     lines.push(`**Estimated savings:** ${strategy.estimated_savings}`);
     lines.push(`**Estimated build time:** ${strategy.time_estimate}`);
     lines.push(
       `**Progress:** ${totals.completed} / ${totals.totalSteps} steps · actual ${formatCredits(totals.actual)} cr / est ${formatCredits(totals.estimated)} cr`,
     );
+    lines.push("");
+    lines.push("## Why this route");
+    lines.push("");
+    lines.push(recommendation.recommendation_reason || "Recommended from platform fit, estimated credits, and workflow balance.");
+    lines.push("");
+    lines.push("## Platform scorecard");
+    lines.push("");
+    lines.push("| Platform | Overall | Cost | Quality | Speed | Ease |");
+    lines.push("| --- | ---: | ---: | ---: | ---: | ---: |");
+    recommendation.platform_scores.forEach((p) => {
+      lines.push(`| ${getPlatform(p.platform).name} | ${p.overall} | ${p.cost} | ${p.output_quality} | ${p.speed} | ${p.beginner_friendly} |`);
+    });
     lines.push("");
     lines.push("## Cost breakdown by platform");
     lines.push("");
@@ -405,7 +475,7 @@ function ResultsPage() {
           total_estimated_cost: strategy.total_estimated_cost,
           estimated_savings: strategy.estimated_savings,
           time_estimate: strategy.time_estimate,
-          steps: strategy.steps,
+          steps: { items: strategy.steps, recommendation: strategy },
           is_public: true,
         })
         .select("id")
@@ -489,48 +559,26 @@ function ResultsPage() {
         </Button>
       </div>
 
-      <div className="rounded-2xl border border-border bg-gradient-mesh p-6 sm:p-8 shadow-card">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Your build strategy</h1>
+      {recommendation && (
+        <RecommendationHero
+          recommendation={recommendation}
+          totalCost={strategy.total_estimated_cost}
+          savings={strategy.estimated_savings}
+          timeEstimate={strategy.time_estimate}
+        />
+      )}
 
-        <dl className="mt-5 space-y-3 text-sm">
-          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
-            <dt className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground sm:w-20 shrink-0">
-              Idea
-            </dt>
-            <dd className="text-foreground/90 line-clamp-2">{strategy.idea}</dd>
+      <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-card">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">Idea</div>
+            <p className="mt-1 truncate text-sm text-foreground/90">{strategy.idea}</p>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <dt className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground sm:w-20 shrink-0">
-              Budget
-            </dt>
-            <dd>
-              <Badge variant="outline" className="font-normal border-border bg-card/60">
-                {strategy.budget}
-              </Badge>
-            </dd>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <dt className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground sm:w-20 shrink-0">
-              Platforms
-            </dt>
-            <dd className="flex flex-wrap gap-2">
-              {strategy.platforms.length > 0 ? (
-                strategy.platforms.map((p) => (
-                  <span
-                    key={p}
-                    className="inline-flex items-center rounded-full border border-border bg-card/60 px-2.5 py-0.5"
-                  >
-                    <PlatformBadge id={p} size="sm" />
-                  </span>
-                ))
-              ) : (
-                <span className="text-muted-foreground text-xs">None selected</span>
-              )}
-            </dd>
-          </div>
-        </dl>
-
-        <div className="mt-6 hidden sm:flex flex-wrap gap-2">
+          <Badge variant="outline" className="w-fit font-normal border-border bg-background/40">
+            {strategy.budget}
+          </Badge>
+        </div>
+        <div className="mt-4 hidden sm:flex flex-wrap gap-2">
           <Button onClick={saveToDashboard} variant="secondary" className="gap-2" disabled={!!savedId}>
             <Save className="h-4 w-4" />
             {savedId ? "Saved" : "Save to dashboard"}
@@ -549,6 +597,19 @@ function ResultsPage() {
           </Button>
         </div>
       </div>
+
+      {recommendation && (
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <PlatformScoreBars scores={recommendation.platform_scores} />
+          <PlatformScoreMatrix scores={recommendation.platform_scores} />
+        </div>
+      )}
+
+      {recommendation && (
+        <div className="mt-6">
+          <RecommendationInsights tradeoffs={recommendation.tradeoffs} />
+        </div>
+      )}
 
       {/* Visual dashboard hero — 4-panel summary */}
       {totals && (
@@ -754,7 +815,16 @@ function ResultsPage() {
         </div>
       )}
 
-      <ol className="mt-8 space-y-4">
+      <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Copy-ready prompts</h2>
+          <p className="text-xs text-muted-foreground">Prompts are collapsed so the dashboard stays visual.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setPromptsExpanded((v) => !v)}>
+          {promptsExpanded ? "Collapse all prompts" : "Expand all prompts"}
+        </Button>
+      </div>
+      <ol className="mt-4 space-y-4">
         {strategy.steps.map((s) => (
           <StepCard
             key={s.step_number}
@@ -770,6 +840,7 @@ function ResultsPage() {
                   .map((p) => p.step_number),
               )
             }
+            forceExpanded={promptsExpanded}
             onUpdate={(patch) => upsertProgress(s.step_number, patch)}
           />
         ))}
@@ -862,6 +933,7 @@ function StepCard({
   totalSteps,
   totalEstimatedCredits,
   completedNumbers,
+  forceExpanded,
   onUpdate,
 }: {
   step: Step;
@@ -870,12 +942,12 @@ function StepCard({
   totalSteps: number;
   totalEstimatedCredits: number;
   completedNumbers: Set<number>;
+  forceExpanded: boolean;
   onUpdate: (patch: Partial<Omit<StepProgress, "step_number">>) => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const isMobile = useIsMobile();
   const [expanded, setExpanded] = useState(false);
-  const isOpen = !isMobile || expanded;
+  const isOpen = forceExpanded || expanded;
   const [costInput, setCostInput] = useState(
     progress?.actual_cost_credits != null ? String(progress.actual_cost_credits) : "",
   );
@@ -990,7 +1062,7 @@ function StepCard({
         </div>
 
         <div className="mt-4">
-          <div className="flex items-center justify-between gap-2 sm:hidden mb-2">
+          <div className="flex items-center justify-between gap-2 mb-2">
             <button
               onClick={() => setExpanded((v) => !v)}
               className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -1021,7 +1093,7 @@ function StepCard({
               </pre>
               <button
                 onClick={copy}
-                className="hidden sm:inline-flex absolute top-2 right-2 items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                className="absolute top-2 right-2 inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 aria-label="Copy prompt"
               >
                 {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
