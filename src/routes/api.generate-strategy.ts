@@ -4,7 +4,8 @@ import { z } from "zod";
 const InputSchema = z.object({
   idea: z.string().trim().min(10).max(4000),
   budget: z.string().trim().min(1).max(200),
-  platforms: z.array(z.string().min(1).max(40)).min(1).max(20),
+  optimizationGoal: z.string().trim().min(1).max(80),
+  existingAccess: z.array(z.string().min(1).max(40)).max(20).default([]),
   calibration: z
     .object({
       // Signed fraction: +0.2 = real spend ran 20% over past estimates.
@@ -39,11 +40,14 @@ CALIBRATION FROM THIS USER'S HISTORY (${cal.sampleSize} tracked strategies):
 - Do not mention this calibration in any user-visible field; just bake the adjustment into the numbers.`;
 }
 
-const SYSTEM_PROMPT = `You are a token-optimization expert for AI coding platforms (Lovable, Claude, Cursor, ChatGPT, Bolt, Replit Agent, Windsurf, Claude Code, GitHub Copilot, Gemini).
+const SYSTEM_PROMPT = `You are a recommendation engine and token-optimization expert for AI coding platforms (Lovable, Claude, Cursor, ChatGPT, Bolt, Replit Agent, Windsurf, Claude Code, GitHub Copilot, Gemini).
 
-Your job: take a user's idea + their budget + which platforms they have access to, and produce the cheapest possible build sequence.
+Your job: take a user's idea + budget + optimization priority + platforms they already pay for, recommend the best build path, and produce a visual-dashboard-ready build sequence.
 
 Rules:
+- Recommend the best platform mix based on budget, output quality, speed, beginner-friendliness, and project fit — do not require the user to choose the build platform.
+- Honor the optimization goal. If it says cheapest, aggressively prefer free planning and fewer paid build steps. If it says best output, accept more credits for higher quality.
+- Use existing paid access as a cost advantage, but still recommend a better platform if it materially improves the plan.
 - Use FREE Claude.ai chat or ChatGPT free tier for planning, brainstorming, copywriting, schema design, and prompt drafting whenever possible.
 - Use Lovable Chat Mode (1 credit per message) for architecture decisions and reviews — NOT for building.
 - Use Lovable Build Mode only for final assembly of UI/code that requires a working preview.
@@ -52,7 +56,7 @@ Rules:
 - Use the cheapest model that can do the task (e.g. GPT-4o-mini for simple text).
 - Each prompt_to_use must be a complete, copy-pasteable prompt the user sends to that platform — not a description.
 - Estimate savings vs. doing the entire project in Lovable Build Mode alone.
-- Only suggest platforms from the user's available list.
+- Return platform_scores for at least 4 platforms that are relevant to the request.
 
 COST UNIT — CRITICAL FOR DOWNSTREAM AGGREGATION:
 - ALL "estimated_cost" values MUST be expressed in CREDITS, using ONE of these exact formats:
