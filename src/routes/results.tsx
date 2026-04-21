@@ -17,6 +17,7 @@ import {
   PieChart,
   ChevronDown,
   Share2,
+  LayoutDashboard,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -24,8 +25,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PlatformBadge } from "@/components/platform-badge";
 import { PlatformDonut } from "@/components/platform-donut";
+import { StrategyTimelineBar } from "@/components/strategy-timeline-bar";
+import { ModeMixChart } from "@/components/mode-mix-chart";
+import { ProgressRing } from "@/components/progress-ring";
+import { StepVisualStrip } from "@/components/step-visual-strip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
