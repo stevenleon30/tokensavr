@@ -520,6 +520,12 @@ function DashboardPage() {
         </div>
       </div>
 
+      {/* In-progress + opportunities */}
+      <div className="grid gap-4 lg:grid-cols-2 mb-8">
+        <InProgressCard rows={rows ?? []} progress={progress} />
+        <OpportunitiesCard rows={rows ?? []} />
+      </div>
+
       {/* Estimate accuracy */}
       <div className="rounded-xl border border-border bg-card p-5 shadow-card mb-8">
         <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
