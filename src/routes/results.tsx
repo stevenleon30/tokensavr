@@ -735,6 +735,15 @@ function ResultsPage() {
             step={s}
             progress={progress[s.step_number]}
             tracking={tracking}
+            totalSteps={strategy.steps.length}
+            totalEstimatedCredits={totals?.estimated ?? 0}
+            completedNumbers={
+              new Set(
+                Object.values(progress)
+                  .filter((p) => p.completed)
+                  .map((p) => p.step_number),
+              )
+            }
             onUpdate={(patch) => upsertProgress(s.step_number, patch)}
           />
         ))}
@@ -742,7 +751,7 @@ function ResultsPage() {
 
       {/* Sticky mobile action bar */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl shadow-elegant pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-4 gap-1.5">
+        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-5 gap-1">
           <Button
             onClick={saveToDashboard}
             variant="secondary"
@@ -751,7 +760,7 @@ function ResultsPage() {
             className="flex-col h-auto py-2 gap-1 px-1"
           >
             <Save className="h-4 w-4" />
-            <span className="text-[11px] leading-none">{savedId ? "Saved" : "Save"}</span>
+            <span className="text-[10px] leading-none">{savedId ? "Saved" : "Save"}</span>
           </Button>
           <Button
             onClick={downloadPdf}
@@ -760,7 +769,7 @@ function ResultsPage() {
             className="flex-col h-auto py-2 gap-1 px-1"
           >
             <Download className="h-4 w-4" />
-            <span className="text-[11px] leading-none">PDF</span>
+            <span className="text-[10px] leading-none">PDF</span>
           </Button>
           <Button
             onClick={copyAllPrompts}
@@ -769,7 +778,16 @@ function ResultsPage() {
             className="flex-col h-auto py-2 gap-1 px-1"
           >
             <ClipboardList className="h-4 w-4" />
-            <span className="text-[11px] leading-none">Copy</span>
+            <span className="text-[10px] leading-none">Prompts</span>
+          </Button>
+          <Button
+            onClick={copyDashboardSummary}
+            variant="outline"
+            size="sm"
+            className="flex-col h-auto py-2 gap-1 px-1"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            <span className="text-[10px] leading-none">Dashboard</span>
           </Button>
           <Button
             onClick={shareStrategy}
@@ -778,7 +796,7 @@ function ResultsPage() {
             className="flex-col h-auto py-2 gap-1 px-1"
           >
             <Share2 className="h-4 w-4" />
-            <span className="text-[11px] leading-none">Share</span>
+            <span className="text-[10px] leading-none">Share</span>
           </Button>
         </div>
       </div>
