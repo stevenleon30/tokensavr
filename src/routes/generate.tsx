@@ -18,6 +18,14 @@ import {
 } from "@/lib/strategy-stream";
 import { loadUserCalibration } from "@/lib/calibration";
 
+const OPTIMIZATION_GOALS = [
+  { id: "Cheapest build", label: "Cheapest build", desc: "Minimize paid credits and use free planning first." },
+  { id: "Best output quality", label: "Best output quality", desc: "Prioritize the strongest final result." },
+  { id: "Fastest path", label: "Fastest path", desc: "Reduce steps and iteration time." },
+  { id: "Beginner-friendly", label: "Beginner-friendly", desc: "Prefer guided tools and simpler workflows." },
+  { id: "Balanced recommendation", label: "Balanced", desc: "Best mix of cost, speed, and quality." },
+];
+
 export const Route = createFileRoute("/generate")({
   validateSearch: (
     s: Record<string, unknown>,
@@ -73,6 +81,7 @@ function GeneratePage() {
   const [platforms, setPlatforms] = useState<string[]>(
     search.platforms && search.platforms.length > 0 ? search.platforms : ["lovable", "claude"],
   );
+  const [optimizationGoal, setOptimizationGoal] = useState("Balanced recommendation");
   const [loading, setLoading] = useState(false);
   const [partial, setPartial] = useState<StreamingPartial | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -94,10 +103,6 @@ function GeneratePage() {
   const onGenerate = async () => {
     if (idea.trim().length < 10) {
       toast.error("Please describe what you want to build (10+ characters).");
-      return;
-    }
-    if (platforms.length === 0) {
-      toast.error("Select at least one platform.");
       return;
     }
     const budgetLabel =
@@ -144,7 +149,8 @@ function GeneratePage() {
         {
           idea: idea.trim(),
           budget: budgetLabel,
-          platforms,
+          optimizationGoal,
+          existingAccess: platforms,
           ...(calibration ? { calibration } : {}),
         },
         {
@@ -185,6 +191,13 @@ function GeneratePage() {
     }
 
     const result = {
+      recommended_platform: final.recommended_platform,
+      recommendation_reason: final.recommendation_reason,
+      optimization_goal: final.optimization_goal ?? optimizationGoal,
+      confidence_score: final.confidence_score,
+      platform_scores: final.platform_scores,
+      recommended_stack: final.recommended_stack,
+      tradeoffs: final.tradeoffs,
       total_estimated_cost: final.total_estimated_cost,
       estimated_savings: final.estimated_savings,
       time_estimate: final.time_estimate ?? "—",
@@ -212,7 +225,7 @@ function GeneratePage() {
           total_estimated_cost: result.total_estimated_cost,
           estimated_savings: result.estimated_savings,
           time_estimate: result.time_estimate,
-          steps: result.steps,
+          steps: { items: result.steps, recommendation: result },
         })
         .select("id")
         .single();
@@ -301,7 +314,37 @@ function GeneratePage() {
 
         {/* Step 3 */}
         <section>
-          <StepHeader n="03" title="Which platforms do you have access to?" />
+          <StepHeader n="03" title="What should TokenSavr optimize for?" />
+          <div className="grid sm:grid-cols-2 gap-3">
+            {OPTIMIZATION_GOALS.map((goal) => {
+              const active = optimizationGoal === goal.id;
+              return (
+                <button
+                  key={goal.id}
+                  type="button"
+                  onClick={() => setOptimizationGoal(goal.id)}
+                  disabled={loading}
+                  className={`text-left rounded-lg border p-4 transition-all disabled:opacity-60 ${
+                    active
+                      ? "border-primary bg-primary/5 shadow-elegant"
+                      : "border-border bg-card hover:border-primary/40"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-medium">{goal.label}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{goal.desc}</div>
+                    </div>
+                    {active && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-5">
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Platforms you already pay for or prefer
+            </p>
           <div className="flex flex-wrap gap-2">
             {PLATFORM_LIST.map((p) => {
               const active = platforms.includes(p.id);
@@ -329,6 +372,7 @@ function GeneratePage() {
                 </button>
               );
             })}
+          </div>
           </div>
         </section>
 
