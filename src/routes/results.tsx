@@ -302,6 +302,61 @@ function ResultsPage() {
     }
   };
 
+  const copyDashboardSummary = async () => {
+    if (!strategy || !totals) return;
+    const lines: string[] = [];
+    lines.push(`# ${strategy.idea}`);
+    lines.push("");
+    lines.push(`**Budget:** ${strategy.budget}`);
+    lines.push(`**Platforms:** ${strategy.platforms.join(", ") || "—"}`);
+    lines.push(`**Total estimated cost:** ${strategy.total_estimated_cost}`);
+    lines.push(`**Estimated savings:** ${strategy.estimated_savings}`);
+    lines.push(`**Estimated build time:** ${strategy.time_estimate}`);
+    lines.push(
+      `**Progress:** ${totals.completed} / ${totals.totalSteps} steps · actual ${formatCredits(totals.actual)} cr / est ${formatCredits(totals.estimated)} cr`,
+    );
+    lines.push("");
+    lines.push("## Cost breakdown by platform");
+    lines.push("");
+    lines.push("| Platform | Steps | Est. credits | Share |");
+    lines.push("| --- | ---: | ---: | ---: |");
+    totals.platformBreakdown.forEach((p) => {
+      const share =
+        totals.estimated > 0
+          ? Math.round((p.credits / totals.estimated) * 100)
+          : 0;
+      lines.push(
+        `| ${getPlatform(p.id).name} | ${p.steps} | ${formatCredits(p.credits)} | ${share}% |`,
+      );
+    });
+    lines.push("");
+    lines.push("## Steps");
+    lines.push("");
+    strategy.steps.forEach((s) => {
+      lines.push(
+        `### ${s.step_number}. ${s.action}`,
+      );
+      lines.push("");
+      lines.push(
+        `_${getPlatform(s.platform).name} · ${s.mode} · est. ${s.estimated_cost}_`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(s.prompt_to_use);
+      lines.push("```");
+      lines.push("");
+    });
+    lines.push("---");
+    lines.push("Generated with TokenSavr — https://tokensavr.lovable.app");
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      toast.success("Dashboard summary copied as markdown");
+    } catch {
+      toast.error("Couldn't copy dashboard.");
+    }
+  };
+
+
   const shareStrategy = async () => {
     if (!strategy) return;
     if (!user) {
