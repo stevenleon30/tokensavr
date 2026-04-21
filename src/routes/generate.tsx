@@ -314,7 +314,37 @@ function GeneratePage() {
 
         {/* Step 3 */}
         <section>
-          <StepHeader n="03" title="Which platforms do you have access to?" />
+          <StepHeader n="03" title="What should TokenSavr optimize for?" />
+          <div className="grid sm:grid-cols-2 gap-3">
+            {OPTIMIZATION_GOALS.map((goal) => {
+              const active = optimizationGoal === goal.id;
+              return (
+                <button
+                  key={goal.id}
+                  type="button"
+                  onClick={() => setOptimizationGoal(goal.id)}
+                  disabled={loading}
+                  className={`text-left rounded-lg border p-4 transition-all disabled:opacity-60 ${
+                    active
+                      ? "border-primary bg-primary/5 shadow-elegant"
+                      : "border-border bg-card hover:border-primary/40"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-medium">{goal.label}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{goal.desc}</div>
+                    </div>
+                    {active && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-5">
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Platforms you already pay for or prefer
+            </p>
           <div className="flex flex-wrap gap-2">
             {PLATFORM_LIST.map((p) => {
               const active = platforms.includes(p.id);
@@ -342,6 +372,7 @@ function GeneratePage() {
                 </button>
               );
             })}
+          </div>
           </div>
         </section>
 
