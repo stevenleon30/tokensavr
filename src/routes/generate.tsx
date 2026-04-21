@@ -261,7 +261,7 @@ function GeneratePage() {
 
         {/* Step 2 */}
         <section>
-          <StepHeader n="02" title="What's your daily budget?" />
+          <StepHeader n="02" title="What's your budget?" />
           <div className="grid sm:grid-cols-2 gap-3">
             {BUDGETS.map((b) => {
               const active = budgetId === b.id;
