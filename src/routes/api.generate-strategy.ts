@@ -194,15 +194,16 @@ export const Route = createFileRoute("/api/generate-strategy")({
         if (!parsed.success) {
           return Response.json({ error: "Invalid input." }, { status: 400 });
         }
-        const { idea, budget, platforms, calibration } = parsed.data;
+        const { idea, budget, optimizationGoal, existingAccess, calibration } = parsed.data;
 
         const calibrationNote = buildCalibrationNote(calibration);
 
         const userMessage = `User's idea:
 ${idea}
 
-Daily budget: ${budget}
-Available platforms: ${platforms.join(", ")}
+Budget: ${budget}
+Optimization goal: ${optimizationGoal}
+Platforms already paid for or preferred: ${existingAccess.length ? existingAccess.join(", ") : "None specified"}
 
 Produce a token-optimized build plan with 5–10 steps.${calibrationNote}`;
 
