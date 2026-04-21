@@ -339,7 +339,7 @@ function ResultsPage() {
         total_estimated_cost: strategy.total_estimated_cost,
         estimated_savings: strategy.estimated_savings,
         time_estimate: strategy.time_estimate,
-        steps: strategy.steps,
+        steps: { items: strategy.steps, recommendation: strategy },
       })
       .select("id")
       .single();
@@ -461,7 +461,7 @@ function ResultsPage() {
           total_estimated_cost: strategy.total_estimated_cost,
           estimated_savings: strategy.estimated_savings,
           time_estimate: strategy.time_estimate,
-          steps: strategy.steps,
+          steps: { items: strategy.steps, recommendation: strategy },
           is_public: true,
         })
         .select("id")
