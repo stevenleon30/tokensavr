@@ -1,61 +1,374 @@
 
+Yes — this is possible. I’ll shift TokenSavr from “choose your platforms, then copy a text-heavy plan” into a recommendation-led dashboard where the app chooses the best build route and makes prompts secondary/collapsible.
 
-## Turn the strategy into a visual dashboard
+## Goal
 
-Right now the results page is mostly text: a header, two charts, then a long vertical list of step cards. I'll convert it into a dashboard-style view where every step has its own mini-visualization, plus add new top-level charts that summarize the whole build at a glance. Copy/export still works exactly as today — every prompt stays one-click copyable, and "Copy all prompts" + PDF export remain unchanged.
+Refactor the strategy flow so users enter:
 
-### What you'll see at the top (new dashboard hero)
+1. What they want to build
+2. Their budget
+3. Their priority, such as:
+   - Lowest budget
+   - Best overall plan
+   - Best output quality
+   - Fastest build
+   - Most beginner-friendly
 
-Replaces the current 3 summary cards with a richer 4-panel grid:
+Then TokenSavr recommends the best platform mix and shows the result as a visual dashboard dominated by graphs, scores, stats, and insights. Prompts remain available, but collapsed by default.
 
-1. **Cost composition donut** — shares of estimated credits per platform (already have `PlatformDonut`, just promote it up here).
-2. **Build timeline bar** — horizontal stacked bar where each segment = one step, colored by platform, width proportional to estimated cost. Hover/tap a segment → scrolls to that step. Gives an instant "where does the money go" read.
-3. **Mode mix mini bar chart** — vertical bars for Plan / Build / Review / Debug step counts, so users see if the plan is balanced or build-heavy.
-4. **Progress ring** — radial gauge showing % steps complete + actual vs estimated credits inside.
+## Changes to the generate page
 
-### What changes on every step card
+### Replace platform picker with a recommendation engine input
 
-Each step gets a compact visual strip underneath the title (left-aligned, ~64px tall):
+Remove the current “Which platforms do you have access to?” multi-select as the main decision point.
 
-- **Cost gauge** — small horizontal bar showing this step's estimated cost as a share of the total strategy cost (so step 3 visibly takes 22% of the budget, etc.).
-- **Platform chip with brand color dot** — already there, kept.
-- **Mode pill** with a tiny icon (Plan/Build/Review/Debug get distinct icons).
-- **Actual vs estimated mini-bar** — when the user logs actual spend, a second bar appears underneath the estimate bar so over/under is visually obvious without reading numbers.
-- **Step position dot-strip** — row of N dots (one per step in the strategy), the current step highlighted, completed steps filled green. Lets users see "step 4 of 11" visually inside every card.
+Add a new step:
 
-### New "Copy entire dashboard" affordance
+```text
+What should TokenSavr optimize for?
+```
 
-Adds a button next to "Copy all prompts": **"Copy dashboard summary"** → copies a clean markdown block with:
-- Idea, budget, totals
-- Platform cost breakdown table
-- Numbered list of steps with platform, mode, estimated cost, and the prompt
-- Footer with TokenSavr attribution
+Options:
 
-So the user can paste the whole strategy into Notion / Linear / a doc and have a readable, structured dashboard — not just prompts.
+- Cheapest build
+- Best output quality
+- Fastest path
+- Beginner-friendly
+- Balanced recommendation
 
-### Layout and polish
+Optional secondary input:
 
-- Top dashboard hero collapses to a 2×2 grid on tablet, single column on mobile.
-- Step cards stay vertically stacked but feel denser and more "dashboard-y" thanks to the visual strip.
-- Reuses existing tokens and `PlatformDonut`; no new chart libraries.
-- All visuals use the brand greens + per-platform brand colors already defined in `src/lib/platforms.ts`.
+```text
+Any platforms you already pay for?
+```
 
-### Technical details
+This can remain a smaller “I already have access to…” selector, but it will be supporting context — not the primary workflow.
 
-- New components in `src/components/`:
-  - `strategy-timeline-bar.tsx` — stacked horizontal bar, click-to-scroll
-  - `mode-mix-chart.tsx` — small vertical bars, pure SVG
-  - `progress-ring.tsx` — SVG radial gauge
-  - `step-visual-strip.tsx` — per-step cost gauge + dot-strip + actual-vs-estimate bar
-- Edit `src/routes/results.tsx`:
-  - Replace the existing 3-card `SummaryCard` row with the new 4-panel hero (donut moves up; existing "Cost by platform" section deleted since it's now redundant with the hero donut + timeline).
-  - Insert `<StepVisualStrip>` inside `StepCard` between the title row and the prompt.
-  - Add `copyDashboardMarkdown()` handler + button in both desktop and mobile action bars (mobile bar gets a 5th slot or swaps "Share" into an overflow menu).
-- No DB schema changes. No new dependencies. All charts are inline SVG, consistent with the existing `PlatformDonut` pattern.
+### Update generation payload
 
-### Out of scope (ask if you want these next)
+Instead of sending only:
 
-- Saving "actual cost" per step from the dashboard hero (already supported per-step today).
-- Exporting the dashboard as a PNG image.
-- Editable step reordering.
+```ts
+idea
+budget
+platforms
+```
 
+send:
+
+```ts
+idea
+budget
+optimizationGoal
+existingAccess
+```
+
+The user no longer has to decide where to plan/build. TokenSavr decides.
+
+## Recommendation engine
+
+### Backend strategy prompt update
+
+Update `/api/generate-strategy` so the AI acts as a platform recommendation engine, not just a step generator.
+
+It should evaluate platforms against criteria like:
+
+- Cost efficiency
+- Build quality
+- Planning quality
+- Speed
+- Ease of use
+- Fit for project type
+- Whether the platform is likely to require paid usage
+- Whether free-tier planning can reduce paid build credits
+
+### Structured output additions
+
+Expand the generated strategy shape from:
+
+```ts
+total_estimated_cost
+estimated_savings
+time_estimate
+steps
+```
+
+to include:
+
+```ts
+recommended_platform
+recommendation_reason
+optimization_goal
+confidence_score
+platform_scores
+recommended_stack
+tradeoffs
+```
+
+Example:
+
+```ts
+{
+  recommended_platform: "Lovable",
+  recommendation_reason: "Best balance of working preview, fast iteration, and low build complexity for this app.",
+  optimization_goal: "Balanced recommendation",
+  confidence_score: 87,
+  platform_scores: [
+    {
+      platform: "Lovable",
+      overall: 87,
+      cost: 72,
+      output_quality: 90,
+      speed: 88,
+      beginner_friendly: 94,
+      reason: "Best for full-stack visual build and deployment."
+    },
+    {
+      platform: "Claude",
+      overall: 81,
+      cost: 95,
+      output_quality: 86,
+      speed: 70,
+      beginner_friendly: 72,
+      reason: "Excellent for planning and prompt refinement, but not final app assembly."
+    }
+  ],
+  recommended_stack: [
+    "Claude for planning",
+    "Lovable for app build",
+    "ChatGPT/Gemini for copy review if free"
+  ],
+  tradeoffs: [
+    "Cheapest route may take longer",
+    "Best output route may use more Lovable build credits"
+  ]
+}
+```
+
+## Results page dashboard refactor
+
+### Make dashboard visuals dominant
+
+Rework `/results` so the top of the page focuses on:
+
+1. Recommended build platform
+2. Confidence score
+3. Cost estimate
+4. Savings estimate
+5. Best-use platform stack
+6. Tradeoffs
+7. Visual platform comparison
+
+The page should feel like a strategy dashboard first, prompt library second.
+
+### New dashboard sections
+
+Add these visual panels:
+
+#### 1. Recommendation hero
+
+Large card showing:
+
+```text
+Recommended build path: Lovable + Claude planning
+Confidence: 87%
+Best for: Balanced recommendation
+Estimated cost: ~12 credits
+Estimated savings: ~18 credits saved
+```
+
+#### 2. Platform score comparison
+
+A bar chart comparing platforms across:
+
+- Overall score
+- Cost
+- Quality
+- Speed
+- Beginner-friendliness
+
+This directly answers “why this platform?”
+
+#### 3. Recommendation matrix
+
+A compact grid:
+
+```text
+Platform       Cost   Quality   Speed   Ease   Best use
+Lovable        72     90        88      94     Final build
+Claude         95     86        70      72     Planning
+Cursor         80     82        84      60     Code edits
+ChatGPT        90     78        86      85     Copy/research
+```
+
+#### 4. Build route timeline
+
+Keep the current visual timeline, but make it represent the recommended workflow:
+
+```text
+Plan → Architecture → UI Build → Review → Optimize → Ship
+```
+
+#### 5. Savings insights
+
+Show why the route saves money:
+
+- “Use free planning before paid build messages”
+- “Batch UI changes into fewer build prompts”
+- “Use Lovable only when preview/deployment matters”
+- “Use cheaper/free tools for copy, schema, and reviews”
+
+#### 6. Prompt library collapsed by default
+
+Move prompts into a secondary section titled:
+
+```text
+Copy-ready prompts
+```
+
+Each step card should show:
+
+- Step number
+- Action
+- Platform
+- Estimated cost
+- Status/progress visual
+- “Copy prompt” button
+- Collapsed prompt body
+
+The prompt text should be hidden by default on all screen sizes, not just mobile.
+
+## Prompt collapse behavior
+
+Current behavior:
+
+- Desktop: prompts are always open
+- Mobile: prompts are collapsed
+
+New behavior:
+
+- Desktop: prompts collapsed by default
+- Mobile: prompts collapsed by default
+- User can open individual prompt
+- Add “Expand all prompts” / “Collapse all prompts”
+- Keep one-click copy available without expanding
+
+This keeps the page from becoming a wall of text.
+
+## Copy/export changes
+
+### Keep existing copy buttons
+
+Keep:
+
+- Copy individual prompt
+- Copy all prompts
+- Copy dashboard summary
+- Download PDF
+
+### Update dashboard summary
+
+The copied dashboard summary should prioritize insights first:
+
+```md
+# TokenSavr Build Recommendation
+
+Recommended path: Lovable + Claude planning
+Optimization goal: Lowest budget
+Confidence: 87%
+
+## Why this route
+...
+
+## Platform scorecard
+| Platform | Overall | Cost | Quality | Speed | Ease |
+...
+
+## Recommended workflow
+...
+
+## Copy-ready prompts
+...
+```
+
+## Data model impact
+
+No required database migration for the first version.
+
+The recommendation metadata can be stored inside the existing `strategies.steps` JSON flow or added to the strategy payload stored in session/database. Since `strategies` already stores flexible JSON for steps and text fields for summary data, this can be implemented without adding tables.
+
+Optional later improvement: add dedicated database columns for `recommended_platform`, `optimization_goal`, and `confidence_score` to make dashboard filtering easier.
+
+## Files to update
+
+### `src/routes/generate.tsx`
+
+- Remove the platform picker as the main Step 3
+- Add optimization goal selector
+- Optionally keep “platforms you already pay for” as a smaller advanced field
+- Update the payload sent to `streamStrategy`
+- Update live preview language from “platforms selected” to “recommendation being generated”
+
+### `src/lib/strategy-stream.ts`
+
+- Update `StrategyInput` type
+- Add recommendation-related fields to `StreamingPartial`
+
+### `src/routes/api.generate-strategy.ts`
+
+- Update input validation
+- Update system prompt
+- Update tool schema to return recommendation metadata
+- Replace “Only suggest platforms from selected list” with “recommend best platform mix based on budget, goal, and project fit”
+- Fix the backend wording that still says “Daily budget”
+
+### `src/routes/results.tsx`
+
+- Add recommendation hero
+- Add platform score visual sections
+- Make prompts collapsed by default on all devices
+- Add expand/collapse all controls
+- Update copy dashboard summary to include recommendation rationale and platform scorecard
+- De-emphasize raw prompt text visually
+
+### New component candidates
+
+- `src/components/recommendation-hero.tsx`
+- `src/components/platform-score-bars.tsx`
+- `src/components/platform-score-matrix.tsx`
+- `src/components/recommendation-insights.tsx`
+
+## Implementation sequence
+
+1. Update generation input flow to collect optimization goal instead of making users choose build platforms.
+2. Update strategy input/output types.
+3. Update the backend AI schema and recommendation prompt.
+4. Update results page to render recommendation metadata.
+5. Collapse all prompt text by default and add expand/collapse controls.
+6. Update copy/export text so the dashboard summary reads like an insight report.
+7. Test existing saved strategies with missing recommendation metadata and show graceful fallbacks so old results do not break.
+
+## Backward compatibility
+
+Older strategies that do not have recommendation metadata will still load.
+
+For old strategies:
+
+- Use the highest-cost or most-used platform as a fallback “primary platform”
+- Hide confidence score if unavailable
+- Keep existing charts working
+- Keep prompts collapsed by default
+
+## Result
+
+The user experience becomes:
+
+```text
+User describes idea + budget + goal
+          ↓
+TokenSavr recommends the best build platform/path
+          ↓
+Dashboard explains why with scores, charts, tradeoffs, and savings
+          ↓
+Prompts are available when needed, but no longer dominate the page
+```
