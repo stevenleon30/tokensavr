@@ -1168,7 +1168,18 @@ function StepCard({
                 >
                   Est. {step.estimated_cost}
                 </Badge>
+                {liveEstimate && (
+                  <Badge
+                    variant="outline"
+                    className="font-normal text-xs border-primary/40 text-primary"
+                    title={`${liveEstimate.profileLabel} · ${liveEstimate.inputTokens.toLocaleString()} in / ${liveEstimate.outputTokens.toLocaleString()} out tokens on ${liveEstimate.sourceModelId}`}
+                  >
+                    Live {formatCredits(liveEstimate.credits)} cr ·{" "}
+                    {formatUsd(liveEstimate.usd)}
+                  </Badge>
+                )}
               </div>
+
               <StepVisualStrip
                 stepNumber={step.step_number}
                 totalSteps={totalSteps}
