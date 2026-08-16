@@ -257,7 +257,7 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      schedule_pricing_sync: { Args: { secret: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
