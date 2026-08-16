@@ -5,11 +5,13 @@
  * "free", "2-3 credits", "$0.50". We normalize them to a single comparable
  * unit ("credit equivalents") so we can compute estimated vs. real spend.
  *
- * Convention: $0.10 ≈ 1 credit (roughly Lovable Build pricing). This is an
- * approximation — fine for relative trend comparisons on the dashboard.
+ * The credit <-> USD peg lives in src/lib/pricing.ts (the pricing catalog) so
+ * every conversion in the app shares one maintained number.
  */
 
-const DOLLARS_PER_CREDIT = 0.1;
+import { CREDIT_USD, creditsToUsd, formatUsd } from "@/lib/pricing";
+
+const DOLLARS_PER_CREDIT = CREDIT_USD;
 
 /** Parse an AI-generated cost string into approximate credit-equivalents. */
 export function parseCostToCredits(input: string | null | undefined): number {
