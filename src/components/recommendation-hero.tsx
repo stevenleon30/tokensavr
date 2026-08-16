@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { ProgressRing } from "@/components/progress-ring";
 import { getPlatform } from "@/lib/platforms";
+import { withUsd } from "@/lib/cost";
 
 export type RecommendationSummary = {
   recommended_platform?: string;
