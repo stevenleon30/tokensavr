@@ -83,6 +83,24 @@ export function modelForPlatform(platformId: string): string {
   return p?.models?.[0] ?? "claude-sonnet-4.5";
 }
 
+/**
+ * Baseline for savings: what the same workload would cost if every step ran on
+ * a top-tier frontier model (the naive "just use the best model for everything"
+ * approach). Savings shown to the user are the delta against this.
+ */
+export const BASELINE_MODEL_CANDIDATES = ["claude-opus-4.1", "gpt-5", "claude-sonnet-4.5"];
+
+/** First baseline model that has a live price, with its row. */
+export function resolveBaseline(
+  prices: LivePriceMap,
+): { modelId: string; row: LiveModelPrice } | null {
+  for (const modelId of BASELINE_MODEL_CANDIDATES) {
+    const row = resolveLivePrice(modelId, prices);
+    if (row) return { modelId, row };
+  }
+  return null;
+}
+
 export type LiveStepEstimate = {
   stepNumber: number;
   modelId: string;
@@ -91,8 +109,20 @@ export type LiveStepEstimate = {
   profileLabel: string;
   inputTokens: number;
   outputTokens: number;
+  totalTokens: number;
+  /** Per-million-token rates used, for display. */
+  inputPerMillion: number;
+  outputPerMillion: number;
   usd: number;
   credits: number;
+  /** Same tokens costed on the frontier baseline model. */
+  baselineModelId: string | null;
+  baselineUsd: number;
+  baselineCredits: number;
+  savedUsd: number;
+  savedCredits: number;
+  /** Share of the strategy's total token cost, 0-1 (filled in by the strategy pass). */
+  costShare: number;
 };
 
 /** Compute a live-priced estimate for one step. */
@@ -109,6 +139,13 @@ export function estimateStepFromLivePricing(
     profile.input * row.input_cost_per_token +
     profile.output * row.output_cost_per_token;
 
+  const baseline = resolveBaseline(prices);
+  const baselineUsd = baseline
+    ? profile.input * baseline.row.input_cost_per_token +
+      profile.output * baseline.row.output_cost_per_token
+    : 0;
+  const savedUsd = Math.max(0, baselineUsd - usd);
+
   return {
     stepNumber: step.step_number,
     modelId,
@@ -116,15 +153,36 @@ export function estimateStepFromLivePricing(
     profileLabel: profile.label,
     inputTokens: profile.input,
     outputTokens: profile.output,
+    totalTokens: profile.input + profile.output,
+    inputPerMillion: row.input_cost_per_token * 1_000_000,
+    outputPerMillion: row.output_cost_per_token * 1_000_000,
     usd,
     credits: usdToCredits(usd),
+    baselineModelId: baseline?.modelId ?? null,
+    baselineUsd,
+    baselineCredits: usdToCredits(baselineUsd),
+    savedUsd,
+    savedCredits: usdToCredits(savedUsd),
+    costShare: 0,
   };
 }
 
 export type LiveStrategyEstimate = {
   byStep: Record<number, LiveStepEstimate>;
+  /** Ordered list, cheapest-first ranking available via sorting on the caller. */
+  steps: LiveStepEstimate[];
   totalUsd: number;
   totalCredits: number;
+  totalTokens: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  baselineModelId: string | null;
+  baselineUsd: number;
+  baselineCredits: number;
+  savedUsd: number;
+  savedCredits: number;
+  /** 0-1 share of baseline cost avoided. */
+  savedShare: number;
   pricedSteps: number;
   fetchedAt: string | null;
   creditUsd: number;
@@ -136,24 +194,50 @@ export function estimateStrategyFromLivePricing(
   prices: LivePriceMap,
 ): LiveStrategyEstimate {
   const byStep: Record<number, LiveStepEstimate> = {};
+  const list: LiveStepEstimate[] = [];
   let totalUsd = 0;
+  let baselineUsd = 0;
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
   let fetchedAt: string | null = null;
 
   steps.forEach((step) => {
     const est = estimateStepFromLivePricing(step, prices);
     if (!est) return;
     byStep[step.step_number] = est;
+    list.push(est);
     totalUsd += est.usd;
+    baselineUsd += est.baselineUsd;
+    totalInputTokens += est.inputTokens;
+    totalOutputTokens += est.outputTokens;
     const row = est.sourceModelId ? prices[est.sourceModelId] : null;
     if (row && (!fetchedAt || row.fetched_at > fetchedAt)) fetchedAt = row.fetched_at;
   });
 
+  // Cost share per step, now that the total is known.
+  list.forEach((est) => {
+    est.costShare = totalUsd > 0 ? est.usd / totalUsd : 0;
+  });
+
+  const savedUsd = Math.max(0, baselineUsd - totalUsd);
+
   return {
     byStep,
+    steps: list,
     totalUsd,
     totalCredits: usdToCredits(totalUsd),
-    pricedSteps: Object.keys(byStep).length,
+    totalTokens: totalInputTokens + totalOutputTokens,
+    totalInputTokens,
+    totalOutputTokens,
+    baselineModelId: resolveBaseline(prices)?.modelId ?? null,
+    baselineUsd,
+    baselineCredits: usdToCredits(baselineUsd),
+    savedUsd,
+    savedCredits: usdToCredits(savedUsd),
+    savedShare: baselineUsd > 0 ? savedUsd / baselineUsd : 0,
+    pricedSteps: list.length,
     fetchedAt,
     creditUsd: CREDIT_USD,
   };
 }
+
