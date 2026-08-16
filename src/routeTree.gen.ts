@@ -14,6 +14,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingSyncRouteImport } from './routes/pricing-sync'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as DocsRouteImport } from './routes/docs'
@@ -46,6 +47,11 @@ const ResultsRoute = ResultsRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingSyncRoute = PricingSyncRouteImport.update({
+  id: '/pricing-sync',
+  path: '/pricing-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRoute
   '/generate': typeof GenerateRoute
   '/pricing': typeof PricingRoute
+  '/pricing-sync': typeof PricingSyncRoute
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRoute
   '/generate': typeof GenerateRoute
   '/pricing': typeof PricingRoute
+  '/pricing-sync': typeof PricingSyncRoute
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRoute
   '/generate': typeof GenerateRoute
   '/pricing': typeof PricingRoute
+  '/pricing-sync': typeof PricingSyncRoute
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/settings': typeof SettingsRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/generate'
     | '/pricing'
+    | '/pricing-sync'
     | '/privacy'
     | '/results'
     | '/settings'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/generate'
     | '/pricing'
+    | '/pricing-sync'
     | '/privacy'
     | '/results'
     | '/settings'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/generate'
     | '/pricing'
+    | '/pricing-sync'
     | '/privacy'
     | '/results'
     | '/settings'
@@ -191,6 +203,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRoute
   GenerateRoute: typeof GenerateRoute
   PricingRoute: typeof PricingRoute
+  PricingSyncRoute: typeof PricingSyncRoute
   PrivacyRoute: typeof PrivacyRoute
   ResultsRoute: typeof ResultsRoute
   SettingsRoute: typeof SettingsRoute
@@ -235,6 +248,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing-sync': {
+      id: '/pricing-sync'
+      path: '/pricing-sync'
+      fullPath: '/pricing-sync'
+      preLoaderRoute: typeof PricingSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -303,6 +323,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRoute,
   GenerateRoute: GenerateRoute,
   PricingRoute: PricingRoute,
+  PricingSyncRoute: PricingSyncRoute,
   PrivacyRoute: PrivacyRoute,
   ResultsRoute: ResultsRoute,
   SettingsRoute: SettingsRoute,
