@@ -18,7 +18,7 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { getPlatform } from "@/lib/platforms";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { parseCostToCredits, formatCredits } from "@/lib/cost";
+import { parseCostToCredits, formatCredits, formatCreditsWithUsd } from "@/lib/cost";
 import {
   InProgressCard,
   OpportunitiesCard,
@@ -401,7 +401,7 @@ function DashboardPage() {
                   {formatCredits(stats.totalActual)}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  / {formatCredits(stats.totalEstimated)} cr est.
+                  / {formatCreditsWithUsd(stats.totalEstimated)} est.
                 </span>
               </div>
               <p
