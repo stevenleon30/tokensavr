@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.schedule_pricing_sync(text);
