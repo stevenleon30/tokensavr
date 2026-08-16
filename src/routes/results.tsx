@@ -938,7 +938,9 @@ function ResultsPage() {
               )
             }
             forceExpanded={promptsExpanded}
+            liveEstimate={liveEstimate?.byStep[s.step_number]}
             onUpdate={(patch) => upsertProgress(s.step_number, patch)}
+
           />
         ))}
       </ol>
