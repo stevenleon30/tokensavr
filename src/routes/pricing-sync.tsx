@@ -1,10 +1,25 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { RefreshCw, Database, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
+import {
+  RefreshCw,
+  Database,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  ShieldCheck,
+  Play,
+} from "lucide-react";
 import {
   getPricingSyncStatus,
   type PricingSyncStatus,
 } from "@/lib/sync-status.functions";
+import {
+  getIsPricingAdmin,
+  runPricingSyncNow,
+  type SyncRunResult,
+} from "@/lib/admin-sync.functions";
+import { useAuth } from "@/lib/auth";
+
 
 export const Route = createFileRoute("/pricing-sync")({
   head: () => ({
@@ -75,9 +90,45 @@ function PricingSyncPage() {
     }
   };
 
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<SyncRunResult | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
+
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    getIsPricingAdmin()
+      .then((r) => !cancelled && setIsAdmin(r.isAdmin))
+      .catch(() => !cancelled && setIsAdmin(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const triggerSync = async () => {
+    setRunning(true);
+    setRunError(null);
+    setRunResult(null);
+    try {
+      const result = await runPricingSyncNow();
+      setRunResult(result);
+      if (result.ok) await load();
+    } catch (e) {
+      setRunError(e instanceof Error ? e.message : "Sync request failed");
+    } finally {
+      setRunning(false);
+    }
+  };
+
 
   const stale =
     !!status &&
@@ -145,6 +196,84 @@ function PricingSyncPage() {
                 : `Pricing is current — last sync ${relative(status.lastFetchedAt)}.`}
             </span>
           </div>
+
+          {isAdmin && (
+            <section className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Admin controls
+                  </div>
+                  <p className="mt-1 max-w-xl text-xs text-muted-foreground">
+                    Run the sync immediately instead of waiting for the 06:00 UTC job. It
+                    refetches OpenRouter and LiteLLM and re-applies manual overrides.
+                  </p>
+                </div>
+                <button
+                  onClick={() => void triggerSync()}
+                  disabled={running}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {running ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
+                  {running ? "Syncing…" : "Run sync now"}
+                </button>
+              </div>
+
+              {running && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Fetching upstream catalogs — this usually takes 10–30 seconds.
+                </p>
+              )}
+
+              {runError && (
+                <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>{runError}</span>
+                </div>
+              )}
+
+              {runResult && (
+                <div
+                  className={`mt-3 rounded-lg border p-3 text-xs ${
+                    runResult.ok
+                      ? "border-success/30 bg-success/5"
+                      : "border-destructive/40 bg-destructive/5 text-destructive"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 font-medium">
+                    {runResult.ok ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                    ) : (
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                    )}
+                    {runResult.ok
+                      ? `Sync succeeded — ${runResult.total?.toLocaleString()} models upserted in ${(runResult.durationMs / 1000).toFixed(1)}s`
+                      : `Sync failed after ${(runResult.durationMs / 1000).toFixed(1)}s`}
+                  </div>
+                  {runResult.ok && runResult.counts ? (
+                    <ul className="mt-2 grid gap-1 sm:grid-cols-3">
+                      <li>OpenRouter: {runResult.counts.openrouter.toLocaleString()}</li>
+                      <li>LiteLLM: {runResult.counts.litellm.toLocaleString()}</li>
+                      <li>Manual: {runResult.counts.manual.toLocaleString()}</li>
+                    </ul>
+                  ) : (
+                    <p className="mt-2 font-mono break-words">{runResult.error}</p>
+                  )}
+                  <p className="mt-2 text-muted-foreground">
+                    Started {fmtDateTime(runResult.startedAt)} · finished{" "}
+                    {fmtDateTime(runResult.finishedAt)}
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
+
+
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
