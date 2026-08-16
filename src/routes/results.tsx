@@ -659,6 +659,12 @@ function ResultsPage() {
         </section>
       )}
 
+      {liveEstimate && liveEstimate.pricedSteps > 0 && (
+        <CostBreakdown steps={strategy.steps} estimate={liveEstimate} />
+      )}
+
+
+
 
 
       <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-card">
