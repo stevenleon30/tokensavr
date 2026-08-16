@@ -38,6 +38,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits, formatCreditsWithUsd } from "@/lib/cost";
 import { getPlatform } from "@/lib/platforms";
+import { formatUsd } from "@/lib/pricing";
+import { getLiveModelPricing } from "@/lib/live-pricing.functions";
+import {
+  estimateStrategyFromLivePricing,
+  type LivePriceMap,
+  type LiveStepEstimate,
+  type LiveStrategyEstimate,
+} from "@/lib/live-pricing";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 
 /** Pull a monthly USD budget out of a stored budget label like "Pro ($50/mo)". */
@@ -119,6 +127,29 @@ function ResultsPage() {
   const [savedId, setSavedId] = useState<string | undefined>(id);
   const [progress, setProgress] = useState<Record<number, StepProgress>>({});
   const [promptsExpanded, setPromptsExpanded] = useState(false);
+  const [livePrices, setLivePrices] = useState<LivePriceMap | null>(null);
+
+  // Live per-token model prices (synced daily into model_pricing).
+  useEffect(() => {
+    let cancelled = false;
+    getLiveModelPricing()
+      .then(({ prices }) => {
+        if (cancelled) return;
+        const map: LivePriceMap = {};
+        prices.forEach((p) => {
+          map[p.model_id] = p;
+        });
+        setLivePrices(map);
+      })
+      .catch((err) => {
+        console.error("Live model pricing unavailable", err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+
 
   // Load strategy + (if signed-in) its progress rows
   useEffect(() => {
@@ -300,6 +331,15 @@ function ResultsPage() {
       platformMax,
     };
   }, [strategy, progress]);
+
+  /** Accurate estimate recomputed from live per-token model prices. */
+  const liveEstimate: LiveStrategyEstimate | null = useMemo(() => {
+    if (!strategy || !livePrices) return null;
+    const est = estimateStrategyFromLivePricing(strategy.steps, livePrices);
+    return est.pricedSteps > 0 ? est : null;
+  }, [strategy, livePrices]);
+
+
 
   const recommendation = useMemo(() => {
     if (!strategy || !totals) return null;
@@ -575,6 +615,51 @@ function ResultsPage() {
           timeEstimate={strategy.time_estimate}
         />
       )}
+
+      {liveEstimate && (
+        <section className="mt-4 rounded-xl border border-border bg-card p-5 shadow-card">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CircleDollarSign className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-medium">Live-priced estimate</h2>
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+              Model prices synced{" "}
+              {liveEstimate.fetchedAt
+                ? new Date(liveEstimate.fetchedAt).toLocaleDateString()
+                : "recently"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <LiveStat
+              label="Token cost"
+              value={formatUsd(liveEstimate.totalUsd)}
+              hint="Sum of per-step model API cost"
+            />
+            <LiveStat
+              label="Credit equivalent"
+              value={`${formatCredits(liveEstimate.totalCredits)} cr`}
+              hint={`at ${formatUsd(liveEstimate.creditUsd)}/credit`}
+            />
+            <LiveStat
+              label="Plan estimate"
+              value={`${formatCredits(totals?.estimated ?? 0)} cr`}
+              hint="From the generated strategy"
+            />
+            <LiveStat
+              label="Priced steps"
+              value={`${liveEstimate.pricedSteps}/${strategy.steps.length}`}
+              hint="Steps matched to a live model price"
+            />
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Recomputed from real published per-token prices for the model each platform
+            runs, using typical token volumes for each step type.
+          </p>
+        </section>
+      )}
+
+
 
       <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-card">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -853,7 +938,9 @@ function ResultsPage() {
               )
             }
             forceExpanded={promptsExpanded}
+            liveEstimate={liveEstimate?.byStep[s.step_number]}
             onUpdate={(patch) => upsertProgress(s.step_number, patch)}
+
           />
         ))}
       </ol>
@@ -913,7 +1000,28 @@ function ResultsPage() {
   );
 }
 
+function LiveStat({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-background/40 px-3 py-2">
+      <div className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-semibold text-foreground">{value}</div>
+      <div className="mt-0.5 text-[10px] text-muted-foreground">{hint}</div>
+    </div>
+  );
+}
+
 function Stat({
+
   label,
   value,
   tone = "neutral",
@@ -946,6 +1054,7 @@ function StepCard({
   totalEstimatedCredits,
   completedNumbers,
   forceExpanded,
+  liveEstimate,
   onUpdate,
 }: {
   step: Step;
@@ -955,6 +1064,7 @@ function StepCard({
   totalEstimatedCredits: number;
   completedNumbers: Set<number>;
   forceExpanded: boolean;
+  liveEstimate?: LiveStepEstimate;
   onUpdate: (patch: Partial<Omit<StepProgress, "step_number">>) => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -1058,7 +1168,18 @@ function StepCard({
                 >
                   Est. {step.estimated_cost}
                 </Badge>
+                {liveEstimate && (
+                  <Badge
+                    variant="outline"
+                    className="font-normal text-xs border-primary/40 text-primary"
+                    title={`${liveEstimate.profileLabel} · ${liveEstimate.inputTokens.toLocaleString()} in / ${liveEstimate.outputTokens.toLocaleString()} out tokens on ${liveEstimate.sourceModelId}`}
+                  >
+                    Live {formatCredits(liveEstimate.credits)} cr ·{" "}
+                    {formatUsd(liveEstimate.usd)}
+                  </Badge>
+                )}
               </div>
+
               <StepVisualStrip
                 stepNumber={step.step_number}
                 totalSteps={totalSteps}
