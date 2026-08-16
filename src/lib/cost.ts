@@ -5,11 +5,13 @@
  * "free", "2-3 credits", "$0.50". We normalize them to a single comparable
  * unit ("credit equivalents") so we can compute estimated vs. real spend.
  *
- * Convention: $0.10 ≈ 1 credit (roughly Lovable Build pricing). This is an
- * approximation — fine for relative trend comparisons on the dashboard.
+ * The credit <-> USD peg lives in src/lib/pricing.ts (the pricing catalog) so
+ * every conversion in the app shares one maintained number.
  */
 
-const DOLLARS_PER_CREDIT = 0.1;
+import { CREDIT_USD, creditsToUsd, formatUsd } from "@/lib/pricing";
+
+const DOLLARS_PER_CREDIT = CREDIT_USD;
 
 /** Parse an AI-generated cost string into approximate credit-equivalents. */
 export function parseCostToCredits(input: string | null | undefined): number {
@@ -46,4 +48,24 @@ export function formatCredits(n: number): string {
   if (n < 1) return n.toFixed(2);
   if (n < 10) return n.toFixed(1);
   return Math.round(n).toString();
+}
+
+/** Parse an AI-generated cost string into approximate USD. */
+export function parseCostToUsd(input: string | null | undefined): number {
+  return creditsToUsd(parseCostToCredits(input));
+}
+
+/** "~12 credits" → "~12 credits (≈$3)" style suffix for display. */
+export function formatCreditsWithUsd(credits: number): string {
+  if (!Number.isFinite(credits) || credits <= 0) return "0 cr";
+  return `${formatCredits(credits)} cr (≈${formatUsd(creditsToUsd(credits))})`;
+}
+
+/** Append a dollar equivalent to an AI-generated cost string, when parseable. */
+export function withUsd(costString: string | null | undefined): string {
+  const label = costString?.trim();
+  if (!label || label === "—") return "—";
+  const usd = parseCostToUsd(label);
+  if (usd <= 0) return label;
+  return `${label} (≈${formatUsd(usd)})`;
 }
