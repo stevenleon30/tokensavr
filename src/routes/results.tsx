@@ -616,6 +616,51 @@ function ResultsPage() {
         />
       )}
 
+      {liveEstimate && (
+        <section className="mt-4 rounded-xl border border-border bg-card p-5 shadow-card">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CircleDollarSign className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-medium">Live-priced estimate</h2>
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+              Model prices synced{" "}
+              {liveEstimate.fetchedAt
+                ? new Date(liveEstimate.fetchedAt).toLocaleDateString()
+                : "recently"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <LiveStat
+              label="Token cost"
+              value={formatUsd(liveEstimate.totalUsd)}
+              hint="Sum of per-step model API cost"
+            />
+            <LiveStat
+              label="Credit equivalent"
+              value={`${formatCredits(liveEstimate.totalCredits)} cr`}
+              hint={`at ${formatUsd(liveEstimate.creditUsd)}/credit`}
+            />
+            <LiveStat
+              label="Plan estimate"
+              value={`${formatCredits(totals?.estimated ?? 0)} cr`}
+              hint="From the generated strategy"
+            />
+            <LiveStat
+              label="Priced steps"
+              value={`${liveEstimate.pricedSteps}/${strategy.steps.length}`}
+              hint="Steps matched to a live model price"
+            />
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Recomputed from real published per-token prices for the model each platform
+            runs, using typical token volumes for each step type.
+          </p>
+        </section>
+      )}
+
+
+
       <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-card">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
