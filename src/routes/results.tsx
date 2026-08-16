@@ -47,6 +47,8 @@ import {
   type LiveStrategyEstimate,
 } from "@/lib/live-pricing";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
+import { CostBreakdown } from "@/components/cost-breakdown";
+
 
 /** Pull a monthly USD budget out of a stored budget label like "Pro ($50/mo)". */
 function budgetToUsd(budget: string | null | undefined): number {
@@ -658,6 +660,12 @@ function ResultsPage() {
           </p>
         </section>
       )}
+
+      {liveEstimate && liveEstimate.pricedSteps > 0 && (
+        <CostBreakdown steps={strategy.steps} estimate={liveEstimate} />
+      )}
+
+
 
 
 
