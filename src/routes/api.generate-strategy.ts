@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { buildPricingGuide } from "@/lib/pricing";
 
 const InputSchema = z.object({
   idea: z.string().trim().min(10).max(4000),
