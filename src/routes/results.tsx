@@ -127,6 +127,29 @@ function ResultsPage() {
   const [savedId, setSavedId] = useState<string | undefined>(id);
   const [progress, setProgress] = useState<Record<number, StepProgress>>({});
   const [promptsExpanded, setPromptsExpanded] = useState(false);
+  const [livePrices, setLivePrices] = useState<LivePriceMap | null>(null);
+
+  // Live per-token model prices (synced daily into model_pricing).
+  useEffect(() => {
+    let cancelled = false;
+    getLiveModelPricing()
+      .then(({ prices }) => {
+        if (cancelled) return;
+        const map: LivePriceMap = {};
+        prices.forEach((p) => {
+          map[p.model_id] = p;
+        });
+        setLivePrices(map);
+      })
+      .catch((err) => {
+        console.error("Live model pricing unavailable", err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+
 
   // Load strategy + (if signed-in) its progress rows
   useEffect(() => {
