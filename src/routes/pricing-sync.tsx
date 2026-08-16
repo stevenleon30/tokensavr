@@ -90,9 +90,45 @@ function PricingSyncPage() {
     }
   };
 
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<SyncRunResult | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
+
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    getIsPricingAdmin()
+      .then((r) => !cancelled && setIsAdmin(r.isAdmin))
+      .catch(() => !cancelled && setIsAdmin(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const triggerSync = async () => {
+    setRunning(true);
+    setRunError(null);
+    setRunResult(null);
+    try {
+      const result = await runPricingSyncNow();
+      setRunResult(result);
+      if (result.ok) await load();
+    } catch (e) {
+      setRunError(e instanceof Error ? e.message : "Sync request failed");
+    } finally {
+      setRunning(false);
+    }
+  };
+
 
   const stale =
     !!status &&
