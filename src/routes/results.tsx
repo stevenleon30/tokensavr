@@ -1054,6 +1054,7 @@ function StepCard({
   totalEstimatedCredits,
   completedNumbers,
   forceExpanded,
+  liveEstimate,
   onUpdate,
 }: {
   step: Step;
@@ -1063,6 +1064,7 @@ function StepCard({
   totalEstimatedCredits: number;
   completedNumbers: Set<number>;
   forceExpanded: boolean;
+  liveEstimate?: LiveStepEstimate;
   onUpdate: (patch: Partial<Omit<StepProgress, "step_number">>) => void;
 }) {
   const [copied, setCopied] = useState(false);
