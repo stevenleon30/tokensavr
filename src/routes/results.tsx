@@ -36,9 +36,17 @@ import { PlatformScoreMatrix } from "@/components/platform-score-matrix";
 import { RecommendationInsights } from "@/components/recommendation-insights";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { parseCostToCredits, formatCredits } from "@/lib/cost";
+import { parseCostToCredits, formatCredits, formatCreditsWithUsd } from "@/lib/cost";
 import { getPlatform } from "@/lib/platforms";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
+
+/** Pull a monthly USD budget out of a stored budget label like "Pro ($50/mo)". */
+function budgetToUsd(budget: string | null | undefined): number {
+  if (!budget) return 0;
+  const m = budget.match(/\$\s?(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : 0;
+}
+
 
 type Step = {
   step_number: number;
@@ -607,7 +615,11 @@ function ResultsPage() {
 
       {recommendation && (
         <div className="mt-6">
-          <RecommendationInsights tradeoffs={recommendation.tradeoffs} />
+          <RecommendationInsights
+            tradeoffs={recommendation.tradeoffs}
+            estimatedCredits={totals?.estimated ?? 0}
+            monthlyBudgetUsd={budgetToUsd(strategy?.budget)}
+          />
         </div>
       )}
 
@@ -622,7 +634,7 @@ function ResultsPage() {
                 <h2 className="text-sm font-medium">Cost composition</h2>
               </div>
               <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-                {formatCredits(totals.estimated)} cr est.
+                {formatCreditsWithUsd(totals.estimated)} est.
               </span>
             </div>
             {totals.platformBreakdown.length > 0 && totals.estimated > 0 ? (
@@ -756,7 +768,7 @@ function ResultsPage() {
               <h2 className="text-sm font-medium">Estimated vs actual by platform</h2>
             </div>
             <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-              {formatCredits(totals.estimated)} cr est. total
+              {formatCreditsWithUsd(totals.estimated)} est. total
             </span>
           </div>
           <ul className="space-y-3">
