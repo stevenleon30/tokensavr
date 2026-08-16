@@ -96,7 +96,8 @@ function DashboardPage() {
           .select("strategy_id,step_number,completed,actual_cost_credits"),
       ]);
       if (cancelled) return;
-      const strategies = (strategiesRes.data as unknown as StrategyRow[]) ?? [];
+      const raw = (strategiesRes.data as unknown as StrategyRow[]) ?? [];
+      const strategies = raw.map((r) => ({ ...r, steps: normalizeSteps(r.steps) }));
       setRows(strategies);
       setProgress((progressRes.data as ProgressRow[]) ?? []);
       if (profileRes.data?.daily_budget_credits)
