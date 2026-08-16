@@ -332,6 +332,15 @@ function ResultsPage() {
     };
   }, [strategy, progress]);
 
+  /** Accurate estimate recomputed from live per-token model prices. */
+  const liveEstimate: LiveStrategyEstimate | null = useMemo(() => {
+    if (!strategy || !livePrices) return null;
+    const est = estimateStrategyFromLivePricing(strategy.steps, livePrices);
+    return est.pricedSteps > 0 ? est : null;
+  }, [strategy, livePrices]);
+
+
+
   const recommendation = useMemo(() => {
     if (!strategy || !totals) return null;
     const primary = strategy.recommended_platform || totals.platformBreakdown[0]?.id;
