@@ -15,25 +15,30 @@ export type SyncRunResult = {
 export const getIsPricingAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ isAdmin: boolean }> => {
-    const { data, error } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
+    const { data, error } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
     if (error) return { isAdmin: false };
-    return { isAdmin: data === true };
+    return { isAdmin: !!data };
   });
 
 /** Admin-only manual run of the model pricing sync. */
 export const runPricingSyncNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<SyncRunResult> => {
-    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (roleError || isAdmin !== true) {
+    const { data: adminRow, error: roleError } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (roleError || !adminRow) {
       throw new Error("Forbidden: admin role required");
     }
+
 
     const started = Date.now();
     const startedAt = new Date(started).toISOString();
