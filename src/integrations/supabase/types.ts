@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      model_pricing: {
+        Row: {
+          cache_read_cost_per_token: number | null
+          cache_write_cost_per_token: number | null
+          context_window: number | null
+          created_at: string
+          display_name: string | null
+          fetched_at: string
+          id: string
+          input_cost_per_token: number | null
+          max_output_tokens: number | null
+          modalities: string[] | null
+          model_id: string
+          output_cost_per_token: number | null
+          provider: string | null
+          raw: Json
+          request_cost: number | null
+          source: string
+          supports_function_calling: boolean | null
+          supports_prompt_caching: boolean | null
+          supports_vision: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          cache_read_cost_per_token?: number | null
+          cache_write_cost_per_token?: number | null
+          context_window?: number | null
+          created_at?: string
+          display_name?: string | null
+          fetched_at?: string
+          id?: string
+          input_cost_per_token?: number | null
+          max_output_tokens?: number | null
+          modalities?: string[] | null
+          model_id: string
+          output_cost_per_token?: number | null
+          provider?: string | null
+          raw: Json
+          request_cost?: number | null
+          source: string
+          supports_function_calling?: boolean | null
+          supports_prompt_caching?: boolean | null
+          supports_vision?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          cache_read_cost_per_token?: number | null
+          cache_write_cost_per_token?: number | null
+          context_window?: number | null
+          created_at?: string
+          display_name?: string | null
+          fetched_at?: string
+          id?: string
+          input_cost_per_token?: number | null
+          max_output_tokens?: number | null
+          modalities?: string[] | null
+          model_id?: string
+          output_cost_per_token?: number | null
+          provider?: string | null
+          raw?: Json
+          request_cost?: number | null
+          source?: string
+          supports_function_calling?: boolean | null
+          supports_prompt_caching?: boolean | null
+          supports_vision?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -138,7 +207,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      model_pricing_per_million: {
+        Row: {
+          context_window: number | null
+          display_name: string | null
+          fetched_at: string | null
+          id: string | null
+          input_cost_per_million: number | null
+          max_output_tokens: number | null
+          model_id: string | null
+          output_cost_per_million: number | null
+          provider: string | null
+          source: string | null
+          supports_function_calling: boolean | null
+          supports_prompt_caching: boolean | null
+          supports_vision: boolean | null
+        }
+        Insert: {
+          context_window?: number | null
+          display_name?: string | null
+          fetched_at?: string | null
+          id?: string | null
+          input_cost_per_million?: never
+          max_output_tokens?: number | null
+          model_id?: string | null
+          output_cost_per_million?: never
+          provider?: string | null
+          source?: string | null
+          supports_function_calling?: boolean | null
+          supports_prompt_caching?: boolean | null
+          supports_vision?: boolean | null
+        }
+        Update: {
+          context_window?: number | null
+          display_name?: string | null
+          fetched_at?: string | null
+          id?: string | null
+          input_cost_per_million?: never
+          max_output_tokens?: number | null
+          model_id?: string | null
+          output_cost_per_million?: never
+          provider?: string | null
+          source?: string | null
+          supports_function_calling?: boolean | null
+          supports_prompt_caching?: boolean | null
+          supports_vision?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
