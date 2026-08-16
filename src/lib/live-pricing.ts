@@ -25,14 +25,14 @@ export type LiveModelPrice = {
  * First match wins.
  */
 export const MODEL_ID_ALIASES: Record<string, string[]> = {
-  "claude-sonnet-4.5": ["anthropic/claude-sonnet-4.5", "claude-sonnet-4-5"],
+  "claude-sonnet-4.6": ["anthropic/claude-sonnet-4.6", "claude-sonnet-4-6", "anthropic/claude-sonnet-4.5"],
   "claude-haiku-4.5": ["anthropic/claude-haiku-4.5", "claude-haiku-4-5"],
-  "claude-opus-4.1": ["anthropic/claude-opus-4.1", "claude-opus-4-1"],
-  "gpt-5": ["openai/gpt-5", "gpt-5"],
-  "gpt-5-mini": ["openai/gpt-5-mini", "gpt-5-mini"],
-  "gpt-4o-mini": ["openai/gpt-4o-mini", "gpt-4o-mini"],
-  "gemini-2.5-flash": ["google/gemini-2.5-flash", "gemini/gemini-2.5-flash"],
-  "gemini-2.5-pro": ["google/gemini-2.5-pro", "gemini/gemini-2.5-pro"],
+  "claude-opus-4.8": ["anthropic/claude-opus-4.8", "claude-opus-4-8", "anthropic/claude-opus-4.5"],
+  "gpt-5.4": ["openai/gpt-5.4", "gpt-5.4", "openai/gpt-5.2"],
+  "gpt-5.4-mini": ["openai/gpt-5.4-mini", "gpt-5.4-mini", "openai/gpt-5-mini"],
+  "gpt-5.4-nano": ["openai/gpt-5.4-nano", "gpt-5.4-nano", "openai/gpt-4o-mini"],
+  "gemini-3.7-flash": ["google/gemini-3.7-flash", "gemini/gemini-3.7-flash", "google/gemini-2.5-flash"],
+  "gemini-3.1-pro": ["google/gemini-3.1-pro-preview", "gemini/gemini-3.1-pro", "google/gemini-2.5-pro"],
 };
 
 /** Every id we need to pull out of the table. */
@@ -80,7 +80,7 @@ export function tokenProfileFor(mode: string, action = ""): TokenProfile {
 /** Model a platform most likely runs for this work. */
 export function modelForPlatform(platformId: string): string {
   const p = PLATFORM_PRICING[platformId?.toLowerCase?.() ?? ""];
-  return p?.models?.[0] ?? "claude-sonnet-4.5";
+  return p?.models?.[0] ?? "claude-sonnet-4.6";
 }
 
 /**
@@ -88,7 +88,7 @@ export function modelForPlatform(platformId: string): string {
  * a top-tier frontier model (the naive "just use the best model for everything"
  * approach). Savings shown to the user are the delta against this.
  */
-export const BASELINE_MODEL_CANDIDATES = ["claude-opus-4.1", "gpt-5", "claude-sonnet-4.5"];
+export const BASELINE_MODEL_CANDIDATES = ["claude-opus-4.8", "gpt-5.4", "claude-sonnet-4.6"];
 
 /** First baseline model that has a live price, with its row. */
 export function resolveBaseline(
