@@ -607,7 +607,11 @@ function ResultsPage() {
 
       {recommendation && (
         <div className="mt-6">
-          <RecommendationInsights tradeoffs={recommendation.tradeoffs} />
+          <RecommendationInsights
+            tradeoffs={recommendation.tradeoffs}
+            estimatedCredits={totals?.estimated ?? 0}
+            monthlyBudgetUsd={budgetToUsd(strategy?.budget)}
+          />
         </div>
       )}
 
