@@ -1,10 +1,25 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { RefreshCw, Database, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
+import {
+  RefreshCw,
+  Database,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  ShieldCheck,
+  Play,
+} from "lucide-react";
 import {
   getPricingSyncStatus,
   type PricingSyncStatus,
 } from "@/lib/sync-status.functions";
+import {
+  getIsPricingAdmin,
+  runPricingSyncNow,
+  type SyncRunResult,
+} from "@/lib/admin-sync.functions";
+import { useAuth } from "@/lib/auth";
+
 
 export const Route = createFileRoute("/pricing-sync")({
   head: () => ({
