@@ -45,8 +45,8 @@ export function RecommendationHero({
               "This route is based on the generated workflow, estimated credits, and platform fit for the project."}
           </p>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <HeroStat label="Estimated" value={totalCost} />
-            <HeroStat label="Savings" value={savings} />
+            <HeroStat label="Estimated" value={withUsd(totalCost)} />
+            <HeroStat label="Savings" value={withUsd(savings)} />
             <HeroStat label="Timeline" value={timeEstimate} />
             <HeroStat label="Confidence" value={confidence ? `${confidence}%` : "—"} />
           </div>
