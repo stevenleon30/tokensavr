@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,6 +16,7 @@ const Ctx = createContext<AuthCtx | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const settledRef = useRef(false);
 
   useEffect(() => {
     // One-time cleanup: remove deprecated BYOK key from localStorage
@@ -25,12 +26,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch {}
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      // Before the stored session has been read back, ignore empty events —
+      // they'd otherwise flash a "signed out" state and bounce guarded pages.
+      if (!settledRef.current && !s && event !== "SIGNED_OUT") return;
       setSession(s);
-      setLoading(false);
+      if (s || event === "SIGNED_OUT") {
+        settledRef.current = true;
+        setLoading(false);
+      }
     });
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+      settledRef.current = true;
+      setSession((prev) => data.session ?? prev);
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
