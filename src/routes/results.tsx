@@ -36,7 +36,7 @@ import { PlatformScoreMatrix } from "@/components/platform-score-matrix";
 import { RecommendationInsights } from "@/components/recommendation-insights";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { parseCostToCredits, formatCredits } from "@/lib/cost";
+import { parseCostToCredits, formatCredits, formatCreditsWithUsd } from "@/lib/cost";
 import { getPlatform } from "@/lib/platforms";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 
@@ -634,7 +634,7 @@ function ResultsPage() {
                 <h2 className="text-sm font-medium">Cost composition</h2>
               </div>
               <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-                {formatCredits(totals.estimated)} cr est.
+                {formatCreditsWithUsd(totals.estimated)} est.
               </span>
             </div>
             {totals.platformBreakdown.length > 0 && totals.estimated > 0 ? (
@@ -768,7 +768,7 @@ function ResultsPage() {
               <h2 className="text-sm font-medium">Estimated vs actual by platform</h2>
             </div>
             <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-              {formatCredits(totals.estimated)} cr est. total
+              {formatCreditsWithUsd(totals.estimated)} est. total
             </span>
           </div>
           <ul className="space-y-3">
