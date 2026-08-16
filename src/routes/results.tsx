@@ -38,6 +38,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits, formatCreditsWithUsd } from "@/lib/cost";
 import { getPlatform } from "@/lib/platforms";
+import { formatUsd } from "@/lib/pricing";
+import { getLiveModelPricing } from "@/lib/live-pricing.functions";
+import {
+  estimateStrategyFromLivePricing,
+  type LivePriceMap,
+  type LiveStepEstimate,
+  type LiveStrategyEstimate,
+} from "@/lib/live-pricing";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 
 /** Pull a monthly USD budget out of a stored budget label like "Pro ($50/mo)". */
