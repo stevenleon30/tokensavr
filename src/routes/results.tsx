@@ -40,6 +40,14 @@ import { parseCostToCredits, formatCredits } from "@/lib/cost";
 import { getPlatform } from "@/lib/platforms";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 
+/** Pull a monthly USD budget out of a stored budget label like "Pro ($50/mo)". */
+function budgetToUsd(budget: string | null | undefined): number {
+  if (!budget) return 0;
+  const m = budget.match(/\$\s?(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+
 type Step = {
   step_number: number;
   action: string;
