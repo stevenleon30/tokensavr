@@ -93,7 +93,13 @@ function DashboardPage() {
   const [usedToday, setUsedToday] = useState(0);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate({ to: "/auth" });
+    if (!authLoading && !user) {
+      navigate({
+        to: "/auth",
+        search: { redirect: "/dashboard", idea: undefined },
+        replace: true,
+      });
+    }
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
