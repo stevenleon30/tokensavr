@@ -21,6 +21,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiGenerateStrategyRouteImport } from './routes/api.generate-strategy'
+import { Route as ApiPublicSyncModelPricingRouteImport } from './routes/api/public/sync-model-pricing'
 
 const TipsRoute = TipsRouteImport.update({
   id: '/tips',
@@ -82,6 +83,12 @@ const ApiGenerateStrategyRoute = ApiGenerateStrategyRouteImport.update({
   path: '/api/generate-strategy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSyncModelPricingRoute =
+  ApiPublicSyncModelPricingRouteImport.update({
+    id: '/api/public/sync-model-pricing',
+    path: '/api/public/sync-model-pricing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/tips': typeof TipsRoute
   '/api/generate-strategy': typeof ApiGenerateStrategyRoute
+  '/api/public/sync-model-pricing': typeof ApiPublicSyncModelPricingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +118,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/tips': typeof TipsRoute
   '/api/generate-strategy': typeof ApiGenerateStrategyRoute
+  '/api/public/sync-model-pricing': typeof ApiPublicSyncModelPricingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +134,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/tips': typeof TipsRoute
   '/api/generate-strategy': typeof ApiGenerateStrategyRoute
+  '/api/public/sync-model-pricing': typeof ApiPublicSyncModelPricingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/tips'
     | '/api/generate-strategy'
+    | '/api/public/sync-model-pricing'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/tips'
     | '/api/generate-strategy'
+    | '/api/public/sync-model-pricing'
   id:
     | '__root__'
     | '/'
@@ -169,6 +181,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/tips'
     | '/api/generate-strategy'
+    | '/api/public/sync-model-pricing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +197,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TipsRoute: typeof TipsRoute
   ApiGenerateStrategyRoute: typeof ApiGenerateStrategyRoute
+  ApiPublicSyncModelPricingRoute: typeof ApiPublicSyncModelPricingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -272,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGenerateStrategyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sync-model-pricing': {
+      id: '/api/public/sync-model-pricing'
+      path: '/api/public/sync-model-pricing'
+      fullPath: '/api/public/sync-model-pricing'
+      preLoaderRoute: typeof ApiPublicSyncModelPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -288,6 +309,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TipsRoute: TipsRoute,
   ApiGenerateStrategyRoute: ApiGenerateStrategyRoute,
+  ApiPublicSyncModelPricingRoute: ApiPublicSyncModelPricingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
