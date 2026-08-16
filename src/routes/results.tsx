@@ -1000,7 +1000,28 @@ function ResultsPage() {
   );
 }
 
+function LiveStat({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-background/40 px-3 py-2">
+      <div className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-semibold text-foreground">{value}</div>
+      <div className="mt-0.5 text-[10px] text-muted-foreground">{hint}</div>
+    </div>
+  );
+}
+
 function Stat({
+
   label,
   value,
   tone = "neutral",
