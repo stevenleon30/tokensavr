@@ -63,6 +63,27 @@ type ProgressRow = {
   actual_cost_credits: number | null;
 };
 
+type StepLike = { platform: string; estimated_cost?: string; step_number?: number };
+
+function normalizeSteps(value: unknown): StepLike[] {
+  if (Array.isArray(value)) return value as StepLike[];
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? (parsed as StepLike[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  if (value && typeof value === "object") {
+    const nested = (value as { steps?: unknown }).steps;
+    if (Array.isArray(nested)) return nested as StepLike[];
+    const vals = Object.values(value as Record<string, unknown>);
+    if (vals.every((v) => v && typeof v === "object")) return vals as StepLike[];
+  }
+  return [];
+}
+
 function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -96,7 +117,8 @@ function DashboardPage() {
           .select("strategy_id,step_number,completed,actual_cost_credits"),
       ]);
       if (cancelled) return;
-      const strategies = (strategiesRes.data as unknown as StrategyRow[]) ?? [];
+      const raw = (strategiesRes.data as unknown as StrategyRow[]) ?? [];
+      const strategies = raw.map((r) => ({ ...r, steps: normalizeSteps(r.steps) }));
       setRows(strategies);
       setProgress((progressRes.data as ProgressRow[]) ?? []);
       if (profileRes.data?.daily_budget_credits)
