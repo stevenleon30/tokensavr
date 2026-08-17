@@ -132,6 +132,7 @@ function ResultsPage() {
   const [promptsExpanded, setPromptsExpanded] = useState(false);
   const [livePrices, setLivePrices] = useState<LivePriceMap | null>(null);
   const [savePromptDismissed, setSavePromptDismissed] = useState(false);
+  const [localSavedId, setLocalSavedId] = useState<string | undefined>(local);
 
 
   // Live per-token model prices (synced daily into model_pricing).
