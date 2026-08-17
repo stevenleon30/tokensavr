@@ -1069,6 +1069,18 @@ function ResultsPage() {
             <Share2 className="h-4 w-4" />
             <span className="text-[10px] leading-none">Share</span>
           </Button>
+          <Button
+            onClick={saveToBrowser}
+            variant="outline"
+            size="sm"
+            disabled={!!localSavedId}
+            className="flex-col h-auto py-2 gap-1 px-1"
+          >
+            <HardDrive className="h-4 w-4" />
+            <span className="text-[10px] leading-none">
+              {localSavedId ? "In browser" : "Browser"}
+            </span>
+          </Button>
         </div>
       </div>
     </div>
