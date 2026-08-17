@@ -645,9 +645,20 @@ function ResultsPage() {
       {!user && !savePromptDismissed && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
           <p className="text-sm text-muted-foreground">
-            Create a free account to save this strategy, track your progress, and share it.
+            Keep this strategy on this device — no account needed. Create an account to sync across
+            devices, track progress, and share.
           </p>
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+              onClick={saveToBrowser}
+              disabled={!!localSavedId}
+            >
+              <HardDrive className="h-3.5 w-3.5" />
+              {localSavedId ? "Saved in browser" : "Save in this browser"}
+            </Button>
             <Button asChild size="sm" className="bg-gradient-primary">
               <Link to="/auth" search={{ redirect: "/results", idea: undefined }}>
                 Create account
