@@ -14,13 +14,13 @@ import {
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "AI coding platform pricing compared — TokenSavr" },
+      { title: "LLM Cost Comparison — TokenSavr" },
       {
         name: "description",
         content:
-          "Side-by-side pricing for Lovable, Claude, Cursor, Bolt, Replit, Windsurf, Copilot and Gemini — monthly plans, included credits, effective cost per credit, and model token rates.",
+          "Side-by-side LLM cost comparison for Lovable, Claude, Cursor, Bolt, Replit, Windsurf, Copilot and Gemini — monthly plans, included credits, effective cost per credit, and model token rates.",
       },
-      { property: "og:title", content: "AI coding platform pricing compared — TokenSavr" },
+      { property: "og:title", content: "LLM Cost Comparison — TokenSavr" },
       {
         property: "og:description",
         content:
@@ -63,10 +63,10 @@ function PricingPage() {
       <header className="mb-8">
         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
           <Coins className="h-3.5 w-3.5 text-primary" />
-          Pricing catalog · verified {PRICING_VERSION}
+          LLM cost catalog · verified {PRICING_VERSION}
         </div>
         <h1 className="mt-4 text-3xl sm:text-4xl font-semibold tracking-tight">
-          What AI coding platforms actually cost
+          LLM Cost Comparison
         </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
           TokenSavr estimates every strategy against this catalog. Credits are pegged at{" "}
