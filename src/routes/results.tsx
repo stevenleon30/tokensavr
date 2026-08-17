@@ -130,6 +130,8 @@ function ResultsPage() {
   const [progress, setProgress] = useState<Record<number, StepProgress>>({});
   const [promptsExpanded, setPromptsExpanded] = useState(false);
   const [livePrices, setLivePrices] = useState<LivePriceMap | null>(null);
+  const [savePromptDismissed, setSavePromptDismissed] = useState(false);
+
 
   // Live per-token model prices (synced daily into model_pricing).
   useEffect(() => {
@@ -608,6 +610,31 @@ function ResultsPage() {
           </Link>
         </Button>
       </div>
+
+      {!user && !savePromptDismissed && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            Create a free account to save this strategy, track your progress, and share it.
+          </p>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" className="bg-gradient-primary">
+              <Link to="/auth" search={{ redirect: "/results", idea: undefined }}>
+                Create account
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={() => setSavePromptDismissed(true)}
+            >
+              Not now
+            </Button>
+          </div>
+        </div>
+      )}
+
+
 
       {recommendation && (
         <RecommendationHero
