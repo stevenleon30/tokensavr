@@ -40,7 +40,6 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const navigate = useNavigate();
   const [idea, setIdea] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
 
   const toggle = (id: string) =>
     setSelected((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
