@@ -19,6 +19,7 @@ import {
   Share2,
   LayoutDashboard,
   HardDrive,
+  FileJson,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
