@@ -1045,7 +1045,7 @@ function ResultsPage() {
 
       {/* Sticky mobile action bar */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl shadow-elegant pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-6 gap-1">
+        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-7 gap-1">
           <Button
             onClick={saveToDashboard}
             variant="secondary"
