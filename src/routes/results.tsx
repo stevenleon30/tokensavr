@@ -18,6 +18,7 @@ import {
   ChevronDown,
   Share2,
   LayoutDashboard,
+  HardDrive,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ import {
 } from "@/lib/live-pricing";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 import { CostBreakdown } from "@/components/cost-breakdown";
+import { getLocalStrategy, saveLocalStrategy } from "@/lib/local-strategies";
 
 
 /** Pull a monthly USD budget out of a stored budget label like "Pro ($50/mo)". */
@@ -108,8 +110,9 @@ type StepProgress = {
 };
 
 export const Route = createFileRoute("/results")({
-  validateSearch: (s: Record<string, unknown>): { id?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { id?: string; local?: string } => ({
     id: typeof s.id === "string" ? s.id : undefined,
+    local: typeof s.local === "string" ? s.local : undefined,
   }),
   head: () => ({
     meta: [
@@ -121,7 +124,7 @@ export const Route = createFileRoute("/results")({
 });
 
 function ResultsPage() {
-  const { id } = Route.useSearch();
+  const { id, local } = Route.useSearch();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [strategy, setStrategy] = useState<StoredStrategy | null>(null);
@@ -131,6 +134,7 @@ function ResultsPage() {
   const [promptsExpanded, setPromptsExpanded] = useState(false);
   const [livePrices, setLivePrices] = useState<LivePriceMap | null>(null);
   const [savePromptDismissed, setSavePromptDismissed] = useState(false);
+  const [localSavedId, setLocalSavedId] = useState<string | undefined>(local);
 
 
   // Live per-token model prices (synced daily into model_pricing).
@@ -171,6 +175,18 @@ function ResultsPage() {
     const load = async () => {
       setLoading(true);
       try {
+        // Strategy saved in this browser only (no account).
+        if (local) {
+          const record = getLocalStrategy(local);
+          if (!record) {
+            toast.error("That saved strategy is no longer in this browser.");
+            if (!cancelled) setStrategy(readSessionStrategy());
+          } else if (!cancelled) {
+            setStrategy(record.payload as unknown as StoredStrategy);
+          }
+          return;
+        }
+
         if (id) {
           const strategyQuery = supabase
             .from("strategies")
@@ -247,7 +263,7 @@ function ResultsPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, user]);
+  }, [id, local, user]);
 
   const upsertProgress = async (
     stepNumber: number,
@@ -399,6 +415,21 @@ function ResultsPage() {
     } else {
       setSavedId(data.id);
       toast.success("Saved to your dashboard.");
+    }
+  };
+
+  /** Keep a copy of this strategy on this device only — no account needed. */
+  const saveToBrowser = () => {
+    if (!strategy) return;
+    try {
+      const record = saveLocalStrategy(strategy as unknown as Record<string, unknown>);
+      setLocalSavedId(record.id);
+      toast.success("Saved in this browser", {
+        description: "Find it any time under Saved.",
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't save to this browser.");
     }
   };
 
@@ -614,9 +645,20 @@ function ResultsPage() {
       {!user && !savePromptDismissed && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
           <p className="text-sm text-muted-foreground">
-            Create a free account to save this strategy, track your progress, and share it.
+            Keep this strategy on this device — no account needed. Create an account to sync across
+            devices, track progress, and share.
           </p>
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+              onClick={saveToBrowser}
+              disabled={!!localSavedId}
+            >
+              <HardDrive className="h-3.5 w-3.5" />
+              {localSavedId ? "Saved in browser" : "Save in this browser"}
+            </Button>
             <Button asChild size="sm" className="bg-gradient-primary">
               <Link to="/auth" search={{ redirect: "/results", idea: undefined }}>
                 Create account
@@ -722,6 +764,15 @@ function ResultsPage() {
           </Button>
           <Button onClick={shareStrategy} variant="outline" className="gap-2">
             <Share2 className="h-4 w-4" /> Share strategy
+          </Button>
+          <Button
+            onClick={saveToBrowser}
+            variant="outline"
+            className="gap-2"
+            disabled={!!localSavedId}
+          >
+            <HardDrive className="h-4 w-4" />
+            {localSavedId ? "Saved in browser" : "Save in this browser"}
           </Button>
         </div>
       </div>
@@ -982,7 +1033,7 @@ function ResultsPage() {
 
       {/* Sticky mobile action bar */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl shadow-elegant pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-5 gap-1">
+        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-6 gap-1">
           <Button
             onClick={saveToDashboard}
             variant="secondary"
@@ -1028,6 +1079,18 @@ function ResultsPage() {
           >
             <Share2 className="h-4 w-4" />
             <span className="text-[10px] leading-none">Share</span>
+          </Button>
+          <Button
+            onClick={saveToBrowser}
+            variant="outline"
+            size="sm"
+            disabled={!!localSavedId}
+            className="flex-col h-auto py-2 gap-1 px-1"
+          >
+            <HardDrive className="h-4 w-4" />
+            <span className="text-[10px] leading-none">
+              {localSavedId ? "In browser" : "Browser"}
+            </span>
           </Button>
         </div>
       </div>
