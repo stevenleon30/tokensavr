@@ -40,25 +40,18 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [idea, setIdea] = useState("");
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = idea.trim();
     if (trimmed.length < 10) return;
-    if (!user) {
-      try {
-        sessionStorage.setItem("ts:pendingIdea", trimmed);
-      } catch {}
-      navigate({ to: "/auth", search: { redirect: "/generate", idea: trimmed } });
-      return;
-    }
     navigate({
       to: "/generate",
       search: { idea: trimmed, budget: undefined, platforms: undefined },
     });
   };
+
 
   return (
     <div>
