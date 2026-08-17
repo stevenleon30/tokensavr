@@ -425,7 +425,7 @@ function HistoryPage() {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
                   {item.platforms.slice(0, 5).map((p) => (
-                    <PlatformBadge key={p} platform={p} />
+                    <PlatformBadge key={p} id={p} size="sm" />
                   ))}
                 </div>
                 {item.stepCount > 0 && (
