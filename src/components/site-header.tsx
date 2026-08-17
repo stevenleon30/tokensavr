@@ -102,8 +102,9 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => {
+          {navItems.filter((item) => !item.authOnly || user).map((item) => {
             const active = location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+
             return (
               <Link
                 key={item.to}
