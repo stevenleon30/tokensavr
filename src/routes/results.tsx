@@ -417,6 +417,21 @@ function ResultsPage() {
     }
   };
 
+  /** Keep a copy of this strategy on this device only — no account needed. */
+  const saveToBrowser = () => {
+    if (!strategy) return;
+    try {
+      const record = saveLocalStrategy(strategy as unknown as Record<string, unknown>);
+      setLocalSavedId(record.id);
+      toast.success("Saved in this browser", {
+        description: "Find it any time under Saved.",
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't save to this browser.");
+    }
+  };
+
   const downloadPdf = () => {
     if (!strategy) return;
     try {
