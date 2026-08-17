@@ -63,6 +63,27 @@ function SavedPage() {
     toast.success("Cleared local strategies");
   };
 
+  const exportPdf = (record: LocalStrategyRecord) => {
+    try {
+      const payload = record.payload as Record<string, unknown>;
+      downloadStrategyPdf(payload as never, strategyFilename(payload.idea, "pdf"));
+      toast.success("PDF downloaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't generate PDF.");
+    }
+  };
+
+  const exportJson = (record: LocalStrategyRecord) => {
+    try {
+      downloadStrategyJson(record.payload as Record<string, unknown>);
+      toast.success("JSON downloaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't export JSON.");
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
