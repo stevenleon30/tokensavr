@@ -261,7 +261,7 @@ function ResultsPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, user]);
+  }, [id, local, user]);
 
   const upsertProgress = async (
     stepNumber: number,
