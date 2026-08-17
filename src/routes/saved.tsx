@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { HardDrive, Trash2, ArrowRight, Sparkles } from "lucide-react";
+import { HardDrive, Trash2, ArrowRight, Sparkles, Download, FileJson } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import {
   clearLocalStrategies,
   type LocalStrategyRecord,
 } from "@/lib/local-strategies";
+import { downloadStrategyPdf } from "@/lib/strategy-pdf";
+import { downloadStrategyJson, strategyFilename } from "@/lib/strategy-export";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
