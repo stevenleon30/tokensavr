@@ -108,8 +108,9 @@ type StepProgress = {
 };
 
 export const Route = createFileRoute("/results")({
-  validateSearch: (s: Record<string, unknown>): { id?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { id?: string; local?: string } => ({
     id: typeof s.id === "string" ? s.id : undefined,
+    local: typeof s.local === "string" ? s.local : undefined,
   }),
   head: () => ({
     meta: [
