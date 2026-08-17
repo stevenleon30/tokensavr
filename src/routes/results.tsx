@@ -173,6 +173,18 @@ function ResultsPage() {
     const load = async () => {
       setLoading(true);
       try {
+        // Strategy saved in this browser only (no account).
+        if (local) {
+          const record = getLocalStrategy(local);
+          if (!record) {
+            toast.error("That saved strategy is no longer in this browser.");
+            if (!cancelled) setStrategy(readSessionStrategy());
+          } else if (!cancelled) {
+            setStrategy(record.payload as unknown as StoredStrategy);
+          }
+          return;
+        }
+
         if (id) {
           const strategyQuery = supabase
             .from("strategies")
