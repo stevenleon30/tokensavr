@@ -41,9 +41,6 @@ function Landing() {
   const navigate = useNavigate();
   const [idea, setIdea] = useState("");
 
-  const toggle = (id: string) =>
-    setSelected((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
-
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = idea.trim();
