@@ -225,7 +225,7 @@ export function SiteHeader() {
                 </div>
               </div>
             )}
-            {navItems.map((item) => (
+            {navItems.filter((item) => !item.authOnly || user).map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
