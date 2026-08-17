@@ -48,6 +48,7 @@ import {
 } from "@/lib/live-pricing";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 import { CostBreakdown } from "@/components/cost-breakdown";
+import { getLocalStrategy, saveLocalStrategy } from "@/lib/local-strategies";
 
 
 /** Pull a monthly USD budget out of a stored budget label like "Pro ($50/mo)". */
