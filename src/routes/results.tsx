@@ -52,6 +52,10 @@ import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 import { downloadStrategyJson, strategyFilename } from "@/lib/strategy-export";
 import { CostBreakdown } from "@/components/cost-breakdown";
 import { getLocalStrategy, saveLocalStrategy } from "@/lib/local-strategies";
+import {
+  createStrategyShare,
+  getStrategyShare,
+} from "@/lib/strategy-share.functions";
 
 
 /** Pull a monthly USD budget out of a stored budget label like "Pro ($50/mo)". */
@@ -112,9 +116,10 @@ type StepProgress = {
 };
 
 export const Route = createFileRoute("/results")({
-  validateSearch: (s: Record<string, unknown>): { id?: string; local?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { id?: string; local?: string; share?: string } => ({
     id: typeof s.id === "string" ? s.id : undefined,
     local: typeof s.local === "string" ? s.local : undefined,
+    share: typeof s.share === "string" ? s.share : undefined,
   }),
   head: () => ({
     meta: [
@@ -126,7 +131,7 @@ export const Route = createFileRoute("/results")({
 });
 
 function ResultsPage() {
-  const { id, local } = Route.useSearch();
+  const { id, local, share } = Route.useSearch();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [strategy, setStrategy] = useState<StoredStrategy | null>(null);
@@ -137,6 +142,9 @@ function ResultsPage() {
   const [livePrices, setLivePrices] = useState<LivePriceMap | null>(null);
   const [savePromptDismissed, setSavePromptDismissed] = useState(false);
   const [localSavedId, setLocalSavedId] = useState<string | undefined>(local);
+  const [shareId, setShareId] = useState<string | undefined>(share);
+  const [sharing, setSharing] = useState(false);
+  const isSharedView = !!share;
 
 
   // Live per-token model prices (synced daily into model_pricing).
@@ -177,6 +185,19 @@ function ResultsPage() {
     const load = async () => {
       setLoading(true);
       try {
+        // Public read-only share link — no account needed.
+        if (share) {
+          const record = await getStrategyShare({ data: { id: share } });
+          if (cancelled) return;
+          if (!record) {
+            toast.error("That shared strategy link is no longer available.");
+            setStrategy(null);
+          } else {
+            setStrategy(record.payload as unknown as StoredStrategy);
+          }
+          return;
+        }
+
         // Strategy saved in this browser only (no account).
         if (local) {
           const record = getLocalStrategy(local);
@@ -547,51 +568,35 @@ function ResultsPage() {
 
   const shareStrategy = async () => {
     if (!strategy) return;
-    if (!user) {
-      toast.message("Sign in to share", {
-        description: "Create a free account to share strategies.",
-      });
-      navigate({ to: "/auth" });
+    if (shareId) {
+      await copyShareUrl(shareId);
       return;
     }
-    let shareId = savedId;
-    if (!shareId) {
-      const { data, error } = await supabase
-        .from("strategies")
-        .insert({
-          user_id: user.id,
-          title: strategy.idea.slice(0, 80),
-          idea: strategy.idea,
-          budget: strategy.budget,
-          platforms: strategy.platforms,
-          total_estimated_cost: strategy.total_estimated_cost,
-          estimated_savings: strategy.estimated_savings,
-          time_estimate: strategy.time_estimate,
-          steps: { items: strategy.steps, recommendation: strategy },
-          is_public: true,
-        })
-        .select("id")
-        .single();
-      if (error || !data) {
-        toast.error("Couldn't create share link.");
-        return;
-      }
-      shareId = data.id;
-      setSavedId(shareId);
-    } else {
-      const { error } = await supabase
-        .from("strategies")
-        .update({ is_public: true })
-        .eq("id", shareId);
-      if (error) {
-        toast.error("Couldn't enable sharing.");
-        return;
-      }
+    setSharing(true);
+    try {
+      const { id: newShareId } = await createStrategyShare({
+        data: {
+          title: (strategy.idea || "AI build strategy").slice(0, 120),
+          payload: strategy as unknown as Record<string, unknown>,
+        },
+      });
+      setShareId(newShareId);
+      await copyShareUrl(newShareId);
+    } catch (err) {
+      console.error("Share failed", err);
+      toast.error("Couldn't create a share link. Try again.");
+    } finally {
+      setSharing(false);
     }
-    const url = `${window.location.origin}/results?id=${shareId}`;
+  };
+
+  const copyShareUrl = async (sid: string) => {
+    const url = `${window.location.origin}/results?share=${sid}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Public link copied to clipboard");
+      toast.success("Public link copied", {
+        description: "Anyone with this link can view the strategy — no account needed.",
+      });
     } catch {
       toast.message("Share link ready", { description: url });
     }
@@ -651,7 +656,32 @@ function ResultsPage() {
         </Button>
       </div>
 
-      {!user && !savePromptDismissed && (
+      {isSharedView && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            You're viewing a shared, read-only strategy. No account needed.
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+              onClick={saveToBrowser}
+              disabled={!!localSavedId}
+            >
+              <HardDrive className="h-3.5 w-3.5" />
+              {localSavedId ? "Saved in browser" : "Save a copy in this browser"}
+            </Button>
+            <Button asChild size="sm" className="bg-gradient-primary">
+              <Link to="/generate" search={{ idea: undefined, budget: undefined, platforms: undefined }}>
+                Build your own
+              </Link>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!user && !isSharedView && !savePromptDismissed && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
           <p className="text-sm text-muted-foreground">
             Keep this strategy on this device — no account needed. Create an account to sync across
@@ -774,8 +804,14 @@ function ResultsPage() {
           <Button onClick={copyDashboardSummary} variant="outline" className="gap-2">
             <LayoutDashboard className="h-4 w-4" /> Copy dashboard
           </Button>
-          <Button onClick={shareStrategy} variant="outline" className="gap-2">
-            <Share2 className="h-4 w-4" /> Share strategy
+          <Button
+            onClick={shareStrategy}
+            variant="outline"
+            className="gap-2"
+            disabled={sharing}
+          >
+            <Share2 className="h-4 w-4" />
+            {sharing ? "Creating link…" : shareId ? "Copy share link" : "Share strategy"}
           </Button>
           <Button
             onClick={saveToBrowser}
