@@ -152,6 +152,24 @@ function SavedPage() {
                   </Button>
                   <Button
                     size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => exportPdf(item)}
+                    aria-label={`Export ${idea} as PDF`}
+                  >
+                    <Download className="h-3.5 w-3.5" /> PDF
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => exportJson(item)}
+                    aria-label={`Export ${idea} as JSON`}
+                  >
+                    <FileJson className="h-3.5 w-3.5" /> JSON
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="ghost"
                     className="text-muted-foreground"
                     onClick={() => remove(item.id)}
