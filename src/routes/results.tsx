@@ -49,6 +49,7 @@ import {
   type LiveStrategyEstimate,
 } from "@/lib/live-pricing";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
+import { downloadStrategyJson, strategyFilename } from "@/lib/strategy-export";
 import { CostBreakdown } from "@/components/cost-breakdown";
 import { getLocalStrategy, saveLocalStrategy } from "@/lib/local-strategies";
 
