@@ -50,7 +50,7 @@ function Landing() {
       search: {
         idea: trimmed,
         budget: undefined,
-        platforms: selected.length > 0 ? selected : undefined,
+        platforms: undefined,
       },
     });
   };
