@@ -30,6 +30,7 @@ import {
 const navItems = [
   { to: "/generate", label: "Generate", authOnly: false },
   { to: "/dashboard", label: "Dashboard", authOnly: true },
+  { to: "/saved", label: "Saved", authOnly: false },
   { to: "/tips", label: "Tips", authOnly: false },
   { to: "/pricing", label: "Pricing", authOnly: false },
   { to: "/docs", label: "Docs", authOnly: false },
