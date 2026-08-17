@@ -656,7 +656,32 @@ function ResultsPage() {
         </Button>
       </div>
 
-      {!user && !savePromptDismissed && (
+      {isSharedView && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            You're viewing a shared, read-only strategy. No account needed.
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+              onClick={saveToBrowser}
+              disabled={!!localSavedId}
+            >
+              <HardDrive className="h-3.5 w-3.5" />
+              {localSavedId ? "Saved in browser" : "Save a copy in this browser"}
+            </Button>
+            <Button asChild size="sm" className="bg-gradient-primary">
+              <Link to="/generate" search={{ idea: undefined, budget: undefined, platforms: undefined }}>
+                Build your own
+              </Link>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!user && !isSharedView && !savePromptDismissed && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
           <p className="text-sm text-muted-foreground">
             Keep this strategy on this device — no account needed. Create an account to sync across
