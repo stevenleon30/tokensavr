@@ -3,7 +3,6 @@ import { useState } from "react";
 import { ArrowRight, Sparkles, Zap, BarChart3, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { PlatformFan } from "@/components/platform-fan";
 
 // Brand hex colors for the platform name strip — kept literal because
 // these are external brands, not part of our themed palette. Picked to
@@ -41,10 +40,6 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const navigate = useNavigate();
   const [idea, setIdea] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
-
-  const toggle = (id: string) =>
-    setSelected((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +50,7 @@ function Landing() {
       search: {
         idea: trimmed,
         budget: undefined,
-        platforms: selected.length > 0 ? selected : undefined,
+        platforms: undefined,
       },
     });
   };
@@ -116,8 +111,6 @@ function Landing() {
               </div>
             </div>
           </form>
-
-          <PlatformFan selected={selected} onToggle={toggle} />
 
         </div>
       </section>
