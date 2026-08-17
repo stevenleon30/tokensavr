@@ -1066,6 +1066,15 @@ function ResultsPage() {
             <span className="text-[10px] leading-none">PDF</span>
           </Button>
           <Button
+            onClick={downloadJson}
+            variant="outline"
+            size="sm"
+            className="flex-col h-auto py-2 gap-1 px-1"
+          >
+            <FileJson className="h-4 w-4" />
+            <span className="text-[10px] leading-none">JSON</span>
+          </Button>
+          <Button
             onClick={copyAllPrompts}
             variant="outline"
             size="sm"
