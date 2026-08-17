@@ -83,3 +83,19 @@ environment variables in your host's dashboard — never in a build artifact.
 - `.env.example` contains placeholders only.
 - If a real key was ever committed, rotate it — deleting the file does not
   remove it from git history.
+
+## Lovable Cloud sync note
+
+Lovable Cloud may recreate a tracked `.env` file when it syncs project
+configuration to GitHub. If `.env` reappears in `git status` after a Lovable
+push, untrack it again before committing:
+
+```bash
+git rm --cached .env
+git commit -m "Untrack .env"
+git push
+```
+
+The `.github/workflows/env-guard.yml` workflow will fail any PR or push that
+re-introduces a committed `.env` file, so you will catch it in GitHub before the
+repo goes public.

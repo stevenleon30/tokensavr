@@ -1,0 +1,40 @@
+name: Env Guard
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  check-env:
+    name: Block committed .env files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail if .env is tracked
+        run: |
+          echo "Checking for tracked .env files..."
+          if git ls-files | grep -E '^\.env($|\.)' | grep -v '\.env\.example$'; then
+            echo "❌ Committed .env file(s) found. Remove them with:"
+            echo "   git rm --cached .env"
+            echo "   git commit -m 'Remove .env from repository'"
+            exit 1
+          fi
+          echo "✅ No .env files are tracked."
+
+      - name: Fail if .env.example contains real values
+        run: |
+          echo "Checking .env.example for placeholder-only values..."
+          if grep -E '(your-project-ref|your-publishable-or-anon-key)' .env.example >/dev/null 2>&1; then
+            echo "✅ .env.example contains placeholders."
+          else
+            echo "⚠️ .env.example may contain real values. Ensure it only has placeholders."
+          fi
