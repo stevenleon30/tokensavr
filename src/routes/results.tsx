@@ -753,6 +753,15 @@ function ResultsPage() {
           <Button onClick={shareStrategy} variant="outline" className="gap-2">
             <Share2 className="h-4 w-4" /> Share strategy
           </Button>
+          <Button
+            onClick={saveToBrowser}
+            variant="outline"
+            className="gap-2"
+            disabled={!!localSavedId}
+          >
+            <HardDrive className="h-4 w-4" />
+            {localSavedId ? "Saved in browser" : "Save in this browser"}
+          </Button>
         </div>
       </div>
 
