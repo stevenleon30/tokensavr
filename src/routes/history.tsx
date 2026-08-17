@@ -20,6 +20,7 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { parseCostToCredits, formatCredits } from "@/lib/cost";
+import { getPlatform } from "@/lib/platforms";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 import { downloadStrategyJson, strategyFilename } from "@/lib/strategy-export";
 import { createStrategyShare } from "@/lib/strategy-share.functions";
@@ -175,9 +176,17 @@ function HistoryPage() {
         0,
       );
       const actual = ps.reduce((sum, p) => sum + (p.actual_cost_credits ?? 0), 0);
-      const platforms = Array.from(
+      const platformIds = Array.from(
         new Set([...(row.platforms ?? []), ...steps.map((s) => s.platform)].filter(Boolean)),
       );
+      // Rows mix platform ids and display names; collapse to one label per platform.
+      const seen = new Map<string, string>();
+      platformIds.forEach((raw) => {
+        const label = getPlatform(raw).name;
+        if (!seen.has(label)) seen.set(label, raw);
+      });
+      const platforms = Array.from(seen.keys());
+      const platformRefs = Array.from(seen.values());
       return {
         row,
         steps,
@@ -187,6 +196,7 @@ function HistoryPage() {
         estimated,
         actual,
         platforms,
+        platformRefs,
       };
     });
   }, [rows, progress]);
@@ -424,7 +434,7 @@ function HistoryPage() {
                   {item.actual > 0 && <span>{formatCredits(item.actual)} cr tracked</span>}
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  {item.platforms.slice(0, 5).map((p) => (
+                  {item.platformRefs.slice(0, 5).map((p) => (
                     <PlatformBadge key={p} id={p} size="sm" />
                   ))}
                 </div>
