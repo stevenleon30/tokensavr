@@ -438,19 +438,26 @@ function ResultsPage() {
   const downloadPdf = () => {
     if (!strategy) return;
     try {
-      const safeSlug =
-        strategy.idea
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "")
-          .slice(0, 40) || "strategy";
-      downloadStrategyPdf(strategy, `tokensavr-${safeSlug}.pdf`);
+      downloadStrategyPdf(strategy, strategyFilename(strategy.idea, "pdf"));
       toast.success("PDF downloaded");
     } catch (err) {
       console.error(err);
       toast.error("Couldn't generate PDF.");
     }
   };
+
+  /** Export the raw strategy payload as JSON for re-use in other tools. */
+  const downloadJson = () => {
+    if (!strategy) return;
+    try {
+      downloadStrategyJson(strategy as unknown as Record<string, unknown>);
+      toast.success("JSON downloaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't export JSON.");
+    }
+  };
+
 
   const copyAllPrompts = async () => {
     if (!strategy) return;
