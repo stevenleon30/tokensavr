@@ -32,14 +32,20 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run npm audit
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
+        run: npm audit --json --audit-level=moderate > npm-audit.json || true
 
       - name: Upload audit log
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: npm-audit-log
-          path: |
-            npm-audit.json
-        continue-on-error: true
+          path: npm-audit.json
+          if-no-files-found: ignore
+
+      - name: Fail on high or critical vulnerabilities
+        run: |
+          if grep -q '"severity":"high"\|"severity":"critical"' npm-audit.json 2>/dev/null; then
+            echo "High or critical vulnerabilities found. Review the audit log."
+            exit 1
+          fi
+
