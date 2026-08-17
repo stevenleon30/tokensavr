@@ -19,6 +19,7 @@ import {
   Share2,
   LayoutDashboard,
   HardDrive,
+  FileJson,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ import {
   type LiveStrategyEstimate,
 } from "@/lib/live-pricing";
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
+import { downloadStrategyJson, strategyFilename } from "@/lib/strategy-export";
 import { CostBreakdown } from "@/components/cost-breakdown";
 import { getLocalStrategy, saveLocalStrategy } from "@/lib/local-strategies";
 
@@ -436,19 +438,26 @@ function ResultsPage() {
   const downloadPdf = () => {
     if (!strategy) return;
     try {
-      const safeSlug =
-        strategy.idea
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "")
-          .slice(0, 40) || "strategy";
-      downloadStrategyPdf(strategy, `tokensavr-${safeSlug}.pdf`);
+      downloadStrategyPdf(strategy, strategyFilename(strategy.idea, "pdf"));
       toast.success("PDF downloaded");
     } catch (err) {
       console.error(err);
       toast.error("Couldn't generate PDF.");
     }
   };
+
+  /** Export the raw strategy payload as JSON for re-use in other tools. */
+  const downloadJson = () => {
+    if (!strategy) return;
+    try {
+      downloadStrategyJson(strategy as unknown as Record<string, unknown>);
+      toast.success("JSON downloaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't export JSON.");
+    }
+  };
+
 
   const copyAllPrompts = async () => {
     if (!strategy) return;
@@ -754,7 +763,10 @@ function ResultsPage() {
             {savedId ? "Saved" : "Save to dashboard"}
           </Button>
           <Button onClick={downloadPdf} variant="outline" className="gap-2">
-            <Download className="h-4 w-4" /> Download as PDF
+            <Download className="h-4 w-4" /> Export PDF
+          </Button>
+          <Button onClick={downloadJson} variant="outline" className="gap-2">
+            <FileJson className="h-4 w-4" /> Export JSON
           </Button>
           <Button onClick={copyAllPrompts} variant="outline" className="gap-2">
             <ClipboardList className="h-4 w-4" /> Copy all prompts
@@ -1033,7 +1045,7 @@ function ResultsPage() {
 
       {/* Sticky mobile action bar */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl shadow-elegant pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-6 gap-1">
+        <div className="mx-auto max-w-4xl px-2 py-2 grid grid-cols-7 gap-1">
           <Button
             onClick={saveToDashboard}
             variant="secondary"
@@ -1052,6 +1064,15 @@ function ResultsPage() {
           >
             <Download className="h-4 w-4" />
             <span className="text-[10px] leading-none">PDF</span>
+          </Button>
+          <Button
+            onClick={downloadJson}
+            variant="outline"
+            size="sm"
+            className="flex-col h-auto py-2 gap-1 px-1"
+          >
+            <FileJson className="h-4 w-4" />
+            <span className="text-[10px] leading-none">JSON</span>
           </Button>
           <Button
             onClick={copyAllPrompts}
