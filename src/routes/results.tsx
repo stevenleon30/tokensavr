@@ -130,6 +130,8 @@ function ResultsPage() {
   const [progress, setProgress] = useState<Record<number, StepProgress>>({});
   const [promptsExpanded, setPromptsExpanded] = useState(false);
   const [livePrices, setLivePrices] = useState<LivePriceMap | null>(null);
+  const [savePromptDismissed, setSavePromptDismissed] = useState(false);
+
 
   // Live per-token model prices (synced daily into model_pricing).
   useEffect(() => {
