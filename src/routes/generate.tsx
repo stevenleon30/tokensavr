@@ -399,13 +399,14 @@ function GeneratePage() {
           </Button>
           {!user && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Tip:{" "}
+              No account needed.{" "}
               <Link to="/auth" className="text-primary underline-offset-2 hover:underline">
-                sign in
+                Create a free one
               </Link>{" "}
-              to save strategies to your dashboard.
+              later to save strategies and track progress.
             </p>
           )}
+
         </section>
 
         {/* Live streaming preview */}
