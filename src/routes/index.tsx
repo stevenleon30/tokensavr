@@ -117,21 +117,8 @@ function Landing() {
             </div>
           </form>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
-            <span>Optimizes across</span>
-            {PLATFORM_LIST.map((p) => (
-              <span key={p.id} className="inline-flex items-center gap-1.5">
-                <span
-                  className="h-4 w-4 rounded flex items-center justify-center text-[9px] font-bold text-background"
-                  style={{ backgroundColor: p.color }}
-                  aria-hidden
-                >
-                  {p.initial}
-                </span>
-                {p.name}
-              </span>
-            ))}
-          </div>
+          <PlatformFan selected={selected} onToggle={toggle} />
+
         </div>
       </section>
 
