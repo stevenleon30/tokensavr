@@ -122,7 +122,7 @@ export const Route = createFileRoute("/results")({
 });
 
 function ResultsPage() {
-  const { id } = Route.useSearch();
+  const { id, local } = Route.useSearch();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [strategy, setStrategy] = useState<StoredStrategy | null>(null);
