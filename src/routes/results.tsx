@@ -763,7 +763,10 @@ function ResultsPage() {
             {savedId ? "Saved" : "Save to dashboard"}
           </Button>
           <Button onClick={downloadPdf} variant="outline" className="gap-2">
-            <Download className="h-4 w-4" /> Download as PDF
+            <Download className="h-4 w-4" /> Export PDF
+          </Button>
+          <Button onClick={downloadJson} variant="outline" className="gap-2">
+            <FileJson className="h-4 w-4" /> Export JSON
           </Button>
           <Button onClick={copyAllPrompts} variant="outline" className="gap-2">
             <ClipboardList className="h-4 w-4" /> Copy all prompts
