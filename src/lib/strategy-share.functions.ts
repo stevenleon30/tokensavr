@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const shareInput = z.object({
   title: z.string().min(1).max(160),
-  payload: z.record(z.string(), z.unknown()),
+  payload: z.record(z.string(), z.any()),
 });
 
 const idInput = z.object({ id: z.string().uuid() });
@@ -56,6 +56,6 @@ export const getStrategyShare = createServerFn({ method: "GET" })
       id: row.id as string,
       title: row.title as string,
       createdAt: row.created_at as string,
-      payload: row.payload as Record<string, unknown>,
+      payload: row.payload as Record<string, any>,
     };
   });
