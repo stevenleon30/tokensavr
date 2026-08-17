@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { HardDrive, Trash2, ArrowRight, Sparkles } from "lucide-react";
+import { HardDrive, Trash2, ArrowRight, Sparkles, Download, FileJson } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import {
   clearLocalStrategies,
   type LocalStrategyRecord,
 } from "@/lib/local-strategies";
+import { downloadStrategyPdf } from "@/lib/strategy-pdf";
+import { downloadStrategyJson, strategyFilename } from "@/lib/strategy-export";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
@@ -59,6 +61,27 @@ function SavedPage() {
     clearLocalStrategies();
     setItems([]);
     toast.success("Cleared local strategies");
+  };
+
+  const exportPdf = (record: LocalStrategyRecord) => {
+    try {
+      const payload = record.payload as Record<string, unknown>;
+      downloadStrategyPdf(payload as never, strategyFilename(payload.idea, "pdf"));
+      toast.success("PDF downloaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't generate PDF.");
+    }
+  };
+
+  const exportJson = (record: LocalStrategyRecord) => {
+    try {
+      downloadStrategyJson(record.payload as Record<string, unknown>);
+      toast.success("JSON downloaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't export JSON.");
+    }
   };
 
   return (
@@ -126,6 +149,24 @@ function SavedPage() {
                     onClick={() => navigate({ to: "/results", search: { local: item.id } })}
                   >
                     Open <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => exportPdf(item)}
+                    aria-label={`Export ${idea} as PDF`}
+                  >
+                    <Download className="h-3.5 w-3.5" /> PDF
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => exportJson(item)}
+                    aria-label={`Export ${idea} as JSON`}
+                  >
+                    <FileJson className="h-3.5 w-3.5" /> JSON
                   </Button>
                   <Button
                     size="sm"
