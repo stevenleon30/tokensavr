@@ -3,7 +3,8 @@ import { useState } from "react";
 import { ArrowRight, Sparkles, Zap, BarChart3, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { PLATFORM_LIST } from "@/lib/platforms";
+import { PlatformFan } from "@/components/platform-fan";
+
 // Brand hex colors for the platform name strip — kept literal because
 // these are external brands, not part of our themed palette. Picked to
 // remain legible on both light and dark backgrounds.
@@ -40,6 +41,10 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const navigate = useNavigate();
   const [idea, setIdea] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,9 +52,15 @@ function Landing() {
     if (trimmed.length < 10) return;
     navigate({
       to: "/generate",
-      search: { idea: trimmed, budget: undefined, platforms: undefined },
+      search: {
+        idea: trimmed,
+        budget: undefined,
+        platforms: selected.length > 0 ? selected : undefined,
+      },
     });
   };
+
+
 
 
   return (
@@ -106,21 +117,8 @@ function Landing() {
             </div>
           </form>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
-            <span>Optimizes across</span>
-            {PLATFORM_LIST.map((p) => (
-              <span key={p.id} className="inline-flex items-center gap-1.5">
-                <span
-                  className="h-4 w-4 rounded flex items-center justify-center text-[9px] font-bold text-background"
-                  style={{ backgroundColor: p.color }}
-                  aria-hidden
-                >
-                  {p.initial}
-                </span>
-                {p.name}
-              </span>
-            ))}
-          </div>
+          <PlatformFan selected={selected} onToggle={toggle} />
+
         </div>
       </section>
 
