@@ -28,13 +28,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const navItems = [
-  { to: "/generate", label: "Generate" },
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/tips", label: "Tips" },
-  { to: "/pricing", label: "Pricing" },
-  { to: "/docs", label: "Docs" },
-  { to: "/settings", label: "Settings" },
+  { to: "/generate", label: "Generate", authOnly: false },
+  { to: "/dashboard", label: "Dashboard", authOnly: true },
+  { to: "/tips", label: "Tips", authOnly: false },
+  { to: "/pricing", label: "Pricing", authOnly: false },
+  { to: "/docs", label: "Docs", authOnly: false },
+  { to: "/settings", label: "Settings", authOnly: true },
 ] as const;
+
 
 function getInitials(source: string) {
   const trimmed = source.trim();
