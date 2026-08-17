@@ -33,7 +33,7 @@ const navItems = [
   { to: "/saved", label: "Saved", authOnly: false },
   { to: "/history", label: "History", authOnly: true },
   { to: "/tips", label: "Tips", authOnly: false },
-  { to: "/pricing", label: "Pricing", authOnly: false },
+  { to: "/pricing", label: "LLM Cost Comparison", authOnly: false },
   { to: "/docs", label: "Docs", authOnly: false },
   { to: "/settings", label: "Settings", authOnly: true },
 ] as const;

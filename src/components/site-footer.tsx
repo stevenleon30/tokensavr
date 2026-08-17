@@ -7,7 +7,7 @@ const footerLinks = [
   { to: "/generate", label: "Generate" },
   { to: "/dashboard", label: "Dashboard" },
   { to: "/tips", label: "Tips" },
-  { to: "/pricing", label: "Pricing" },
+  { to: "/pricing", label: "LLM Cost Comparison" },
   { to: "/docs", label: "Docs" },
 ] as const;
 
