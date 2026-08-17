@@ -205,6 +205,30 @@ export type Database = {
         }
         Relationships: []
       }
+      strategy_shares: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          title: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload: Json
+          title: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          title?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
