@@ -5,6 +5,8 @@ import { useAuth } from "@/lib/auth";
 
 const navItems = [
   { to: "/pricing", label: "Pricing", authOnly: false },
+  { to: "/models", label: "Models", authOnly: false },
+
   { to: "/docs", label: "Docs", authOnly: false },
   { to: "/pricing-sync", label: "Sync log", authOnly: false },
   { to: "/generate", label: "Generate", authOnly: false },
