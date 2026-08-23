@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Await } from "@tanstack/react-router";
+import { createFileRoute, Link, Await, defer } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { PricingSyncLedger } from "@/components/pricing-sync-ledger";
 import { ProviderStatusStrip } from "@/components/provider-status-strip";
