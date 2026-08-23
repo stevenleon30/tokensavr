@@ -35,7 +35,15 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  loader: () => getSyncLedger(),
+  loader: async () => {
+    const [ledger, npm, providers] = await Promise.all([
+      getSyncLedger(),
+      getNpmTrend().catch(() => null),
+      getProviderStatuses().catch(() => []),
+    ]);
+    return { ...ledger, npm, providers };
+  },
+
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
       <p className="font-mono text-sm text-warning" role="alert">
