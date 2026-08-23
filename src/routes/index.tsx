@@ -140,23 +140,34 @@ function Landing() {
           value={data.uptimePct === null ? "—" : `${data.uptimePct.toFixed(1)}%`}
           label="sync uptime"
         />
-        <Stat
-          value={
-            data.npm && data.npm.totalWeeklyDownloads > 0
-              ? data.npm.totalWeeklyDownloads.toLocaleString()
-              : "—"
-          }
-          label="SDK installs this week"
-        >
-          {data.npm && data.npm.weeks.length > 1 ? (
-            <NpmTrendSparkline weeks={data.npm.weeks} />
-          ) : null}
-          {data.npm?.lastUpdated ? (
-            <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
-              updated {new Date(data.npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-            </p>
-          ) : null}
-        </Stat>
+        <Suspense fallback={<NpmStatSkeleton />}>
+          <Await
+            promise={data.npm}
+            errorElement={<NpmStatError />}
+          >
+            {(npm) => (
+              <Stat
+                value={
+                  npm.totalWeeklyDownloads > 0
+                    ? npm.totalWeeklyDownloads.toLocaleString()
+                    : "—"
+                }
+                label="SDK installs this week"
+              >
+                {npm.weeks.length > 1 ? (
+                  <NpmTrendSparkline weeks={npm.weeks} />
+                ) : (
+                  <NpmStatEmpty />
+                )}
+                {npm.lastUpdated ? (
+                  <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
+                    updated {new Date(npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                ) : null}
+              </Stat>
+            )}
+          </Await>
+        </Suspense>
 
       </section>
 
