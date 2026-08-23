@@ -1369,23 +1369,37 @@ function StepCard({
               </h3>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <PlatformBadge id={step.platform} size="sm" />
-                <Badge
-                  variant="outline"
-                  className="font-normal text-xs border-warning/40 text-warning"
-                >
-                  Est. {step.estimated_cost}
-                </Badge>
                 {liveEstimate && (
                   <Badge
                     variant="outline"
                     className="font-normal text-xs border-primary/40 text-primary"
-                    title={`${liveEstimate.profileLabel} · ${liveEstimate.inputTokens.toLocaleString()} in / ${liveEstimate.outputTokens.toLocaleString()} out tokens on ${liveEstimate.sourceModelId}`}
+                    title={`${liveEstimate.profileLabel} · ${liveEstimate.inputTokens.toLocaleString()} input + ${liveEstimate.outputTokens.toLocaleString()} output tokens on ${liveEstimate.sourceModelId}${
+                      liveEstimate.tokensFromModel ? " (estimated for this step)" : " (typical for this kind of step)"
+                    }`}
                   >
-                    Live {formatCredits(liveEstimate.credits)} cr ·{" "}
-                    {formatUsd(liveEstimate.usd)}
+                    ~{formatTokens(liveEstimate.totalTokens)} tok
+                  </Badge>
+                )}
+                <Badge
+                  variant="outline"
+                  className="font-normal text-xs border-warning/40 text-warning"
+                >
+                  {stepCredits > 0
+                    ? `Est. ${formatCredits(stepCredits)} cr`
+                    : "Est. free"}
+                  {liveEstimate ? ` · ${formatUsd(liveEstimate.usd)}` : ""}
+                </Badge>
+                {step.covered_by_subscription && (
+                  <Badge
+                    variant="outline"
+                    className="font-normal text-xs border-success/40 text-success"
+                    title="Runs on a plan you already pay for — no extra out-of-pocket cost."
+                  >
+                    Covered by your plan
                   </Badge>
                 )}
               </div>
+
 
               <StepVisualStrip
                 stepNumber={step.step_number}
