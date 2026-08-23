@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 const footerLinks = [
   { to: "/generate", label: "Generate" },
   { to: "/pricing", label: "Pricing" },
+  { to: "/models", label: "Models" },
+
   { to: "/pricing-sync", label: "Sync log" },
   { to: "/tips", label: "Tips" },
   { to: "/docs", label: "Docs" },
