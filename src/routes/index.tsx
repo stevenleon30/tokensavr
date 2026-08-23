@@ -39,12 +39,11 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: async () => {
-    const [ledger, npm, providers] = await Promise.all([
+    const [ledger, providers] = await Promise.all([
       getSyncLedger(),
-      getNpmTrend().catch(() => null),
       getProviderStatuses().catch(() => []),
     ]);
-    return { ...ledger, npm, providers };
+    return { ...ledger, npm: defer(getNpmTrend()), providers };
   },
 
   errorComponent: ({ error }) => (
