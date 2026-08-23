@@ -416,7 +416,7 @@ function ResultsPage() {
       recommended_platform: primary,
       recommendation_reason: strategy.recommendation_reason,
       optimization_goal: strategy.optimization_goal || "Balanced recommendation",
-      confidence_score: strategy.confidence_score,
+      confidence_score: normalizeConfidence(strategy.confidence_score),
       platform_scores: strategy.platform_scores?.length ? strategy.platform_scores : fallbackScores,
       recommended_stack: strategy.recommended_stack?.length
         ? strategy.recommended_stack
