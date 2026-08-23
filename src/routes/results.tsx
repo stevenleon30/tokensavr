@@ -38,16 +38,23 @@ import { PlatformScoreMatrix } from "@/components/platform-score-matrix";
 import { RecommendationInsights } from "@/components/recommendation-insights";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { parseCostToCredits, formatCredits, formatCreditsWithUsd } from "@/lib/cost";
+import {
+  parseCostToCredits,
+  formatCredits,
+  formatCreditsWithUsd,
+  normalizeConfidence,
+} from "@/lib/cost";
 import { getPlatform } from "@/lib/platforms";
 import { formatUsd } from "@/lib/pricing";
 import { getLiveModelPricing } from "@/lib/live-pricing.functions";
 import {
   estimateStrategyFromLivePricing,
+  formatTokens,
   type LivePriceMap,
   type LiveStepEstimate,
   type LiveStrategyEstimate,
 } from "@/lib/live-pricing";
+
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 import { downloadStrategyJson, strategyFilename } from "@/lib/strategy-export";
 import { CostBreakdown } from "@/components/cost-breakdown";
@@ -72,8 +79,14 @@ type Step = {
   platform: string;
   mode: string;
   estimated_cost: string;
+  /** Generator-supplied token volumes, when the plan includes them. */
+  estimated_input_tokens?: number | null;
+  estimated_output_tokens?: number | null;
+  /** Step runs on a paid plan the user already subscribes to. */
+  covered_by_subscription?: boolean | null;
   prompt_to_use: string;
 };
+
 
 type StoredStrategy = {
   idea: string;
@@ -378,10 +391,22 @@ function ResultsPage() {
   /** Accurate estimate recomputed from live per-token model prices. */
   const liveEstimate: LiveStrategyEstimate | null = useMemo(() => {
     if (!strategy || !livePrices) return null;
-    const est = estimateStrategyFromLivePricing(strategy.steps, livePrices);
+    const est = estimateStrategyFromLivePricing(strategy.steps, livePrices, {
+      idea: strategy.idea,
+    });
+
     return est.pricedSteps > 0 ? est : null;
   }, [strategy, livePrices]);
 
+  /**
+   * Credits shown as the plan total. The generator zeroes out steps it thinks a
+   * subscription covers, which used to make the total read "0" — so fall back to
+   * the token-derived figure whenever the parsed plan total is missing.
+   */
+  const planCreditsFromLive = (totals?.estimated ?? 0) <= 0 && !!liveEstimate;
+  const planCredits = planCreditsFromLive
+    ? (liveEstimate?.totalCredits ?? 0)
+    : (totals?.estimated ?? 0);
 
 
   const recommendation = useMemo(() => {
@@ -400,7 +425,7 @@ function ResultsPage() {
       recommended_platform: primary,
       recommendation_reason: strategy.recommendation_reason,
       optimization_goal: strategy.optimization_goal || "Balanced recommendation",
-      confidence_score: strategy.confidence_score,
+      confidence_score: normalizeConfidence(strategy.confidence_score),
       platform_scores: strategy.platform_scores?.length ? strategy.platform_scores : fallbackScores,
       recommended_stack: strategy.recommended_stack?.length
         ? strategy.recommended_stack
@@ -742,19 +767,23 @@ function ResultsPage() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <LiveStat
-              label="Token cost"
-              value={formatUsd(liveEstimate.totalUsd)}
-              hint="Sum of per-step model API cost"
+              label="Tokens you'll use"
+              value={`${formatTokens(liveEstimate.totalTokens)} tok`}
+              hint={`${formatTokens(liveEstimate.totalInputTokens)} in / ${formatTokens(liveEstimate.totalOutputTokens)} out`}
             />
             <LiveStat
-              label="Credit equivalent"
-              value={`${formatCredits(liveEstimate.totalCredits)} cr`}
-              hint={`at ${formatUsd(liveEstimate.creditUsd)}/credit`}
+              label="Token cost"
+              value={formatUsd(liveEstimate.totalUsd)}
+              hint={`≈ ${formatCredits(liveEstimate.totalCredits)} cr at ${formatUsd(liveEstimate.creditUsd)}/credit`}
             />
             <LiveStat
               label="Plan estimate"
-              value={`${formatCredits(totals?.estimated ?? 0)} cr`}
-              hint="From the generated strategy"
+              value={`${formatCredits(planCredits)} cr`}
+              hint={
+                planCreditsFromLive
+                  ? "Derived from token volumes"
+                  : "From the generated strategy"
+              }
             />
             <LiveStat
               label="Priced steps"
@@ -762,10 +791,33 @@ function ResultsPage() {
               hint="Steps matched to a live model price"
             />
           </div>
+          {liveEstimate.byPlatform.length > 1 && (
+            <ul className="mt-4 space-y-2">
+              {liveEstimate.byPlatform.map((p) => (
+                <li key={p.platformId} className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <PlatformBadge id={p.platformId} size="sm" />
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      · {p.steps} {p.steps === 1 ? "step" : "steps"}
+                    </span>
+                  </div>
+                  <div className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    <span className="font-medium text-foreground">
+                      {formatTokens(p.totalTokens)} tok
+                    </span>{" "}
+                    · {formatUsd(p.usd)} · {Math.round(p.tokenShare * 100)}%
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
           <p className="mt-3 text-xs text-muted-foreground">
-            Recomputed from real published per-token prices for the model each platform
-            runs, using typical token volumes for each step type.
+            Token volumes are sized from your idea's complexity and each step's kind of
+            work, then priced with real published per-token rates for the model that
+            platform runs. Steps covered by a subscription still show their token cost so
+            you can see the work involved.
           </p>
+
         </section>
       )}
 
@@ -1268,6 +1320,14 @@ function StepCard({
     onUpdate({ actual_cost_credits: Math.round(n * 100) / 100 });
   };
 
+  /**
+   * Credits for this step: the generator's number when it gave one, otherwise
+   * the token-derived figure (it zeroes out subscription-covered steps).
+   */
+  const parsedCredits = parseCostToCredits(step.estimated_cost);
+  const stepCredits = parsedCredits > 0 ? parsedCredits : (liveEstimate?.credits ?? 0);
+
+
   return (
     <li
       id={`step-${step.step_number}`}
@@ -1317,29 +1377,43 @@ function StepCard({
               </h3>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <PlatformBadge id={step.platform} size="sm" />
-                <Badge
-                  variant="outline"
-                  className="font-normal text-xs border-warning/40 text-warning"
-                >
-                  Est. {step.estimated_cost}
-                </Badge>
                 {liveEstimate && (
                   <Badge
                     variant="outline"
                     className="font-normal text-xs border-primary/40 text-primary"
-                    title={`${liveEstimate.profileLabel} · ${liveEstimate.inputTokens.toLocaleString()} in / ${liveEstimate.outputTokens.toLocaleString()} out tokens on ${liveEstimate.sourceModelId}`}
+                    title={`${liveEstimate.profileLabel} · ${liveEstimate.inputTokens.toLocaleString()} input + ${liveEstimate.outputTokens.toLocaleString()} output tokens on ${liveEstimate.sourceModelId}${
+                      liveEstimate.tokensFromModel ? " (estimated for this step)" : " (typical for this kind of step)"
+                    }`}
                   >
-                    Live {formatCredits(liveEstimate.credits)} cr ·{" "}
-                    {formatUsd(liveEstimate.usd)}
+                    ~{formatTokens(liveEstimate.totalTokens)} tok
+                  </Badge>
+                )}
+                <Badge
+                  variant="outline"
+                  className="font-normal text-xs border-warning/40 text-warning"
+                >
+                  {stepCredits > 0
+                    ? `Est. ${formatCredits(stepCredits)} cr`
+                    : "Est. free"}
+                  {liveEstimate ? ` · ${formatUsd(liveEstimate.usd)}` : ""}
+                </Badge>
+                {step.covered_by_subscription && (
+                  <Badge
+                    variant="outline"
+                    className="font-normal text-xs border-success/40 text-success"
+                    title="Runs on a plan you already pay for — no extra out-of-pocket cost."
+                  >
+                    Covered by your plan
                   </Badge>
                 )}
               </div>
+
 
               <StepVisualStrip
                 stepNumber={step.step_number}
                 totalSteps={totalSteps}
                 completedNumbers={completedNumbers}
-                estimatedCredits={parseCostToCredits(step.estimated_cost)}
+                estimatedCredits={stepCredits}
                 totalEstimatedCredits={totalEstimatedCredits}
                 actualCredits={progress?.actual_cost_credits ?? null}
                 platformId={step.platform}
@@ -1407,7 +1481,9 @@ function StepCard({
               className="h-8 w-28 bg-background border-border text-sm"
             />
             <span className="text-muted-foreground">
-              Estimate: {formatCredits(parseCostToCredits(step.estimated_cost))} cr
+              Estimate: {formatCredits(stepCredits)} cr
+              {liveEstimate ? ` · ~${formatTokens(liveEstimate.totalTokens)} tok` : ""}
+
             </span>
           </div>
         )}

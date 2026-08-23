@@ -77,11 +77,21 @@ Additional estimating baselines:
 - Lovable Build Mode: ~1-3 credits per non-trivial build message; complex multi-file refactors 3-5.
 - Lovable Chat Mode: 1 credit per message, flat.
 - Claude.ai free chat / ChatGPT free tier: "0 credits" (free).
-- Steps covered by a subscription the user already pays for: "0 credits".
+- A step running on a paid platform the user ALREADY subscribes to is NOT free: still give its real credit/message cost and set "covered_by_subscription": true so the app can show that it comes out of an existing plan. Only use "0 credits" for genuinely free tiers.
 
-Sanity check before responding: the sum of every step's estimated_cost (using the midpoint of any range) should be within ±20% of total_estimated_cost. If they don't match, fix the per-step numbers — do not silently inflate the total.
+TOKEN ESTIMATES — REQUIRED PER STEP:
+- Every step MUST include "estimated_input_tokens" and "estimated_output_tokens": the realistic token volume that step will consume on that platform.
+- Input tokens include the prompt plus the project context the tool will read (existing files, schema, prior steps). Output tokens are the generated code/text.
+- Typical ranges for a medium project: planning/brainstorm turn 5K-15K in / 1K-4K out; chat/architecture turn 10K-25K in / 2K-4K out; review/debug pass 20K-50K in / 3K-8K out; full build or agent turn 40K-120K in / 6K-20K out.
+- Scale these up for a large, multi-surface project with integrations, and down for a tiny single-screen app. Later build steps should carry more input tokens than early ones because more project context exists.
+
+CONFIDENCE:
+- "confidence_score" is a PERCENTAGE from 0 to 100 (e.g. 85 for high confidence). Never return a 0-1 probability like 0.85.
+
+Sanity check before responding: the sum of every step's estimated_cost (using the midpoint of any range) should be within ±20% of total_estimated_cost. If they don't match, fix the per-step numbers — do not silently inflate the total. estimated_savings must be smaller than the cost of building the whole thing in Lovable Build Mode alone.
 
 You MUST respond by calling the return_strategy tool with the structured plan.`;
+
 
 const TOOL = {
   type: "function" as const,
@@ -141,6 +151,22 @@ const TOOL = {
                 pattern:
                   "^(0 credits|1 credit|~?\\d+(\\.\\d)? credits|\\d+-\\d+ credits)$",
               },
+              estimated_input_tokens: {
+                type: "number",
+                minimum: 0,
+                description:
+                  "Realistic input/context tokens this step consumes on that platform.",
+              },
+              estimated_output_tokens: {
+                type: "number",
+                minimum: 0,
+                description: "Realistic output tokens this step generates.",
+              },
+              covered_by_subscription: {
+                type: "boolean",
+                description:
+                  "True when this step runs on a paid plan the user already subscribes to (cost is not additional out-of-pocket).",
+              },
               prompt_to_use: { type: "string" },
             },
             required: [
@@ -149,10 +175,14 @@ const TOOL = {
               "platform",
               "mode",
               "estimated_cost",
+              "estimated_input_tokens",
+              "estimated_output_tokens",
+              "covered_by_subscription",
               "prompt_to_use",
             ],
             additionalProperties: false,
           },
+
         },
       },
       required: [
