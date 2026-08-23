@@ -57,7 +57,15 @@ export const Route = createRootRoute({
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b7dae22-ad8c-46d6-bd75-69b088e24c4f/id-preview-414ed117--e46ad49f-3dfe-41d2-908d-cdf603646bea.lovable.app-1776654826986.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3b7dae22-ad8c-46d6-bd75-69b088e24c4f/id-preview-414ed117--e46ad49f-3dfe-41d2-908d-cdf603646bea.lovable.app-1776654826986.png" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
+      },
+      { rel: "stylesheet", href: appCss },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -66,7 +74,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="light">
       <head>
         <HeadContent />
       </head>
@@ -77,6 +85,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
+
 
 function RootComponent() {
   return (
