@@ -92,7 +92,7 @@ export function NpmTrendSparkline({ weeks: allWeeks }: { weeks: NpmWeek[] }) {
           style={{ left: hoveredPoint.x, top: hoveredPoint.y }}
         >
           <p className="whitespace-nowrap font-mono text-[10px] text-card-foreground">
-            {formatDate(hovered.weekStart)}: {compact(hovered.downloads)} downloads
+            Week ending {formatDate(hovered.weekEnding)}: {compact(hovered.downloads)} downloads
           </p>
         </div>
       )}
