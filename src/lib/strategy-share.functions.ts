@@ -32,15 +32,16 @@ export const createStrategyShare = createServerFn({ method: "POST" })
     return { id: row.id as string };
   });
 
-/** Reads a shared strategy by id. Public: readable by anyone with the link. */
+/**
+ * Reads a single shared strategy by its unguessable id. Runs server-side and is
+ * always scoped to one id, so the table itself stays unreadable by clients and
+ * cannot be enumerated.
+ */
 export const getStrategyShare = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => idInput.parse(data))
   .handler(async ({ data }) => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(
-      process.env["SUPABASE_URL"]!,
-      process.env["SUPABASE_PUBLISHABLE_KEY"]!,
-      { auth: { persistSession: false, autoRefreshToken: false } },
+    const { supabaseAdmin: supabase } = await import(
+      "@/integrations/supabase/client.server"
     );
 
     const { data: row, error } = await supabase
@@ -48,6 +49,7 @@ export const getStrategyShare = createServerFn({ method: "GET" })
       .select("id,title,payload,created_at")
       .eq("id", data.id)
       .maybeSingle();
+
 
     if (error) throw new Error(error.message);
     if (!row) return null;
