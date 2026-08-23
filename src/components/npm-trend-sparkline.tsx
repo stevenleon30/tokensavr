@@ -9,7 +9,12 @@ function compact(n: number): string {
   return String(n);
 }
 
-export function NpmTrendSparkline({ weeks }: { weeks: NpmWeek[] }) {
+export function NpmTrendSparkline({ weeks: allWeeks }: { weeks: NpmWeek[] }) {
+  const [range, setRange] = useState<number>(8);
+
+  if (allWeeks.length < 2) return null;
+
+  const weeks = allWeeks.slice(-range);
   if (weeks.length < 2) return null;
 
   const w = 132;
