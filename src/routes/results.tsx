@@ -1320,6 +1320,14 @@ function StepCard({
     onUpdate({ actual_cost_credits: Math.round(n * 100) / 100 });
   };
 
+  /**
+   * Credits for this step: the generator's number when it gave one, otherwise
+   * the token-derived figure (it zeroes out subscription-covered steps).
+   */
+  const parsedCredits = parseCostToCredits(step.estimated_cost);
+  const stepCredits = parsedCredits > 0 ? parsedCredits : (liveEstimate?.credits ?? 0);
+
+
   return (
     <li
       id={`step-${step.step_number}`}
