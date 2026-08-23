@@ -9,8 +9,12 @@ export type StreamingStep = {
   platform?: string;
   mode?: string;
   estimated_cost?: string;
+  estimated_input_tokens?: number;
+  estimated_output_tokens?: number;
+  covered_by_subscription?: boolean;
   prompt_to_use?: string;
 };
+
 
 export type PlatformScore = {
   platform: string;
