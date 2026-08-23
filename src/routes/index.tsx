@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { PricingSyncLedger } from "@/components/pricing-sync-ledger";
 import { getSyncLedger } from "@/lib/sync-ledger.functions";
 import {
@@ -10,10 +9,6 @@ import {
   type SyncRun,
 } from "@/lib/sync-ledger";
 
-const ledgerQueryOptions = queryOptions({
-  queryKey: ["sync-ledger"],
-  queryFn: () => getSyncLedger(),
-});
 
 export const Route = createFileRoute("/")({
   head: () => ({
