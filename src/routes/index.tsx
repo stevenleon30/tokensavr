@@ -110,6 +110,9 @@ function Landing() {
       {/* ledger */}
       <section className="pt-14">
         <PricingSyncLedger runs={data.runs} checksLastYear={data.checksLastYear} />
+        <div className="mt-5">
+          <ProviderStatusStrip providers={data.providers} />
+        </div>
       </section>
 
       {/* live feed */}
@@ -127,7 +130,7 @@ function Landing() {
       </section>
 
       {/* stat strip */}
-      <section className="grid grid-cols-2 gap-8 py-16 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-8 py-16 sm:grid-cols-3 lg:grid-cols-5">
         <Stat value={data.modelsTracked.toLocaleString()} label="models tracked" />
         <Stat value={`${SYNC_INTERVAL_HOURS}h`} label="sync interval" />
         <Stat value={data.checksLastYear.toLocaleString()} label="checks in the last year" />
@@ -135,7 +138,16 @@ function Landing() {
           value={data.uptimePct === null ? "—" : `${data.uptimePct.toFixed(1)}%`}
           label="sync uptime"
         />
+        <Stat
+          value={
+            data.npm && data.npm.totalWeeklyDownloads > 0
+              ? data.npm.totalWeeklyDownloads.toLocaleString()
+              : "—"
+          }
+          label="SDK installs this week"
+        />
       </section>
+
     </div>
   );
 }
