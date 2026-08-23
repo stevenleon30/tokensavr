@@ -68,13 +68,13 @@ export function NpmTrendSparkline({ weeks: allWeeks }: { weeks: NpmWeek[] }) {
         <circle cx={last.x} cy={last.y} r="2" fill="var(--primary)" />
         {points.map((p, i) => (
           <g key={i}>
-            <line
-              x1={p.x.toFixed(1)}
-              y1={0}
-              x2={p.x.toFixed(1)}
-              y2={h}
-              stroke="transparent"
-              strokeWidth="10"
+            <rect
+              x={p.x - 6}
+              y={0}
+              width={12}
+              height={h}
+              fill="transparent"
+              pointerEvents="all"
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
               style={{ cursor: "pointer" }}
