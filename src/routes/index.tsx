@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PricingSyncLedger } from "@/components/pricing-sync-ledger";
+import { ProviderStatusStrip } from "@/components/provider-status-strip";
 import { getSyncLedger } from "@/lib/sync-ledger.functions";
+import { getNpmTrend, getProviderStatuses } from "@/lib/live-metrics.functions";
 import {
   SYNC_INTERVAL_HOURS,
   relativeTime,
@@ -8,6 +10,7 @@ import {
   syncHealth,
   type SyncRun,
 } from "@/lib/sync-ledger";
+
 
 
 export const Route = createFileRoute("/")({
