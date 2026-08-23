@@ -9,6 +9,7 @@ export type NpmTrend = {
   totalWeeklyDownloads: number;
   packages: { name: string; downloads: number }[];
   weeks: NpmWeek[];
+  lastUpdated: string;
 };
 
 
@@ -99,6 +100,7 @@ export async function loadNpmTrend(): Promise<NpmTrend> {
     packages,
     weeks,
     totalWeeklyDownloads: weeks.length > 0 ? weeks[weeks.length - 1].downloads : 0,
+    lastUpdated: new Date().toISOString(),
   };
 
   // never cache a fully-failed read
