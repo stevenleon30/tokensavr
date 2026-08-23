@@ -83,6 +83,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_sync_log: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          models_checked: number
+          models_updated: number
+          run_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          models_checked?: number
+          models_updated?: number
+          run_at?: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          models_checked?: number
+          models_updated?: number
+          run_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
