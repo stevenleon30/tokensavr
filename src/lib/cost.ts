@@ -50,6 +50,22 @@ export function formatCredits(n: number): string {
   return Math.round(n).toString();
 }
 
+/**
+ * Normalize a confidence value to 0-100.
+ *
+ * Models sometimes return a 0-1 probability (0.95) for a field documented as a
+ * percentage, which previously rendered as "0.95%". Anything ≤ 1 is treated as
+ * a probability and scaled.
+ */
+export function normalizeConfidence(
+  value: number | null | undefined,
+): number | undefined {
+  if (value == null || !Number.isFinite(value) || value <= 0) return undefined;
+  const pct = value <= 1 ? value * 100 : value;
+  return Math.max(0, Math.min(100, Math.round(pct)));
+}
+
+
 /** Parse an AI-generated cost string into approximate USD. */
 export function parseCostToUsd(input: string | null | undefined): number {
   return creditsToUsd(parseCostToCredits(input));
