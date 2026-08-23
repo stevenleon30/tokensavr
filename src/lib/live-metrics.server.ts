@@ -9,6 +9,7 @@ export type NpmTrend = {
   totalWeeklyDownloads: number;
   packages: { name: string; downloads: number }[];
   weeks: NpmWeek[];
+  lastUpdated: string;
 };
 
 
