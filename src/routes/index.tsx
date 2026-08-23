@@ -141,31 +141,32 @@ function Landing() {
           label="sync uptime"
         />
         <Suspense fallback={<NpmStatSkeleton />}>
-          <Await
-            promise={data.npm}
-            errorElement={<NpmStatError />}
-          >
-            {(npm) => (
-              <Stat
-                value={
-                  npm.totalWeeklyDownloads > 0
-                    ? npm.totalWeeklyDownloads.toLocaleString()
-                    : "—"
-                }
-                label="SDK installs this week"
-              >
-                {npm.weeks.length > 1 ? (
-                  <NpmTrendSparkline weeks={npm.weeks} />
-                ) : (
-                  <NpmStatEmpty />
-                )}
-                {npm.lastUpdated ? (
-                  <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
-                    updated {new Date(npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                ) : null}
-              </Stat>
-            )}
+          <Await promise={data.npm}>
+            {(npm) =>
+              npm ? (
+                <Stat
+                  value={
+                    npm.totalWeeklyDownloads > 0
+                      ? npm.totalWeeklyDownloads.toLocaleString()
+                      : "—"
+                  }
+                  label="SDK installs this week"
+                >
+                  {npm.weeks.length > 1 ? (
+                    <NpmTrendSparkline weeks={npm.weeks} />
+                  ) : (
+                    <NpmStatEmpty />
+                  )}
+                  {npm.lastUpdated ? (
+                    <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
+                      updated {new Date(npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  ) : null}
+                </Stat>
+              ) : (
+                <NpmStatError />
+              )
+            }
           </Await>
         </Suspense>
 
