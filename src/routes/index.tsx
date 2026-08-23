@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Await, defer } from "@tanstack/react-router";
+import { Suspense } from "react";
 import { PricingSyncLedger } from "@/components/pricing-sync-ledger";
 import { ProviderStatusStrip } from "@/components/provider-status-strip";
 import { NpmTrendSparkline } from "@/components/npm-trend-sparkline";
@@ -38,12 +39,11 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: async () => {
-    const [ledger, npm, providers] = await Promise.all([
+    const [ledger, providers] = await Promise.all([
       getSyncLedger(),
-      getNpmTrend().catch(() => null),
       getProviderStatuses().catch(() => []),
     ]);
-    return { ...ledger, npm, providers };
+    return { ...ledger, npm: defer(getNpmTrend().catch(() => null)), providers };
   },
 
   errorComponent: ({ error }) => (
@@ -140,23 +140,35 @@ function Landing() {
           value={data.uptimePct === null ? "—" : `${data.uptimePct.toFixed(1)}%`}
           label="sync uptime"
         />
-        <Stat
-          value={
-            data.npm && data.npm.totalWeeklyDownloads > 0
-              ? data.npm.totalWeeklyDownloads.toLocaleString()
-              : "—"
-          }
-          label="SDK installs this week"
-        >
-          {data.npm && data.npm.weeks.length > 1 ? (
-            <NpmTrendSparkline weeks={data.npm.weeks} />
-          ) : null}
-          {data.npm?.lastUpdated ? (
-            <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
-              updated {new Date(data.npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-            </p>
-          ) : null}
-        </Stat>
+        <Suspense fallback={<NpmStatSkeleton />}>
+          <Await promise={data.npm}>
+            {(npm) =>
+              npm ? (
+                <Stat
+                  value={
+                    npm.totalWeeklyDownloads > 0
+                      ? npm.totalWeeklyDownloads.toLocaleString()
+                      : "—"
+                  }
+                  label="SDK installs this week"
+                >
+                  {npm.weeks.length > 1 ? (
+                    <NpmTrendSparkline weeks={npm.weeks} />
+                  ) : (
+                    <NpmStatEmpty />
+                  )}
+                  {npm.lastUpdated ? (
+                    <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
+                      updated {new Date(npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  ) : null}
+                </Stat>
+              ) : (
+                <NpmStatError />
+              )
+            }
+          </Await>
+        </Suspense>
 
       </section>
 
@@ -181,6 +193,31 @@ function FeedRow({ run }: { run: SyncRun }) {
       <span className={`font-mono text-xs ${toneClass}`}>{note.text}</span>
       <span className="font-mono text-xs text-muted-foreground">{relativeTime(run.run_at)}</span>
     </div>
+  );
+}
+
+function NpmStatSkeleton() {
+  return (
+    <Stat value="—" label="SDK installs this week">
+      <div className="mt-2 h-[34px] w-[132px] animate-pulse rounded bg-muted" />
+      <p className="mt-2 font-mono text-[10px] text-muted-foreground">fetching npm data…</p>
+    </Stat>
+  );
+}
+
+function NpmStatEmpty() {
+  return (
+    <Stat value="—" label="SDK installs this week">
+      <p className="mt-2 font-mono text-[10px] text-muted-foreground">no download data available</p>
+    </Stat>
+  );
+}
+
+function NpmStatError() {
+  return (
+    <Stat value="—" label="SDK installs this week">
+      <p className="mt-2 font-mono text-[10px] text-warning">could not load npm trend</p>
+    </Stat>
   );
 }
 
