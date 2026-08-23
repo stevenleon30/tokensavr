@@ -38,7 +38,7 @@ async function fetchJson(url: string, ms = 6000): Promise<unknown> {
   }
 }
 
-const WEEKS = 8;
+const WEEKS = 12;
 
 function isoDay(d: Date): string {
   return d.toISOString().slice(0, 10);

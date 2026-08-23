@@ -1,4 +1,7 @@
+import { useState } from "react";
 import type { NpmWeek } from "@/lib/live-metrics.server";
+
+const RANGES = [4, 8, 12] as const;
 
 function compact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -6,7 +9,12 @@ function compact(n: number): string {
   return String(n);
 }
 
-export function NpmTrendSparkline({ weeks }: { weeks: NpmWeek[] }) {
+export function NpmTrendSparkline({ weeks: allWeeks }: { weeks: NpmWeek[] }) {
+  const [range, setRange] = useState<number>(8);
+
+  if (allWeeks.length < 2) return null;
+
+  const weeks = allWeeks.slice(-range);
   if (weeks.length < 2) return null;
 
   const w = 132;
@@ -55,6 +63,32 @@ export function NpmTrendSparkline({ weeks }: { weeks: NpmWeek[] }) {
           {Math.abs(changePct).toFixed(1)}%
         </span>
       </p>
+      <div
+        className="mt-2 flex items-center gap-1"
+        role="group"
+        aria-label="SDK momentum timeframe"
+      >
+        {RANGES.map((r) => {
+          const disabled = allWeeks.length < r;
+          const active = range === r;
+          return (
+            <button
+              key={r}
+              type="button"
+              disabled={disabled}
+              aria-pressed={active}
+              onClick={() => setRange(r)}
+              className={`rounded border px-1.5 py-0.5 font-mono text-[10px] transition-colors ${
+                active
+                  ? "border-primary text-primary"
+                  : "border-border text-muted-foreground hover:bg-secondary"
+              } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
+            >
+              {r}w
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
