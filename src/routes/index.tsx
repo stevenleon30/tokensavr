@@ -145,7 +145,12 @@ function Landing() {
               : "—"
           }
           label="SDK installs this week"
-        />
+        >
+          {data.npm && data.npm.weeks.length > 1 ? (
+            <NpmTrendSparkline weeks={data.npm.weeks} />
+          ) : null}
+        </Stat>
+
       </section>
 
     </div>
