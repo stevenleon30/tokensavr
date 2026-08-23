@@ -1481,7 +1481,9 @@ function StepCard({
               className="h-8 w-28 bg-background border-border text-sm"
             />
             <span className="text-muted-foreground">
-              Estimate: {formatCredits(parseCostToCredits(step.estimated_cost))} cr
+              Estimate: {formatCredits(stepCredits)} cr
+              {liveEstimate ? ` · ~${formatTokens(liveEstimate.totalTokens)} tok` : ""}
+
             </span>
           </div>
         )}
