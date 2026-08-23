@@ -25,7 +25,9 @@ export function RecommendationHero({
   const platform = recommendation.recommended_platform
     ? getPlatform(recommendation.recommended_platform)
     : null;
-  const confidence = Math.max(0, Math.min(100, recommendation.confidence_score ?? 0));
+  // Some plans return confidence as a 0-1 probability; normalize to a percentage.
+  const confidence = normalizeConfidence(recommendation.confidence_score) ?? 0;
+
 
   return (
     <section className="rounded-2xl border border-border bg-gradient-mesh p-6 sm:p-8 shadow-card">
