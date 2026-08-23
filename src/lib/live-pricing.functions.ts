@@ -2,19 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { LIVE_PRICING_MODEL_IDS, type LiveModelPrice } from "@/lib/live-pricing";
 
 /**
- * Public read of the daily-synced `model_pricing` table for the models the app
- * estimates against. Uses the publishable key (table has a public SELECT
- * policy), so this is safe to call from public routes.
+ * Server-side read of the daily-synced `model_pricing` table, narrowed to the
+ * models the app estimates against. The table is not client-readable; only the
+ * projection below ever leaves the server.
  */
 export const getLiveModelPricing = createServerFn({ method: "GET" }).handler(
   async (): Promise<{ prices: LiveModelPrice[] }> => {
-    const { createClient } = await import("@supabase/supabase-js");
-
-    const supabase = createClient(
-      process.env["SUPABASE_URL"]!,
-      process.env["SUPABASE_PUBLISHABLE_KEY"]!,
-      { auth: { persistSession: false, autoRefreshToken: false } },
+    const { supabaseAdmin: supabase } = await import(
+      "@/integrations/supabase/client.server"
     );
+
 
     const { data, error } = await supabase
       .from("model_pricing")

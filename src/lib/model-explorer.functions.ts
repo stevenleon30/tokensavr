@@ -30,15 +30,10 @@ export type ModelExplorerResult = {
 
 export const MODEL_PAGE_SIZE = 25;
 
-function serverClient() {
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  return { url: process.env["SUPABASE_URL"]!, key };
-}
-
 /**
- * Public, read-only explorer over `model_pricing`. The table has a public
- * SELECT policy, so the publishable key is enough and this is safe to call
- * during SSR from a public route.
+ * Read-only explorer over `model_pricing`, executed entirely on the server.
+ * The table is not readable by clients; only the paginated projection below is
+ * returned, and search input is length-clamped and sanitized.
  */
 export const searchModelPricing = createServerFn({ method: "GET" })
   .inputValidator((input: ModelExplorerQuery): ModelExplorerQuery => ({
@@ -47,22 +42,10 @@ export const searchModelPricing = createServerFn({ method: "GET" })
     page: Number.isFinite(input?.page) ? Math.max(1, Math.floor(input!.page!)) : 1,
   }))
   .handler(async ({ data }): Promise<ModelExplorerResult> => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const { url, key } = serverClient();
+    const { supabaseAdmin: supabase } = await import(
+      "@/integrations/supabase/client.server"
+    );
 
-    const supabase = createClient(url, key, {
-      auth: { persistSession: false, autoRefreshToken: false },
-      global: {
-        fetch: (input, init) => {
-          const h = new Headers(init?.headers);
-          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-            h.delete("Authorization");
-          }
-          h.set("apikey", key);
-          return fetch(input, { ...init, headers: h });
-        },
-      },
-    });
 
     const page = data.page ?? 1;
     const from = (page - 1) * MODEL_PAGE_SIZE;

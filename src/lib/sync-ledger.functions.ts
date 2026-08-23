@@ -10,28 +10,15 @@ export type SyncLedgerData = {
 };
 
 /**
- * Public read of pricing_sync_log (+ a models-tracked count). The table has a
- * public SELECT policy, so the publishable key is enough — safe on public
- * routes and during SSR.
+ * Server-side read of pricing_sync_log (+ a models-tracked count). Aggregated
+ * on the server so `model_pricing` needs no client-readable policy.
  */
 export const getSyncLedger = createServerFn({ method: "GET" }).handler(
   async (): Promise<SyncLedgerData> => {
-    const { createClient } = await import("@supabase/supabase-js");
+    const { supabaseAdmin: supabase } = await import(
+      "@/integrations/supabase/client.server"
+    );
 
-    const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-    const supabase = createClient(process.env["SUPABASE_URL"]!, key, {
-      auth: { persistSession: false, autoRefreshToken: false },
-      global: {
-        fetch: (input, init) => {
-          const h = new Headers(init?.headers);
-          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-            h.delete("Authorization");
-          }
-          h.set("apikey", key);
-          return fetch(input, { ...init, headers: h });
-        },
-      },
-    });
 
     const since = new Date(Date.now() - LEDGER_DAYS * 24 * 60 * 60 * 1000).toISOString();
 

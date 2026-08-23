@@ -21,18 +21,15 @@ export type PricingSyncStatus = {
 const SOURCES = ["openrouter", "litellm", "manual"] as const;
 
 /**
- * Public read of `model_pricing` sync health. Uses the publishable key
- * (the table has a public SELECT policy), so it is safe on public routes.
+ * Aggregate `model_pricing` sync health, computed server-side. Only counts and
+ * timestamps are returned — never raw pricing rows.
  */
 export const getPricingSyncStatus = createServerFn({ method: "GET" }).handler(
   async (): Promise<PricingSyncStatus> => {
-    const { createClient } = await import("@supabase/supabase-js");
-
-    const supabase = createClient(
-      process.env["SUPABASE_URL"]!,
-      process.env["SUPABASE_PUBLISHABLE_KEY"]!,
-      { auth: { persistSession: false, autoRefreshToken: false } },
+    const { supabaseAdmin: supabase } = await import(
+      "@/integrations/supabase/client.server"
     );
+
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
