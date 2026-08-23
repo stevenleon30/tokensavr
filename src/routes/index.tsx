@@ -32,9 +32,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  loader: ({ context }) => {
-    context.queryClient.ensureQueryData(ledgerQueryOptions);
-  },
+  loader: () => getSyncLedger(),
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
       <p className="font-mono text-sm text-warning" role="alert">
@@ -51,8 +49,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const { data } = useSuspenseQuery(ledgerQueryOptions);
+  const data = Route.useLoaderData();
   const health = syncHealth(data.runs);
+
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
