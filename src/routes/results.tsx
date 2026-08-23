@@ -758,19 +758,23 @@ function ResultsPage() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <LiveStat
-              label="Token cost"
-              value={formatUsd(liveEstimate.totalUsd)}
-              hint="Sum of per-step model API cost"
+              label="Tokens you'll use"
+              value={`${formatTokens(liveEstimate.totalTokens)} tok`}
+              hint={`${formatTokens(liveEstimate.totalInputTokens)} in / ${formatTokens(liveEstimate.totalOutputTokens)} out`}
             />
             <LiveStat
-              label="Credit equivalent"
-              value={`${formatCredits(liveEstimate.totalCredits)} cr`}
-              hint={`at ${formatUsd(liveEstimate.creditUsd)}/credit`}
+              label="Token cost"
+              value={formatUsd(liveEstimate.totalUsd)}
+              hint={`≈ ${formatCredits(liveEstimate.totalCredits)} cr at ${formatUsd(liveEstimate.creditUsd)}/credit`}
             />
             <LiveStat
               label="Plan estimate"
-              value={`${formatCredits(totals?.estimated ?? 0)} cr`}
-              hint="From the generated strategy"
+              value={`${formatCredits(planCredits)} cr`}
+              hint={
+                planCreditsFromLive
+                  ? "Derived from token volumes"
+                  : "From the generated strategy"
+              }
             />
             <LiveStat
               label="Priced steps"
@@ -778,10 +782,33 @@ function ResultsPage() {
               hint="Steps matched to a live model price"
             />
           </div>
+          {liveEstimate.byPlatform.length > 1 && (
+            <ul className="mt-4 space-y-2">
+              {liveEstimate.byPlatform.map((p) => (
+                <li key={p.platformId} className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <PlatformBadge id={p.platformId} size="sm" />
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      · {p.steps} {p.steps === 1 ? "step" : "steps"}
+                    </span>
+                  </div>
+                  <div className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    <span className="font-medium text-foreground">
+                      {formatTokens(p.totalTokens)} tok
+                    </span>{" "}
+                    · {formatUsd(p.usd)} · {Math.round(p.tokenShare * 100)}%
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
           <p className="mt-3 text-xs text-muted-foreground">
-            Recomputed from real published per-token prices for the model each platform
-            runs, using typical token volumes for each step type.
+            Token volumes are sized from your idea's complexity and each step's kind of
+            work, then priced with real published per-token rates for the model that
+            platform runs. Steps covered by a subscription still show their token cost so
+            you can see the work involved.
           </p>
+
         </section>
       )}
 
