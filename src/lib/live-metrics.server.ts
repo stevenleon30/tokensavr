@@ -3,10 +3,14 @@ export type ProviderStatus = {
   status: "none" | "minor" | "major" | "critical" | "unknown";
 };
 
+export type NpmWeek = { weekEnding: string; downloads: number };
+
 export type NpmTrend = {
   totalWeeklyDownloads: number;
   packages: { name: string; downloads: number }[];
+  weeks: NpmWeek[];
 };
+
 
 const NPM_PACKAGES = ["openai", "@anthropic-ai/sdk", "@google/generative-ai", "groq-sdk"];
 
@@ -34,31 +38,74 @@ async function fetchJson(url: string, ms = 6000): Promise<unknown> {
   }
 }
 
+const WEEKS = 8;
+
+function isoDay(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
 export async function loadNpmTrend(): Promise<NpmTrend> {
   if (npmCache && Date.now() - npmCache.at < NPM_TTL) return npmCache.data;
+
+  // npm counts settle a day late; end the window yesterday.
+  const end = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const start = new Date(end.getTime() - (WEEKS * 7 - 1) * 24 * 60 * 60 * 1000);
+  const range = `${isoDay(start)}:${isoDay(end)}`;
 
   const results = await Promise.all(
     NPM_PACKAGES.map(async (pkg) => {
       try {
         const json = (await fetchJson(
-          `https://api.npmjs.org/downloads/point/last-week/${encodeURIComponent(pkg)}`,
-        )) as { downloads?: number };
-        return { name: pkg, downloads: Number(json?.downloads ?? 0) };
+          `https://api.npmjs.org/downloads/range/${range}/${encodeURIComponent(pkg)}`,
+        )) as { downloads?: { day?: string; downloads?: number }[] };
+        const days = Array.isArray(json?.downloads) ? json.downloads : [];
+        return {
+          name: pkg,
+          days: days.map((d) => ({ day: String(d?.day ?? ""), downloads: Number(d?.downloads ?? 0) })),
+        };
       } catch {
-        return { name: pkg, downloads: 0 };
+        return { name: pkg, days: [] as { day: string; downloads: number }[] };
       }
     }),
   );
 
+  // sum every package per calendar day
+  const perDay = new Map<string, number>();
+  for (const r of results) {
+    for (const d of r.days) {
+      if (!d.day) continue;
+      perDay.set(d.day, (perDay.get(d.day) ?? 0) + d.downloads);
+    }
+  }
+  const ordered = [...perDay.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1));
+
+  // bucket trailing days into whole weeks of 7, oldest first
+  const usable = ordered.slice(Math.max(0, ordered.length - WEEKS * 7));
+  const weeks: NpmWeek[] = [];
+  for (let i = 0; i + 7 <= usable.length; i += 7) {
+    const bucket = usable.slice(i, i + 7);
+    weeks.push({
+      weekEnding: bucket[bucket.length - 1][0],
+      downloads: bucket.reduce((sum, [, n]) => sum + n, 0),
+    });
+  }
+
+  const packages = results.map((r) => ({
+    name: r.name,
+    downloads: r.days.slice(-7).reduce((sum, d) => sum + d.downloads, 0),
+  }));
+
   const data: NpmTrend = {
-    packages: results,
-    totalWeeklyDownloads: results.reduce((sum, r) => sum + r.downloads, 0),
+    packages,
+    weeks,
+    totalWeeklyDownloads: weeks.length > 0 ? weeks[weeks.length - 1].downloads : 0,
   };
 
   // never cache a fully-failed read
   if (data.totalWeeklyDownloads > 0) npmCache = { at: Date.now(), data };
   return data;
 }
+
 
 function indicatorFrom(value: unknown): ProviderStatus["status"] {
   return value === "none" || value === "minor" || value === "major" || value === "critical"

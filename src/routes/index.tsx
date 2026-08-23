@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PricingSyncLedger } from "@/components/pricing-sync-ledger";
 import { ProviderStatusStrip } from "@/components/provider-status-strip";
+import { NpmTrendSparkline } from "@/components/npm-trend-sparkline";
+
 import { getSyncLedger } from "@/lib/sync-ledger.functions";
 import { getNpmTrend, getProviderStatuses } from "@/lib/live-metrics.functions";
 import {
@@ -145,7 +147,12 @@ function Landing() {
               : "—"
           }
           label="SDK installs this week"
-        />
+        >
+          {data.npm && data.npm.weeks.length > 1 ? (
+            <NpmTrendSparkline weeks={data.npm.weeks} />
+          ) : null}
+        </Stat>
+
       </section>
 
     </div>
@@ -172,13 +179,23 @@ function FeedRow({ run }: { run: SyncRun }) {
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+function Stat({
+  value,
+  label,
+  children,
+}: {
+  value: string;
+  label: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div>
       <p className="font-display text-3xl font-medium tabular-nums text-foreground sm:text-4xl">
         {value}
       </p>
       <p className="mt-1 font-mono text-xs text-muted-foreground">{label}</p>
+      {children ? <div className="mt-2">{children}</div> : null}
     </div>
   );
+
 }
