@@ -398,6 +398,15 @@ function ResultsPage() {
     return est.pricedSteps > 0 ? est : null;
   }, [strategy, livePrices]);
 
+  /**
+   * Credits shown as the plan total. The generator zeroes out steps it thinks a
+   * subscription covers, which used to make the total read "0" — so fall back to
+   * the token-derived figure whenever the parsed plan total is missing.
+   */
+  const planCreditsFromLive = (totals?.estimated ?? 0) <= 0 && !!liveEstimate;
+  const planCredits = planCreditsFromLive
+    ? (liveEstimate?.totalCredits ?? 0)
+    : (totals?.estimated ?? 0);
 
 
   const recommendation = useMemo(() => {
