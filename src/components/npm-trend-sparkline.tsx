@@ -1,4 +1,7 @@
+import { useState } from "react";
 import type { NpmWeek } from "@/lib/live-metrics.server";
+
+const RANGES = [4, 8, 12] as const;
 
 function compact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
