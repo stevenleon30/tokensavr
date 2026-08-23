@@ -151,6 +151,22 @@ const TOOL = {
                 pattern:
                   "^(0 credits|1 credit|~?\\d+(\\.\\d)? credits|\\d+-\\d+ credits)$",
               },
+              estimated_input_tokens: {
+                type: "number",
+                minimum: 0,
+                description:
+                  "Realistic input/context tokens this step consumes on that platform.",
+              },
+              estimated_output_tokens: {
+                type: "number",
+                minimum: 0,
+                description: "Realistic output tokens this step generates.",
+              },
+              covered_by_subscription: {
+                type: "boolean",
+                description:
+                  "True when this step runs on a paid plan the user already subscribes to (cost is not additional out-of-pocket).",
+              },
               prompt_to_use: { type: "string" },
             },
             required: [
@@ -159,10 +175,14 @@ const TOOL = {
               "platform",
               "mode",
               "estimated_cost",
+              "estimated_input_tokens",
+              "estimated_output_tokens",
+              "covered_by_subscription",
               "prompt_to_use",
             ],
             additionalProperties: false,
           },
+
         },
       },
       required: [
