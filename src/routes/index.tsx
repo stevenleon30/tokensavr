@@ -196,6 +196,31 @@ function FeedRow({ run }: { run: SyncRun }) {
   );
 }
 
+function NpmStatSkeleton() {
+  return (
+    <Stat value="—" label="SDK installs this week">
+      <div className="mt-2 h-[34px] w-[132px] animate-pulse rounded bg-muted" />
+      <p className="mt-2 font-mono text-[10px] text-muted-foreground">fetching npm data…</p>
+    </Stat>
+  );
+}
+
+function NpmStatEmpty() {
+  return (
+    <Stat value="—" label="SDK installs this week">
+      <p className="mt-2 font-mono text-[10px] text-muted-foreground">no download data available</p>
+    </Stat>
+  );
+}
+
+function NpmStatError() {
+  return (
+    <Stat value="—" label="SDK installs this week">
+      <p className="mt-2 font-mono text-[10px] text-warning">could not load npm trend</p>
+    </Stat>
+  );
+}
+
 function Stat({
   value,
   label,
