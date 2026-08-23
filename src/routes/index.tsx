@@ -151,6 +151,11 @@ function Landing() {
           {data.npm && data.npm.weeks.length > 1 ? (
             <NpmTrendSparkline weeks={data.npm.weeks} />
           ) : null}
+          {data.npm?.lastUpdated ? (
+            <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
+              updated {new Date(data.npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          ) : null}
         </Stat>
 
       </section>
