@@ -1,216 +1,167 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowRight, Sparkles, Zap, BarChart3, Library } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { PricingSyncLedger } from "@/components/pricing-sync-ledger";
+import { getSyncLedger } from "@/lib/sync-ledger.functions";
+import {
+  SYNC_INTERVAL_HOURS,
+  relativeTime,
+  runNote,
+  syncHealth,
+  type SyncRun,
+} from "@/lib/sync-ledger";
 
-// Brand hex colors for the platform name strip — kept literal because
-// these are external brands, not part of our themed palette. Picked to
-// remain legible on both light and dark backgrounds.
-const PARTNER_BRANDS: { name: string; color: string }[] = [
-  { name: "Lovable", color: "#FF4F8B" },
-  { name: "Claude", color: "#D97757" },
-  { name: "Claude Code", color: "#C96342" },
-  { name: "ChatGPT", color: "#10A37F" },
-  { name: "Gemini", color: "#4796E3" },
-  { name: "Cursor", color: "#6E6E73" },
-  { name: "Windsurf", color: "#0BAA9F" },
-  { name: "GitHub Copilot", color: "#6E6E73" },
-  { name: "Bolt", color: "#E0AE00" },
-  { name: "Replit", color: "#F26207" },
-];
+const ledgerQueryOptions = queryOptions({
+  queryKey: ["sync-ledger"],
+  queryFn: () => getSyncLedger(),
+});
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>): { idea?: string } => ({
-    idea: typeof s.idea === "string" ? s.idea : undefined,
-  }),
   head: () => ({
     meta: [
-      { title: "TokenSavr — Stop burning credits. Start building smart." },
+      { title: "tokensavr — every model's price, checked every six hours" },
       {
         name: "description",
         content:
-          "Paste your app idea. Get a token-optimized build plan across Lovable, Claude, Cursor, ChatGPT, and Bolt.",
+          "tokensavr tracks LLM prices across every major provider and routes each API call to the cheapest model that clears your quality bar.",
       },
+      {
+        property: "og:title",
+        content: "tokensavr — every model's price, checked every six hours",
+      },
+      {
+        property: "og:description",
+        content:
+          "Live pricing sync ledger, model routing, and a public log of every price check we run.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.ensureQueryData(ledgerQueryOptions);
+  },
+  errorComponent: ({ error }) => (
+    <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+      <p className="font-mono text-sm text-warning" role="alert">
+        the sync ledger could not be loaded: {error.message}
+      </p>
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+      <p className="font-mono text-sm text-muted-foreground">nothing here.</p>
+    </div>
+  ),
   component: Landing,
 });
 
 function Landing() {
-  const navigate = useNavigate();
-  const [idea, setIdea] = useState("");
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = idea.trim();
-    if (trimmed.length < 10) return;
-    navigate({
-      to: "/generate",
-      search: {
-        idea: trimmed,
-        budget: undefined,
-        platforms: undefined,
-      },
-    });
-  };
-
-
-
+  const { data } = useSuspenseQuery(ledgerQueryOptions);
+  const health = syncHealth(data.runs);
 
   return (
-    <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
-        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-28 sm:pb-32 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-foreground shadow-glow backdrop-blur">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-            </span>
-            <Sparkles className="h-4 w-4 text-primary" />
-            For vibe coders &amp; indie builders
-          </div>
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      {/* status line */}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-14 font-mono text-xs text-muted-foreground">
+        <span
+          aria-hidden
+          className={`h-2 w-2 rounded-full ${health.operational ? "bg-success" : "bg-warning"}`}
+        />
+        <span className={health.operational ? "text-success" : "text-warning"}>{health.label}</span>
+        <span aria-hidden>·</span>
+        <span>
+          {health.lastRunAt ? `last sync ${relativeTime(health.lastRunAt)}` : "no sync recorded"}
+        </span>
+      </div>
 
-          <h1 className="mt-6 text-5xl sm:text-7xl lg:text-8xl font-semibold tracking-tight leading-[1.02]">
-            <span className="bg-gradient-to-br from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent">
-              Stop burning credits.
-            </span>
-            <br />
-            <span className="text-gradient">Start building smart.</span>
-          </h1>
-
-          <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            TokenSavr turns your app idea into a token-optimized build plan across Lovable, Claude,
-            Cursor, ChatGPT, and more — so you save credits and ship faster.
-          </p>
-
-          <form onSubmit={onSubmit} className="mt-10 mx-auto max-w-2xl">
-            <div className="rounded-2xl border border-border bg-card shadow-card p-2 transition-all focus-within:border-primary/50 focus-within:shadow-elegant">
-              <Textarea
-                value={idea}
-                onChange={(e) => setIdea(e.target.value)}
-                placeholder="A SaaS dashboard for tracking gym memberships with Stripe billing and a public landing page…"
-                rows={3}
-                className="resize-none border-0 bg-transparent text-base focus-visible:ring-0 shadow-none px-3 py-2 placeholder:text-muted-foreground/60"
-              />
-              <div className="flex items-center justify-between gap-3 px-2 pb-1 pt-2">
-                <span className="text-xs text-muted-foreground hidden sm:block">
-                  Press Enter to generate · Free preview
-                </span>
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="bg-gradient-primary hover:opacity-95 shadow-glow transition-all hover:scale-[1.02] gap-2 ml-auto"
-                  disabled={idea.trim().length < 10}
-                >
-                  Generate My Strategy
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </form>
-
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">How it works</h2>
-          <p className="mt-3 text-muted-foreground">
-            Three minutes to a plan that could save you hundreds of credits.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <FeatureCard
-            icon={<Zap className="h-5 w-5" />}
-            step="01"
-            title="Describe your idea"
-            body="Paste what you want to build. Pick your daily budget and which platforms you have access to."
-          />
-          <FeatureCard
-            icon={<Sparkles className="h-5 w-5" />}
-            step="02"
-            title="Get a routed plan"
-            body="Free Claude for planning. Lovable Chat for architecture. Build mode only when needed. Each step has a copy-paste prompt."
-          />
-          <FeatureCard
-            icon={<BarChart3 className="h-5 w-5" />}
-            step="03"
-            title="Track your savings"
-            body="Save strategies, watch your daily budget, and learn which features burn the most tokens."
-          />
-        </div>
-      </section>
-
-      {/* Tips teaser */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16">
-        <div className="rounded-2xl border border-border bg-gradient-mesh p-8 sm:p-12 shadow-card">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2 text-xs text-primary mb-3">
-                <Library className="h-3.5 w-3.5" /> Platform Tips Library
-              </div>
-              <h3 className="text-2xl font-semibold tracking-tight">
-                Browse curated cost-saving tactics
-              </h3>
-              <p className="mt-2 text-muted-foreground max-w-xl">
-                Lovable Chat vs Build mode. Claude SKILL.md tricks. Cursor /compose. ChatGPT model
-                routing. Updated as platforms change.
-              </p>
-            </div>
-            <Button asChild size="lg" variant="secondary" className="shrink-0">
-              <Link to="/tips">Open library</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Powered-by logo strip */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 border-t border-border">
-        <p className="text-center text-xs uppercase tracking-widest text-muted-foreground mb-8">
-          Optimizes spend across the tools you already use
+      {/* hero */}
+      <section className="pt-6">
+        <h1 className="max-w-[600px] font-display text-4xl font-medium leading-[1.1] tracking-tight text-foreground sm:text-6xl">
+          Every model's price, checked every six hours.
+        </h1>
+        <p className="mt-6 max-w-[560px] text-base leading-relaxed text-muted-foreground">
+          tokensavr watches what OpenAI, Anthropic, Google, DeepSeek, Meta and the rest charge per
+          token. When you send a request, it picks the cheapest model that still clears the quality
+          bar you set, so you pay list price for the work instead of paying for the brand name.
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-          {PARTNER_BRANDS.map((b) => (
-            <span
-              key={b.name}
-              className="text-base sm:text-lg font-semibold tracking-tight transition-transform hover:scale-[1.05]"
-              style={{ color: b.color }}
-            >
-              {b.name}
-            </span>
-          ))}
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Link
+            to="/generate"
+            search={{ idea: undefined, budget: undefined, platforms: undefined }}
+            className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-85"
+          >
+            Start routing free
+          </Link>
+          <Link
+            to="/pricing-sync"
+            className="rounded-lg border border-border px-5 py-2.5 text-sm text-foreground transition-colors hover:bg-secondary"
+          >
+            View live sync log →
+          </Link>
         </div>
+      </section>
+
+      {/* ledger */}
+      <section className="pt-14">
+        <PricingSyncLedger runs={data.runs} checksLastYear={data.checksLastYear} />
+      </section>
+
+      {/* live feed */}
+      <section className="pt-14">
+        <h2 className="font-mono text-xs text-muted-foreground">recent sync activity</h2>
+        <div className="mt-4">
+          {data.recent.length === 0 ? (
+            <p className="border-t border-border py-4 font-mono text-xs text-muted-foreground">
+              no sync runs logged yet — the first scheduled run will appear here
+            </p>
+          ) : (
+            data.recent.map((run) => <FeedRow key={run.run_at} run={run} />)
+          )}
+        </div>
+      </section>
+
+      {/* stat strip */}
+      <section className="grid grid-cols-2 gap-8 py-16 sm:grid-cols-4">
+        <Stat value={data.modelsTracked.toLocaleString()} label="models tracked" />
+        <Stat value={`${SYNC_INTERVAL_HOURS}h`} label="sync interval" />
+        <Stat value={data.checksLastYear.toLocaleString()} label="checks in the last year" />
+        <Stat
+          value={data.uptimePct === null ? "—" : `${data.uptimePct.toFixed(1)}%`}
+          label="sync uptime"
+        />
       </section>
     </div>
   );
 }
 
-function FeatureCard({
-  icon,
-  step,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  step: string;
-  title: string;
-  body: string;
-}) {
+function FeedRow({ run }: { run: SyncRun }) {
+  const note = runNote(run);
+  const toneClass =
+    note.tone === "success"
+      ? "text-success"
+      : note.tone === "warning"
+        ? "text-warning"
+        : "text-muted-foreground";
+
   return (
-    <div className="group rounded-xl border border-border bg-card p-6 shadow-card transition-all hover:border-primary/40 hover:shadow-elegant">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-primary group-hover:bg-gradient-primary group-hover:text-primary-foreground transition-colors">
-          {icon}
-        </div>
-        <span className="text-xs font-mono text-muted-foreground">{step}</span>
-      </div>
-      <h3 className="font-semibold tracking-tight">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{body}</p>
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-border py-3 last:border-b">
+      <span className="font-mono text-sm text-foreground">
+        {run.models_checked > 0 ? "model_pricing" : "sync job"}
+      </span>
+      <span className={`font-mono text-xs ${toneClass}`}>{note.text}</span>
+      <span className="font-mono text-xs text-muted-foreground">{relativeTime(run.run_at)}</span>
+    </div>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <p className="font-display text-3xl font-medium tabular-nums text-foreground sm:text-4xl">
+        {value}
+      </p>
+      <p className="mt-1 font-mono text-xs text-muted-foreground">{label}</p>
     </div>
   );
 }
