@@ -38,16 +38,23 @@ import { PlatformScoreMatrix } from "@/components/platform-score-matrix";
 import { RecommendationInsights } from "@/components/recommendation-insights";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { parseCostToCredits, formatCredits, formatCreditsWithUsd } from "@/lib/cost";
+import {
+  parseCostToCredits,
+  formatCredits,
+  formatCreditsWithUsd,
+  normalizeConfidence,
+} from "@/lib/cost";
 import { getPlatform } from "@/lib/platforms";
 import { formatUsd } from "@/lib/pricing";
 import { getLiveModelPricing } from "@/lib/live-pricing.functions";
 import {
   estimateStrategyFromLivePricing,
+  formatTokens,
   type LivePriceMap,
   type LiveStepEstimate,
   type LiveStrategyEstimate,
 } from "@/lib/live-pricing";
+
 import { downloadStrategyPdf } from "@/lib/strategy-pdf";
 import { downloadStrategyJson, strategyFilename } from "@/lib/strategy-export";
 import { CostBreakdown } from "@/components/cost-breakdown";
