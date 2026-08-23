@@ -3,10 +3,14 @@ export type ProviderStatus = {
   status: "none" | "minor" | "major" | "critical" | "unknown";
 };
 
+export type NpmWeek = { weekEnding: string; downloads: number };
+
 export type NpmTrend = {
   totalWeeklyDownloads: number;
   packages: { name: string; downloads: number }[];
+  weeks: NpmWeek[];
 };
+
 
 const NPM_PACKAGES = ["openai", "@anthropic-ai/sdk", "@google/generative-ai", "groq-sdk"];
 
