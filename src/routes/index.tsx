@@ -43,7 +43,7 @@ export const Route = createFileRoute("/")({
       getSyncLedger(),
       getProviderStatuses().catch(() => []),
     ]);
-    return { ...ledger, npm: defer(getNpmTrend()), providers };
+    return { ...ledger, npm: defer(getNpmTrend().catch(() => null)), providers };
   },
 
   errorComponent: ({ error }) => (
