@@ -179,13 +179,23 @@ function FeedRow({ run }: { run: SyncRun }) {
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+function Stat({
+  value,
+  label,
+  children,
+}: {
+  value: string;
+  label: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div>
       <p className="font-display text-3xl font-medium tabular-nums text-foreground sm:text-4xl">
         {value}
       </p>
       <p className="mt-1 font-mono text-xs text-muted-foreground">{label}</p>
+      {children ? <div className="mt-2">{children}</div> : null}
     </div>
   );
+
 }
