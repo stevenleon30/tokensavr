@@ -1413,7 +1413,7 @@ function StepCard({
                 stepNumber={step.step_number}
                 totalSteps={totalSteps}
                 completedNumbers={completedNumbers}
-                estimatedCredits={parseCostToCredits(step.estimated_cost)}
+                estimatedCredits={stepCredits}
                 totalEstimatedCredits={totalEstimatedCredits}
                 actualCredits={progress?.actual_cost_credits ?? null}
                 platformId={step.platform}
