@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { NpmWeek } from "@/lib/live-metrics.server";
 
 const RANGES = [4, 8, 12] as const;
@@ -9,8 +9,14 @@ function compact(n: number): string {
   return String(n);
 }
 
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 export function NpmTrendSparkline({ weeks: allWeeks }: { weeks: NpmWeek[] }) {
   const [range, setRange] = useState<number>(8);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   if (allWeeks.length < 2) return null;
 
@@ -25,11 +31,13 @@ export function NpmTrendSparkline({ weeks: allWeeks }: { weeks: NpmWeek[] }) {
   const max = Math.max(...values);
   const span = max - min || 1;
 
-  const points = values.map((v, i) => {
-    const x = pad + (i * (w - pad * 2)) / (values.length - 1);
-    const y = h - pad - ((v - min) / span) * (h - pad * 2);
-    return { x, y };
-  });
+  const points = useMemo(() => {
+    return values.map((v, i) => {
+      const x = pad + (i * (w - pad * 2)) / (values.length - 1);
+      const y = h - pad - ((v - min) / span) * (h - pad * 2);
+      return { x, y };
+    });
+  }, [values, min, span]);
 
   const line = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
   const last = points[points.length - 1];
@@ -38,8 +46,11 @@ export function NpmTrendSparkline({ weeks: allWeeks }: { weeks: NpmWeek[] }) {
   const changePct = first > 0 ? ((latest - first) / first) * 100 : 0;
   const up = changePct >= 0;
 
+  const hovered = hoveredIndex != null ? weeks[hoveredIndex] : null;
+  const hoveredPoint = hoveredIndex != null ? points[hoveredIndex] : null;
+
   return (
-    <div>
+    <div className="relative">
       <svg
         viewBox={`0 0 ${w} ${h}`}
         width={w}
@@ -55,7 +66,37 @@ export function NpmTrendSparkline({ weeks: allWeeks }: { weeks: NpmWeek[] }) {
         />
         <path d={line} fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinejoin="round" />
         <circle cx={last.x} cy={last.y} r="2" fill="var(--primary)" />
+        {points.map((p, i) => (
+          <g key={i}>
+            <rect
+              x={p.x - 6}
+              y={0}
+              width={12}
+              height={h}
+              fill="transparent"
+              pointerEvents="all"
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              style={{ cursor: "pointer" }}
+            />
+            {hoveredIndex === i && (
+              <circle cx={p.x} cy={p.y} r="3" fill="var(--primary)" opacity="0.5" />
+            )}
+          </g>
+        ))}
       </svg>
+
+      {hovered && hoveredPoint && (
+        <div
+          className="pointer-events-none absolute z-10 -translate-x-1/2 translate-y-1 rounded border border-border bg-card px-2 py-1 shadow-sm"
+          style={{ left: hoveredPoint.x, top: hoveredPoint.y }}
+        >
+          <p className="whitespace-nowrap font-mono text-[10px] text-card-foreground">
+            Week ending {formatDate(hovered.weekEnding)}: {hovered.downloads.toLocaleString()} downloads
+          </p>
+        </div>
+      )}
+
       <p className="mt-1 font-mono text-xs text-muted-foreground">
         {weeks.length}w momentum{" "}
         <span className={up ? "text-success" : "text-warning"}>
