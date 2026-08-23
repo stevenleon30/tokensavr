@@ -72,8 +72,14 @@ type Step = {
   platform: string;
   mode: string;
   estimated_cost: string;
+  /** Generator-supplied token volumes, when the plan includes them. */
+  estimated_input_tokens?: number | null;
+  estimated_output_tokens?: number | null;
+  /** Step runs on a paid plan the user already subscribes to. */
+  covered_by_subscription?: boolean | null;
   prompt_to_use: string;
 };
+
 
 type StoredStrategy = {
   idea: string;
