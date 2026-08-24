@@ -144,40 +144,39 @@ export function PricingSyncLedger({
         </div>
       </div>
 
-      {/* grid, full width */}
-      <div className="mt-4 overflow-x-auto pb-1">
-        <div className="inline-flex gap-2">
+      {/* grid, stretched to container width */}
+      <div className="mt-4">
+        <div className="flex w-full gap-1.5">
           {/* day-of-week labels */}
           <div
-            className="flex flex-col justify-between font-mono text-[10px] leading-none text-muted-foreground"
-            style={{ paddingTop: 18 }}
+            className="flex shrink-0 flex-col justify-between py-px font-mono text-[10px] leading-none text-muted-foreground"
+            style={{ width: 22, paddingTop: 17 }}
           >
             <span>mon</span>
             <span>wed</span>
             <span>fri</span>
           </div>
 
-          <div>
-            <div className="flex" style={{ gap: active.gap }}>
+          <div className="min-w-0 flex-1">
+            <div className="flex w-full" style={{ gap: active.gap }}>
               {months.map((label, i) => (
                 <div
                   key={i}
-                  className="font-mono text-[10px] leading-4 text-muted-foreground"
-                  style={{ width: active.cell }}
+                  className="min-w-0 flex-1 font-mono text-[10px] leading-4 text-muted-foreground"
                 >
-                  <span className="whitespace-nowrap">{label}</span>
+                  <span className="block truncate">{label}</span>
                 </div>
               ))}
             </div>
 
-            <div className="flex" style={{ gap: active.gap }}>
+            <div className="flex w-full" style={{ gap: active.gap }}>
               {weeks.map((week, wi) => (
-                <div key={wi} className="flex flex-col" style={{ gap: active.gap }}>
+                <div key={wi} className="flex min-w-0 flex-1 flex-col" style={{ gap: active.gap }}>
                   {week.map((day) => (
                     <div
                       key={day.date}
-                      style={{ ...CELL_RADIUS, height: active.cell, width: active.cell }}
-                      className={LEVEL_CLASS[day.level]}
+                      style={CELL_RADIUS}
+                      className={`aspect-square w-full min-w-[2px] ${LEVEL_CLASS[day.level]}`}
                       onMouseEnter={() => setHovered(day)}
                       onMouseLeave={() => setHovered(null)}
                       title={`${formatDate(day.date)} — ${day.updated.toLocaleString()} updates`}
