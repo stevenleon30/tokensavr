@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   buildLedger,
   LEDGER_WINDOW_DAYS,
@@ -60,21 +60,29 @@ export function PricingSyncLedger({
   checksLastYear,
   modelsTracked,
   providersTracked,
+  serverNow,
 }: {
   runs: SyncRun[];
   checksLastYear: number;
   modelsTracked?: number;
   providersTracked?: number;
+  serverNow?: string;
 }) {
   const [hovered, setHovered] = useState<LedgerDay | null>(null);
   const [windowId, setWindowId] = useState<LedgerWindow>("12w");
 
+  // Stable clock for SSR/hydration match; tick to client time after mount.
+  const [now, setNow] = useState(() =>
+    serverNow ? new Date(serverNow).getTime() : Date.now(),
+  );
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
+
   const active = WINDOWS.find((w) => w.id === windowId) ?? WINDOWS[0]!;
-  // 12 weeks fits without scrolling, so let the cells stretch across the card.
-  const fluid = windowId === "12w";
   const days = useMemo(
-    () => buildLedger(runs, new Date(), LEDGER_WINDOW_DAYS[windowId]),
-    [runs, windowId],
+    () => buildLedger(runs, new Date(now), LEDGER_WINDOW_DAYS[windowId]),
+    [runs, windowId, now],
   );
   const weeks = toWeeks(days);
   const months = monthLabels(weeks);
@@ -95,28 +103,12 @@ export function PricingSyncLedger({
             price checks in the {windowId === "1y" ? "last year" : "last 12 weeks"}
           </p>
         </div>
-
-        <div className="flex items-center gap-1.5">
-          {WINDOWS.map((w) => (
-            <button
-              key={w.id}
-              type="button"
-              onClick={() => setWindowId(w.id)}
-              className={`rounded-full border px-2.5 py-1 font-mono text-[10px] transition-colors ${
-                w.id === windowId
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border text-muted-foreground hover:bg-secondary"
-              }`}
-            >
-              {w.label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_200px]">
-        <div className={fluid ? "pb-1" : "overflow-x-auto pb-1"}>
-          <div className={`gap-2 ${fluid ? "flex" : "inline-flex"}`}>
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_200px]">
+        {/* grid column */}
+        <div className="overflow-x-auto pb-1">
+          <div className="inline-flex gap-2">
             {/* day-of-week labels */}
             <div
               className="flex flex-col justify-between font-mono text-[10px] leading-none text-muted-foreground"
@@ -127,13 +119,13 @@ export function PricingSyncLedger({
               <span>fri</span>
             </div>
 
-            <div className={fluid ? "min-w-0 flex-1" : undefined}>
+            <div>
               <div className="flex" style={{ gap: active.gap }}>
                 {months.map((label, i) => (
                   <div
                     key={i}
-                    className={`font-mono text-[10px] leading-4 text-muted-foreground ${fluid ? "min-w-0 flex-1" : ""}`}
-                    style={fluid ? undefined : { width: active.cell }}
+                    className="font-mono text-[10px] leading-4 text-muted-foreground"
+                    style={{ width: active.cell }}
                   >
                     <span className="whitespace-nowrap">{label}</span>
                   </div>
@@ -142,20 +134,12 @@ export function PricingSyncLedger({
 
               <div className="flex" style={{ gap: active.gap }}>
                 {weeks.map((week, wi) => (
-                  <div
-                    key={wi}
-                    className={`flex flex-col ${fluid ? "min-w-0 flex-1 [max-width:40px]" : ""}`}
-                    style={{ gap: active.gap }}
-                  >
+                  <div key={wi} className="flex flex-col" style={{ gap: active.gap }}>
                     {week.map((day) => (
                       <div
                         key={day.date}
-                        style={
-                          fluid
-                            ? CELL_RADIUS
-                            : { ...CELL_RADIUS, height: active.cell, width: active.cell }
-                        }
-                        className={`${LEVEL_CLASS[day.level]} ${fluid ? "aspect-square w-full" : ""}`}
+                        style={{ ...CELL_RADIUS, height: active.cell, width: active.cell }}
+                        className={LEVEL_CLASS[day.level]}
                         onMouseEnter={() => setHovered(day)}
                         onMouseLeave={() => setHovered(null)}
                         title={`${formatDate(day.date)} — ${day.updated.toLocaleString()} updates`}
@@ -180,57 +164,76 @@ export function PricingSyncLedger({
           </div>
         </div>
 
-        {/* metrics rail — fills the space beside the grid */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-1">
-          <RailStat
-            label="last sync"
-            value={latest ? relativeTime(latest.run_at) : "—"}
-            hint={latest ? `${latest.models_checked.toLocaleString()} models checked` : "no runs yet"}
-          />
-          <RailStat
-            label="active days"
-            value={`${summary.activeDays}/${days.length}`}
-            hint={`${summary.streakDays} day streak`}
-          />
-          <RailStat
-            label="runs logged"
-            value={summary.totalRuns.toLocaleString()}
-            hint={
-              summary.runsPerActiveDay > 0
-                ? `${summary.runsPerActiveDay.toFixed(1)} per active day`
-                : undefined
-            }
-          />
-          <RailStat
-            label="prices written"
-            value={summary.totalUpdated.toLocaleString()}
-            hint={
-              summary.busiest
-                ? `peak ${summary.busiest.updated.toLocaleString()} on ${formatDate(summary.busiest.date)}`
-                : undefined
-            }
-          />
-          {modelsTracked !== undefined ? (
-            <RailStat
-              label="coverage"
-              value={`${modelsTracked.toLocaleString()} models`}
-              hint={providersTracked ? `${providersTracked} providers` : undefined}
-            />
-          ) : null}
+        {/* info column */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-end gap-1.5">
+            {WINDOWS.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                onClick={() => setWindowId(w.id)}
+                className={`rounded-full border px-2.5 py-1 font-mono text-[10px] transition-colors ${
+                  w.id === windowId
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:bg-secondary"
+                }`}
+              >
+                {w.label}
+              </button>
+            ))}
+          </div>
 
-          <div className="min-h-[3.25rem] border-t border-border pt-2 font-mono text-[10px] text-muted-foreground">
-            {hovered ? (
-              <>
-                <p className="text-foreground">{hovered.updated.toLocaleString()} updates</p>
-                <p>{formatDate(hovered.date)}</p>
-                <p>
-                  {hovered.runs} {hovered.runs === 1 ? "run" : "runs"} logged
-                  {hovered.hadFailure ? " · includes a failure" : ""}
-                </p>
-              </>
-            ) : (
-              <p>hover a day for its update count</p>
-            )}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-1">
+            <RailStat
+              label="last sync"
+              value={latest ? relativeTime(latest.run_at, now) : "—"}
+              hint={latest ? `${latest.models_checked.toLocaleString()} models checked` : "no runs yet"}
+            />
+            <RailStat
+              label="active days"
+              value={`${summary.activeDays}/${days.length}`}
+              hint={`${summary.streakDays} day streak`}
+            />
+            <RailStat
+              label="runs logged"
+              value={summary.totalRuns.toLocaleString()}
+              hint={
+                summary.runsPerActiveDay > 0
+                  ? `${summary.runsPerActiveDay.toFixed(1)} per active day`
+                  : undefined
+              }
+            />
+            <RailStat
+              label="prices written"
+              value={summary.totalUpdated.toLocaleString()}
+              hint={
+                summary.busiest
+                  ? `peak ${summary.busiest.updated.toLocaleString()} on ${formatDate(summary.busiest.date)}`
+                  : undefined
+              }
+            />
+            {modelsTracked !== undefined ? (
+              <RailStat
+                label="coverage"
+                value={`${modelsTracked.toLocaleString()} models`}
+                hint={providersTracked ? `${providersTracked} providers` : undefined}
+              />
+            ) : null}
+
+            <div className="min-h-[3.25rem] border-t border-border pt-2 font-mono text-[10px] text-muted-foreground">
+              {hovered ? (
+                <>
+                  <p className="text-foreground">{hovered.updated.toLocaleString()} updates</p>
+                  <p>{formatDate(hovered.date)}</p>
+                  <p>
+                    {hovered.runs} {hovered.runs === 1 ? "run" : "runs"} logged
+                    {hovered.hadFailure ? " · includes a failure" : ""}
+                  </p>
+                </>
+              ) : (
+                <p>hover a day for its update count</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
