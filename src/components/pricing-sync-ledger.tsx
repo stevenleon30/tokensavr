@@ -22,8 +22,8 @@ const LEVEL_CLASS: Record<LedgerDay["level"], string> = {
 const CELL_RADIUS = { borderRadius: "2px 2px 3px 3px" } as const;
 
 const WINDOWS: { id: LedgerWindow; label: string; cell: number; gap: number }[] = [
-  { id: "12w", label: "12w", cell: 26, gap: 6 },
-  { id: "1y", label: "1y", cell: 11, gap: 3 },
+  { id: "12w", label: "12w", cell: 52, gap: 8 },
+  { id: "1y", label: "1y", cell: 17, gap: 4 },
 ];
 
 function formatDate(date: string) {
