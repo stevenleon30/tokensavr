@@ -113,8 +113,8 @@ export function PricingSyncLedger({
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_200px]">
-        <div className="overflow-x-auto pb-1">
-          <div className="inline-flex gap-2">
+        <div className={fluid ? "pb-1" : "overflow-x-auto pb-1"}>
+          <div className={`gap-2 ${fluid ? "flex" : "inline-flex"}`}>
             {/* day-of-week labels */}
             <div
               className="flex flex-col justify-between font-mono text-[10px] leading-none text-muted-foreground"
@@ -125,13 +125,13 @@ export function PricingSyncLedger({
               <span>fri</span>
             </div>
 
-            <div>
+            <div className={fluid ? "min-w-0 flex-1" : undefined}>
               <div className="flex" style={{ gap: active.gap }}>
                 {months.map((label, i) => (
                   <div
                     key={i}
-                    className="font-mono text-[10px] leading-4 text-muted-foreground"
-                    style={{ width: active.cell }}
+                    className={`font-mono text-[10px] leading-4 text-muted-foreground ${fluid ? "min-w-0 flex-1" : ""}`}
+                    style={fluid ? undefined : { width: active.cell }}
                   >
                     <span className="whitespace-nowrap">{label}</span>
                   </div>
@@ -140,12 +140,20 @@ export function PricingSyncLedger({
 
               <div className="flex" style={{ gap: active.gap }}>
                 {weeks.map((week, wi) => (
-                  <div key={wi} className="flex flex-col" style={{ gap: active.gap }}>
+                  <div
+                    key={wi}
+                    className={`flex flex-col ${fluid ? "min-w-0 flex-1" : ""}`}
+                    style={{ gap: active.gap }}
+                  >
                     {week.map((day) => (
                       <div
                         key={day.date}
-                        style={{ ...CELL_RADIUS, height: active.cell, width: active.cell }}
-                        className={LEVEL_CLASS[day.level]}
+                        style={
+                          fluid
+                            ? CELL_RADIUS
+                            : { ...CELL_RADIUS, height: active.cell, width: active.cell }
+                        }
+                        className={`${LEVEL_CLASS[day.level]} ${fluid ? "aspect-square w-full" : ""}`}
                         onMouseEnter={() => setHovered(day)}
                         onMouseLeave={() => setHovered(null)}
                         title={`${formatDate(day.date)} — ${day.updated.toLocaleString()} updates`}
