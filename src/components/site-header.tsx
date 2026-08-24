@@ -68,15 +68,15 @@ export function SiteHeader() {
             >
               Sign out
             </button>
-          ) : null}
-
-          <Link
-            to="/auth"
-            search={{ idea: undefined, redirect: undefined }}
-            className="hidden rounded-lg bg-foreground px-4 py-2 font-mono text-xs text-background transition-opacity hover:opacity-85 sm:inline-block"
-          >
-            Get your API key
-          </Link>
+          ) : (
+            <Link
+              to="/auth"
+              search={{ idea: undefined, redirect: undefined }}
+              className="hidden rounded-lg bg-foreground px-4 py-2 font-mono text-xs text-background transition-opacity hover:opacity-85 sm:inline-block"
+            >
+              Create free account
+            </Link>
+          )}
 
           <button
             className="md:hidden text-foreground"
