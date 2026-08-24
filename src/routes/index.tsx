@@ -63,8 +63,13 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const data = Route.useLoaderData();
-  const health = syncHealth(data.runs);
-
+  const [now, setNow] = useState(() =>
+    data.serverNow ? new Date(data.serverNow).getTime() : Date.now(),
+  );
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
+  const health = syncHealth(data.runs, now);
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -77,7 +82,7 @@ function Landing() {
         <span className={health.operational ? "text-success" : "text-warning"}>{health.label}</span>
         <span aria-hidden>·</span>
         <span>
-          {health.lastRunAt ? `last sync ${relativeTime(health.lastRunAt)}` : "no sync recorded"}
+          {health.lastRunAt ? `last sync ${relativeTime(health.lastRunAt, now)}` : "no sync recorded"}
         </span>
       </div>
 
