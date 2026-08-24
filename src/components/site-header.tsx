@@ -101,14 +101,16 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link
-              to="/auth"
-              search={{ idea: undefined, redirect: undefined }}
-              onClick={() => setOpen(false)}
-              className="my-3 rounded-lg bg-foreground px-4 py-2 text-center font-mono text-xs text-background"
-            >
-              Get your API key
-            </Link>
+            {!user ? (
+              <Link
+                to="/auth"
+                search={{ idea: undefined, redirect: undefined }}
+                onClick={() => setOpen(false)}
+                className="my-3 rounded-lg bg-foreground px-4 py-2 text-center font-mono text-xs text-background"
+              >
+                Create free account
+              </Link>
+            ) : null}
             {user ? (
               <button
                 onClick={handleSignOut}
