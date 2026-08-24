@@ -96,10 +96,10 @@ export function PricingSyncLedger({
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
+        <div className="min-w-0">
           <p className="font-mono text-xs text-muted-foreground">pricing sync ledger</p>
-          <p className="mt-1 font-display text-4xl font-medium tabular-nums text-foreground sm:text-5xl">
+          <p className="mt-1 font-display text-3xl font-medium tabular-nums text-foreground sm:text-5xl">
             {headlineChecks.toLocaleString()}
           </p>
           <p className="font-mono text-xs text-muted-foreground">
@@ -107,7 +107,8 @@ export function PricingSyncLedger({
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
+
           {WINDOWS.map((w) => (
             <button
               key={w.id}
