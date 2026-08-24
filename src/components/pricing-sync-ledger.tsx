@@ -33,8 +33,8 @@ type WindowSpec = {
 };
 
 const WINDOWS: WindowSpec[] = [
-  { id: "12w", label: "12w", cell: 52, gap: 8, mobileCell: 20, mobileGap: 4 },
-  { id: "1y", label: "1y", cell: 17, gap: 4, mobileCell: 10, mobileGap: 3 },
+  { id: "12w", label: "12w", cell: 26, gap: 4, mobileCell: 18, mobileGap: 3 },
+  { id: "1y", label: "1y", cell: 11, gap: 3, mobileCell: 9, mobileGap: 2 },
 ];
 
 
