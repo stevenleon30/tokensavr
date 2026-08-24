@@ -121,6 +121,7 @@ function Landing() {
           checksLastYear={data.checksLastYear}
           modelsTracked={data.modelsTracked}
           providersTracked={data.providersTracked}
+          serverNow={data.serverNow}
         />
         <div className="mt-5">
           <ProviderStatusStrip providers={data.providers} />
