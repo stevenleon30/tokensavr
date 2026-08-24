@@ -93,7 +93,13 @@ export function PricingSyncLedger({
     setNow(Date.now());
   }, []);
 
-  const active = WINDOWS.find((w) => w.id === windowId) ?? WINDOWS[0]!;
+  const isMobile = useIsMobile();
+  const spec = WINDOWS.find((w) => w.id === windowId) ?? WINDOWS[0]!;
+  const active = {
+    cell: isMobile ? spec.mobileCell : spec.cell,
+    gap: isMobile ? spec.mobileGap : spec.gap,
+  };
+
   const days = useMemo(
     () => buildLedger(runs, new Date(now), LEDGER_WINDOW_DAYS[windowId]),
     [runs, windowId, now],
