@@ -172,20 +172,21 @@ export function PricingSyncLedger({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
         <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
           <span>fewer checks</span>
           {([0, 1, 2, 3, 4] as const).map((level) => (
             <span
               key={level}
               style={CELL_RADIUS}
-              className={`h-[11px] w-[11px] ${LEVEL_CLASS[level]}`}
+              className={`h-[11px] w-[11px] shrink-0 ${LEVEL_CLASS[level]}`}
             />
           ))}
           <span>more checks</span>
         </div>
 
-        <p className="min-h-[1rem] font-mono text-[10px] text-muted-foreground">
+        <p className="min-w-0 font-mono text-[10px] text-muted-foreground">
+
           {hovered ? (
             <>
               <span className="text-foreground">
