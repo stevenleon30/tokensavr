@@ -111,7 +111,12 @@ function Landing() {
 
       {/* ledger */}
       <section className="pt-14">
-        <PricingSyncLedger runs={data.runs} checksLastYear={data.checksLastYear} />
+        <PricingSyncLedger
+          runs={data.runs}
+          checksLastYear={data.checksLastYear}
+          modelsTracked={data.modelsTracked}
+          providersTracked={data.providersTracked}
+        />
         <div className="mt-5">
           <ProviderStatusStrip providers={data.providers} />
         </div>
