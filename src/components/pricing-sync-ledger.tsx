@@ -45,15 +45,18 @@ function RailStat({
   hint?: string;
 }) {
   return (
-    <div className="border-t border-border pt-2">
+    <div className="min-w-0">
       <p className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="font-mono text-sm tabular-nums text-foreground">{value}</p>
-      {hint ? <p className="font-mono text-[10px] text-muted-foreground">{hint}</p> : null}
+      <p className="mt-0.5 font-mono text-sm tabular-nums text-foreground">{value}</p>
+      {hint ? (
+        <p className="font-mono text-[10px] text-muted-foreground">{hint}</p>
+      ) : null}
     </div>
   );
 }
+
 
 export function PricingSyncLedger({
   runs,
