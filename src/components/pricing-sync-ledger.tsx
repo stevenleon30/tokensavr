@@ -10,6 +10,7 @@ import {
   type LedgerWindow,
   type SyncRun,
 } from "@/lib/sync-ledger";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const LEVEL_CLASS: Record<LedgerDay["level"], string> = {
   0: "bg-ledger-0 border border-border",
@@ -21,10 +22,21 @@ const LEVEL_CLASS: Record<LedgerDay["level"], string> = {
 
 const CELL_RADIUS = { borderRadius: "2px 2px 3px 3px" } as const;
 
-const WINDOWS: { id: LedgerWindow; label: string; cell: number; gap: number }[] = [
-  { id: "12w", label: "12w", cell: 52, gap: 8 },
-  { id: "1y", label: "1y", cell: 17, gap: 4 },
+type WindowSpec = {
+  id: LedgerWindow;
+  label: string;
+  cell: number;
+  gap: number;
+  /** smaller cells so the grid fits a phone without a long scroll */
+  mobileCell: number;
+  mobileGap: number;
+};
+
+const WINDOWS: WindowSpec[] = [
+  { id: "12w", label: "12w", cell: 52, gap: 8, mobileCell: 20, mobileGap: 4 },
+  { id: "1y", label: "1y", cell: 17, gap: 4, mobileCell: 10, mobileGap: 3 },
 ];
+
 
 function formatDate(date: string) {
   return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
@@ -82,7 +94,13 @@ export function PricingSyncLedger({
     setNow(Date.now());
   }, []);
 
-  const active = WINDOWS.find((w) => w.id === windowId) ?? WINDOWS[0]!;
+  const isMobile = useIsMobile();
+  const spec = WINDOWS.find((w) => w.id === windowId) ?? WINDOWS[0]!;
+  const active = {
+    cell: isMobile ? spec.mobileCell : spec.cell,
+    gap: isMobile ? spec.mobileGap : spec.gap,
+  };
+
   const days = useMemo(
     () => buildLedger(runs, new Date(now), LEDGER_WINDOW_DAYS[windowId]),
     [runs, windowId, now],
@@ -96,10 +114,10 @@ export function PricingSyncLedger({
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
+        <div className="min-w-0">
           <p className="font-mono text-xs text-muted-foreground">pricing sync ledger</p>
-          <p className="mt-1 font-display text-4xl font-medium tabular-nums text-foreground sm:text-5xl">
+          <p className="mt-1 font-display text-3xl font-medium tabular-nums text-foreground sm:text-5xl">
             {headlineChecks.toLocaleString()}
           </p>
           <p className="font-mono text-xs text-muted-foreground">
@@ -107,7 +125,8 @@ export function PricingSyncLedger({
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
+
           {WINDOWS.map((w) => (
             <button
               key={w.id}
@@ -171,20 +190,21 @@ export function PricingSyncLedger({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
         <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
           <span>fewer checks</span>
           {([0, 1, 2, 3, 4] as const).map((level) => (
             <span
               key={level}
               style={CELL_RADIUS}
-              className={`h-[11px] w-[11px] ${LEVEL_CLASS[level]}`}
+              className={`h-[11px] w-[11px] shrink-0 ${LEVEL_CLASS[level]}`}
             />
           ))}
           <span>more checks</span>
         </div>
 
-        <p className="min-h-[1rem] font-mono text-[10px] text-muted-foreground">
+        <p className="min-w-0 font-mono text-[10px] text-muted-foreground">
+
           {hovered ? (
             <>
               <span className="text-foreground">
