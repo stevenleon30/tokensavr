@@ -5,6 +5,7 @@ export type SyncLedgerData = {
   runs: SyncRun[];
   recent: SyncRun[];
   modelsTracked: number;
+  providersTracked: number;
   checksLastYear: number;
   uptimePct: number | null;
 };
@@ -22,13 +23,14 @@ export const getSyncLedger = createServerFn({ method: "GET" }).handler(
 
     const since = new Date(Date.now() - LEDGER_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-    const [logRes, countRes] = await Promise.all([
+    const [logRes, countRes, providerRes] = await Promise.all([
       supabase
         .from("pricing_sync_log")
         .select("run_at, status, models_updated, models_checked")
         .gte("run_at", since)
         .order("run_at", { ascending: false }),
       supabase.from("model_pricing").select("id", { count: "exact", head: true }),
+      supabase.from("model_pricing").select("provider"),
     ]);
 
     if (logRes.error) throw new Error(logRes.error.message);
@@ -42,11 +44,17 @@ export const getSyncLedger = createServerFn({ method: "GET" }).handler(
 
     const checksLastYear = runs.reduce((sum, r) => sum + r.models_checked, 0);
     const succeeded = runs.filter((r) => r.status !== "failed").length;
+    const providersTracked = new Set(
+      (providerRes.data ?? [])
+        .map((r) => (r.provider ?? "").trim().toLowerCase())
+        .filter(Boolean),
+    ).size;
 
     return {
       runs,
       recent: runs.slice(0, 8),
       modelsTracked: countRes.count ?? 0,
+      providersTracked,
       checksLastYear,
       uptimePct: runs.length ? (succeeded / runs.length) * 100 : null,
     };

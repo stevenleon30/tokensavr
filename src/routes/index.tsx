@@ -111,7 +111,12 @@ function Landing() {
 
       {/* ledger */}
       <section className="pt-14">
-        <PricingSyncLedger runs={data.runs} checksLastYear={data.checksLastYear} />
+        <PricingSyncLedger
+          runs={data.runs}
+          checksLastYear={data.checksLastYear}
+          modelsTracked={data.modelsTracked}
+          providersTracked={data.providersTracked}
+        />
         <div className="mt-5">
           <ProviderStatusStrip providers={data.providers} />
         </div>
@@ -159,7 +164,7 @@ function Landing() {
                   )}
                   {npm.lastUpdated ? (
                     <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
-                      updated {new Date(npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      updated {new Date(npm.lastUpdated).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" })} UTC
                     </p>
                   ) : null}
                 </Stat>
