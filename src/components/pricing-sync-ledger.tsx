@@ -70,6 +70,8 @@ export function PricingSyncLedger({
   const [windowId, setWindowId] = useState<LedgerWindow>("12w");
 
   const active = WINDOWS.find((w) => w.id === windowId) ?? WINDOWS[0]!;
+  // 12 weeks fits without scrolling, so let the cells stretch across the card.
+  const fluid = windowId === "12w";
   const days = useMemo(
     () => buildLedger(runs, new Date(), LEDGER_WINDOW_DAYS[windowId]),
     [runs, windowId],
