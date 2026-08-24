@@ -10,6 +10,7 @@ import {
   type LedgerWindow,
   type SyncRun,
 } from "@/lib/sync-ledger";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const LEVEL_CLASS: Record<LedgerDay["level"], string> = {
   0: "bg-ledger-0 border border-border",
