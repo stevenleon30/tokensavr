@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Await, defer } from "@tanstack/react-router";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { PricingSyncLedger } from "@/components/pricing-sync-ledger";
 import { ProviderStatusStrip } from "@/components/provider-status-strip";
 import { NpmTrendSparkline } from "@/components/npm-trend-sparkline";
