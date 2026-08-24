@@ -37,18 +37,24 @@ export const Route = createFileRoute("/api/public/sync-model-pricing")({
           models_updated: number;
           models_checked: number;
           error_message?: string;
-        }) => {
+        }): Promise<{ logged: boolean; log_error?: string }> => {
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            await supabaseAdmin.from("pricing_sync_log").insert({
+            const { error } = await supabaseAdmin.from("pricing_sync_log").insert({
               status: row.status,
               models_updated: row.models_updated,
               models_checked: row.models_checked,
               duration_ms: Date.now() - startedAt,
               error_message: row.error_message ?? null,
             });
+            if (error) {
+              console.error("failed to write pricing_sync_log row", error);
+              return { logged: false, log_error: error.message };
+            }
+            return { logged: true };
           } catch (logErr) {
             console.error("failed to write pricing_sync_log row", logErr);
+            return { logged: false, log_error: (logErr as Error).message };
           }
         };
 
@@ -57,23 +63,23 @@ export const Route = createFileRoute("/api/public/sync-model-pricing")({
           const summary = await syncModelPricing();
           const total = summary.openrouter + summary.litellm + summary.manual;
 
-          await logRun({
+          const log = await logRun({
             status: "success",
             models_updated: total,
             models_checked: total,
           });
 
-          return Response.json({ ok: true, ...summary });
+          return Response.json({ ok: true, ...summary, ...log });
         } catch (err) {
           console.error("sync-model-pricing failed", err);
-          await logRun({
+          const log = await logRun({
             status: "failed",
             models_updated: 0,
             models_checked: 0,
             error_message: (err as Error).message,
           });
           return Response.json(
-            { ok: false, error: (err as Error).message },
+            { ok: false, error: (err as Error).message, ...log },
             { status: 500 },
           );
         }
