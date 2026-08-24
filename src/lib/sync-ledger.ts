@@ -70,7 +70,11 @@ function levelFor(updated: number, buckets: number[]): LedgerDay["level"] {
  * ending on `today`. Days without a logged attempt stay at level 0 so gaps in
  * coverage stay visible.
  */
-export function buildLedger(runs: SyncRun[], today = new Date()): LedgerDay[] {
+export function buildLedger(
+  runs: SyncRun[],
+  today = new Date(),
+  windowDays: number = LEDGER_DAYS,
+): LedgerDay[] {
   const grouped = new Map<string, { updated: number; runs: number; hadFailure: boolean }>();
 
   for (const run of runs) {
@@ -89,10 +93,10 @@ export function buildLedger(runs: SyncRun[], today = new Date()): LedgerDay[] {
   end.setUTCDate(end.getUTCDate() + (6 - end.getUTCDay()));
 
   const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - (LEDGER_DAYS - 1));
+  start.setUTCDate(start.getUTCDate() - (windowDays - 1));
 
   const dates: string[] = [];
-  for (let i = 0; i < LEDGER_DAYS; i++) {
+  for (let i = 0; i < windowDays; i++) {
     const d = new Date(start);
     d.setUTCDate(start.getUTCDate() + i);
     dates.push(toDateKey(d));
