@@ -58,6 +58,7 @@ export const getSyncLedger = createServerFn({ method: "GET" }).handler(
       providersTracked,
       checksLastYear,
       uptimePct: runs.length ? (succeeded / runs.length) * 100 : null,
+      serverNow: new Date().toISOString(),
     };
   },
 );
