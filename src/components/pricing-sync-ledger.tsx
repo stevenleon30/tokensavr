@@ -33,8 +33,8 @@ type WindowSpec = {
 };
 
 const WINDOWS: WindowSpec[] = [
-  { id: "12w", label: "12w", cell: 26, gap: 4, mobileCell: 18, mobileGap: 3 },
-  { id: "1y", label: "1y", cell: 11, gap: 3, mobileCell: 9, mobileGap: 2 },
+  { id: "12w", label: "12w", cell: 14, gap: 3, mobileCell: 11, mobileGap: 2 },
+  { id: "1y", label: "1y", cell: 8, gap: 2, mobileCell: 7, mobileGap: 2 },
 ];
 
 
@@ -113,11 +113,11 @@ export function PricingSyncLedger({
   const headlineChecks = windowId === "1y" ? checksLastYear : summary.totalChecks;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+    <div className="rounded-lg border border-border bg-card p-4 sm:p-5">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
         <div className="min-w-0">
           <p className="font-mono text-xs text-muted-foreground">pricing sync ledger</p>
-          <p className="mt-1 font-display text-3xl font-medium tabular-nums text-foreground sm:text-5xl">
+          <p className="mt-1 font-display text-2xl font-medium tabular-nums text-foreground sm:text-3xl">
             {headlineChecks.toLocaleString()}
           </p>
           <p className="font-mono text-xs text-muted-foreground">
@@ -145,7 +145,7 @@ export function PricingSyncLedger({
       </div>
 
       {/* grid, full width */}
-      <div className="mt-6 overflow-x-auto pb-1">
+      <div className="mt-4 overflow-x-auto pb-1">
         <div className="inline-flex gap-2">
           {/* day-of-week labels */}
           <div
@@ -221,7 +221,7 @@ export function PricingSyncLedger({
       </div>
 
       {/* metrics, horizontal under the grid */}
-      <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-border pt-5 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-4 grid grid-cols-2 gap-x-5 gap-y-4 border-t border-border pt-4 sm:grid-cols-3 lg:grid-cols-5">
         <RailStat
           label="last sync"
           value={latest ? relativeTime(latest.run_at, now) : "—"}
