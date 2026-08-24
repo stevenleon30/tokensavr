@@ -6,6 +6,8 @@
  */
 
 export const LEDGER_DAYS = 371;
+export const LEDGER_WINDOW_DAYS = { "12w": 84, "1y": 371 } as const;
+export type LedgerWindow = keyof typeof LEDGER_WINDOW_DAYS;
 export const SYNC_INTERVAL_HOURS = 6;
 
 export type SyncRun = {
