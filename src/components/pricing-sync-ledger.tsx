@@ -21,10 +21,21 @@ const LEVEL_CLASS: Record<LedgerDay["level"], string> = {
 
 const CELL_RADIUS = { borderRadius: "2px 2px 3px 3px" } as const;
 
-const WINDOWS: { id: LedgerWindow; label: string; cell: number; gap: number }[] = [
-  { id: "12w", label: "12w", cell: 52, gap: 8 },
-  { id: "1y", label: "1y", cell: 17, gap: 4 },
+type WindowSpec = {
+  id: LedgerWindow;
+  label: string;
+  cell: number;
+  gap: number;
+  /** smaller cells so the grid fits a phone without a long scroll */
+  mobileCell: number;
+  mobileGap: number;
+};
+
+const WINDOWS: WindowSpec[] = [
+  { id: "12w", label: "12w", cell: 52, gap: 8, mobileCell: 20, mobileGap: 4 },
+  { id: "1y", label: "1y", cell: 17, gap: 4, mobileCell: 10, mobileGap: 3 },
 ];
+
 
 function formatDate(date: string) {
   return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
