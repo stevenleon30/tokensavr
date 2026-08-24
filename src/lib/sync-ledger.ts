@@ -197,3 +197,54 @@ export function runNote(run: SyncRun): { text: string; tone: "muted" | "success"
   }
   return { text: `${run.models_updated} model prices written`, tone: "success" };
 }
+
+export type LedgerSummary = {
+  /** Days in the window with at least one logged run */
+  activeDays: number;
+  /** Total runs logged in the window */
+  totalRuns: number;
+  /** Total model prices written in the window */
+  totalUpdated: number;
+  /** Total price checks in the window */
+  totalChecks: number;
+  /** Consecutive days with a run, counting back from the most recent active day */
+  streakDays: number;
+  /** Heaviest single day in the window */
+  busiest: { date: string; updated: number } | null;
+  /** Average runs per active day */
+  runsPerActiveDay: number;
+};
+
+/** Aggregates a built ledger (plus the raw runs) into rail-sized metrics. */
+export function summarizeLedger(days: LedgerDay[], runs: SyncRun[]): LedgerSummary {
+  const dateSet = new Set(days.map((d) => d.date));
+  const windowRuns = runs.filter((r) => dateSet.has(toDateKey(new Date(r.run_at))));
+
+  const active = days.filter((d) => d.runs > 0);
+  const totalUpdated = active.reduce((s, d) => s + d.updated, 0);
+  const totalChecks = windowRuns.reduce((s, r) => s + Number(r.models_checked ?? 0), 0);
+
+  let busiest: LedgerSummary["busiest"] = null;
+  for (const d of active) {
+    if (!busiest || d.updated > busiest.updated) busiest = { date: d.date, updated: d.updated };
+  }
+
+  // streak: walk backwards from the last active day while days stay active
+  let streakDays = 0;
+  const lastActiveIdx = days.reduce((acc, d, i) => (d.runs > 0 ? i : acc), -1);
+  for (let i = lastActiveIdx; i >= 0; i--) {
+    const day = days[i];
+    if (!day || day.runs === 0) break;
+    streakDays++;
+  }
+
+  return {
+    activeDays: active.length,
+    totalRuns: windowRuns.length,
+    totalUpdated,
+    totalChecks,
+    streakDays,
+    busiest,
+    runsPerActiveDay: active.length ? windowRuns.length / active.length : 0,
+  };
+}
