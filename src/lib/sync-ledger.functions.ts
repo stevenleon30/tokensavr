@@ -5,6 +5,7 @@ export type SyncLedgerData = {
   runs: SyncRun[];
   recent: SyncRun[];
   modelsTracked: number;
+  providersTracked: number;
   checksLastYear: number;
   uptimePct: number | null;
 };
