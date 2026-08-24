@@ -8,6 +8,7 @@ export type SyncLedgerData = {
   providersTracked: number;
   checksLastYear: number;
   uptimePct: number | null;
+  serverNow: string;
 };
 
 /**
