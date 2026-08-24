@@ -1,38 +1,23 @@
-# Fill the empty space beside the sync ledger
+# Make the sync grid actually show activity
 
-The ledger grid only spans about two-thirds of the card, leaving a wide blank column on the right. Plan: turn that space into a compact metrics rail fed by data already available server-side.
+## What the data says
 
-## Layout
+- `pricing_sync_log` contains exactly **1 row**, from Aug 16. That single day is the only shaded square — everything else is empty because there is no logged history, not because the grid is styled wrong.
+- The scheduled job **is** running: 4 successful cron invocations, the latest at Aug 24 00:00 UTC, and the endpoint responded `200 {"ok":true,"openrouter":422,"litellm":2390,"manual":6}`.
+- So the sync works and prices are refreshed, but the run is not being recorded in `pricing_sync_log`. The insert is wrapped in a try/catch that only logs to console, so it fails silently. Exact cause is unconfirmed — most likely the published deployment the cron calls cannot write that table (missing/incorrect service credentials in that environment, so the write is refused by row-level security).
 
-```text
-+-----------------------------------------------------------+
-| pricing sync ledger            | LEDGER RAIL              |
-| 2,749                          | last sync   2h ago       |
-| price checks in the last year   | streak      41 days     |
-|                                | busiest day 1,204 checks |
-| [ ][ ][ ][ ][ ][ ][ ]  ...     | providers   7 tracked    |
-| [ ][ ][ ][ ][ ][ ][ ]  ...     | price moves 18 (30d)     |
-|                                | ------------------------ |
-| fewer -> more checks           | hover readout / day info |
-+-----------------------------------------------------------+
-```
+## Plan
 
-On mobile the rail stacks under the grid as a 2-column mini stat block.
-
-## Metrics in the rail
-
-1. **Last sync** — relative time of the newest run, plus next-run estimate from the 6h interval.
-2. **Sync streak** — consecutive days with at least one successful run (from ledger days).
-3. **Busiest day** — highest single-day check count and its date.
-4. **Providers tracked** — distinct providers in the pricing table (new count, cheap query).
-5. **Price moves (30d)** — models whose price changed in the last 30 days (rows with recent `updated_at`).
-6. **Median input price** — median input cost per 1M tokens across tracked models, as a market-level anchor.
-
-The hover readout for a day moves into the rail's lower slot so hovering fills the space instead of leaving a floating line of text.
+1. **Confirm the write failure first.** Call the endpoint and inspect the server logs for the "failed to write pricing_sync_log row" message and its error, then verify a row appears. No further work is guessed on top of an unverified cause.
+2. **Fix logging so every run records.** Make the log insert surface its error in the response payload (e.g. `logged: true|false` plus the error) instead of swallowing it, and correct whatever blocks the write so each 6-hourly run adds a row. From then on the grid gains ~4 checks/day, ~1 square per day.
+3. **Backfill real history from the pricing data itself.** `model_pricing` carries `fetched_at` / `updated_at` per model, so past refresh days can be reconstructed and inserted as historical ledger rows. This fills the grid with genuine activity rather than invented numbers, and nothing is fabricated for days with no evidence.
+4. **Make the empty window less of a void.** Add a window switch on the ledger — `12 weeks` (default when history is thin) / `1 year` — so a young dataset reads as dense recent activity instead of a year of blank squares. The heading count follows the selected window.
+5. **Include per-run intensity.** Since there are 4 runs/day, shade each day by total models checked that day (already the level logic) and show the run count in the hover readout, so a day with 4 runs looks visibly stronger than a day with 1.
 
 ## Technical notes
 
-- Extend `getSyncLedger` in `src/lib/sync-ledger.functions.ts` to also return `providersTracked`, `priceMoves30d`, `medianInputPer1M`, and `lastSyncAt`; all are `model_pricing` / `pricing_sync_log` aggregates read with the existing admin client, so no new client-readable policies.
-- Add pure helpers in `src/lib/sync-ledger.ts`: `syncStreakDays(days)` and `busiestDay(days)` derived from the existing `buildLedger` output.
-- `src/components/pricing-sync-ledger.tsx`: wrap content in a `lg:grid-cols-[1fr_220px]` grid, add a `RailStat` subcomponent (mono label, tabular-nums value), keep the existing type scale, colors, and 11px cell system unchanged.
-- `src/routes/index.tsx` passes the new fields through; stat strip below stays as-is (no duplicated metrics — "models tracked" and "checks in the last year" stay there, the rail uses different ones).
+- `src/routes/api/public/sync-model-pricing.ts`: return the log-insert outcome; keep the always-log-one-row contract for success and failure.
+- Backfill via a one-off SQL migration that derives distinct refresh timestamps from `model_pricing` and inserts matching `pricing_sync_log` rows with a status marking them as reconstructed.
+- `src/lib/sync-ledger.ts`: make `LEDGER_DAYS` a parameter so `buildLedger`/`toWeeks`/`monthLabels` can render 84 days or 371 days.
+- `src/components/pricing-sync-ledger.tsx`: add the window toggle (mono pill buttons matching the existing style), keep the 11px cell system and colors unchanged; larger cells for the 12-week view so the grid still fills the card width.
+- `src/lib/sync-ledger.functions.ts` and `src/routes/index.tsx`: pass the window through and keep the stat strip numbers consistent with the selected range.
