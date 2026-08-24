@@ -144,7 +144,7 @@ export function PricingSyncLedger({
                 {weeks.map((week, wi) => (
                   <div
                     key={wi}
-                    className={`flex flex-col ${fluid ? "min-w-0 flex-1" : ""}`}
+                    className={`flex flex-col ${fluid ? "min-w-0 flex-1 [max-width:40px]" : ""}`}
                     style={{ gap: active.gap }}
                   >
                     {week.map((day) => (
