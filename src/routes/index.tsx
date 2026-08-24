@@ -164,7 +164,7 @@ function Landing() {
                   )}
                   {npm.lastUpdated ? (
                     <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
-                      updated {new Date(npm.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      updated {new Date(npm.lastUpdated).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" })} UTC
                     </p>
                   ) : null}
                 </Stat>
