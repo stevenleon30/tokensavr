@@ -33,13 +33,13 @@ type WindowSpec = {
 };
 
 const WINDOWS: WindowSpec[] = [
-  { id: "12w", label: "12w", cell: 10, gap: 2, mobileCell: 8, mobileGap: 2 },
-  { id: "1y", label: "1y", cell: 6, gap: 1, mobileCell: 5, mobileGap: 1 },
+  { id: "12w", label: "12w", cell: 14, gap: 4, mobileCell: 10, mobileGap: 3 },
+  { id: "1y", label: "1y", cell: 11, gap: 3, mobileCell: 7, mobileGap: 2 },
 ];
 
-/** Show 4 rows per week column: Mon, Wed, Fri, Sat. */
-const ROW_INDICES = [1, 3, 5, 6] as const;
-const ROW_LABELS = ["mon", "wed", "fri", "sat"] as const;
+/** Show all 7 rows per week column. */
+const ROW_INDICES = [0, 1, 2, 3, 4, 5, 6] as const;
+const ROW_LABELS = ["mon", "", "wed", "", "fri", "", ""] as const;
 
 
 function formatDate(date: string) {
