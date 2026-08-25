@@ -161,8 +161,8 @@ export function PricingSyncLedger({
             ))}
           </div>
 
-          <div className="min-w-0 flex-1 overflow-x-auto">
-            <div className="flex justify-start" style={{ gap: active.gap }}>
+          <div className="min-w-0 flex-1">
+            <div className="flex w-full justify-between" style={{ gap: active.gap }}>
               {months.map((label, i) => (
                 <div
                   key={i}
@@ -174,7 +174,7 @@ export function PricingSyncLedger({
               ))}
             </div>
 
-            <div className="flex justify-start" style={{ gap: active.gap }}>
+            <div className="flex w-full justify-between" style={{ gap: active.gap }}>
               {weeks.map((week, wi) => (
                 <div
                   key={wi}
